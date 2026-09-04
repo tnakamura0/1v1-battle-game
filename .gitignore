@@ -1,0 +1,56 @@
+# ==============================
+# macOS
+# ==============================
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+.fseventsd
+.TemporaryItems
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# ==============================
+# エディタ / IDE
+# ==============================
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.swp
+*.swo
+*~
+
+# ==============================
+# Claude Code（個人用設定・除外対象)
+# ==============================
+.claude/settings.local.json
+CLAUDE.local.md
+
+# ==============================
+# 環境変数・秘匿情報
+# ==============================
+.env
+.env.local
+.env.*.local
+*.pem
+*.key
+
+# ==============================
+# ログ・一時ファイル
+# ==============================
+*.log
+logs/
+*.tmp
+*.temp
+
+# ==============================
+# Node.js / Vite
+# ==============================
+node_modules/
+dist/
+dist-ssr/
+coverage/
+*.local
+*.tsbuildinfo

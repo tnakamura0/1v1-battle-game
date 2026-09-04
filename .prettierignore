@@ -1,0 +1,9 @@
+node_modules
+dist
+coverage
+
+# 開発フロー・Issue/PR運用のドキュメント・テンプレート類は対象外
+.claude
+.github
+docs
+*.md
