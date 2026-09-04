@@ -2,6 +2,7 @@ import { Routes, Route } from 'react-router'
 import { Home } from '@/pages/Home'
 import { Rules } from '@/pages/Rules/Rules'
 import { PresetSelect } from '@/pages/PresetSelect/PresetSelect'
+import { Battle } from '@/pages/Battle/Battle'
 
 export function AppRoutes() {
   return (
@@ -9,6 +10,7 @@ export function AppRoutes() {
       <Route path="/" element={<Home />} />
       <Route path="/rules" element={<Rules />} />
       <Route path="/preset" element={<PresetSelect />} />
+      <Route path="/battle" element={<Battle />} />
     </Routes>
   )
 }
