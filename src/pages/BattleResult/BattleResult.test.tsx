@@ -31,12 +31,12 @@ describe('BattleResult', () => {
 
   it('shows a win headline and the final stats', () => {
     renderPage({ summary })
-    expect(screen.getByText('勝利')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '勝利' })).toBeInTheDocument()
     expect(screen.getByText('7ターン')).toBeInTheDocument()
   })
 
   it('shows a lose headline when the cpu wins', () => {
     renderPage({ summary: { ...summary, winner: 'cpu' } })
-    expect(screen.getByText('敗北')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
   })
 })

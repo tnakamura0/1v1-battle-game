@@ -23,7 +23,7 @@ export function BattleResult() {
       </span>
 
       <div className="flex flex-col gap-2">
-        <span
+        <h1
           className={
             won
               ? 'font-sans text-5xl font-extrabold text-accent-hover'
@@ -31,7 +31,7 @@ export function BattleResult() {
           }
         >
           {won ? '勝利' : '敗北'}
-        </span>
+        </h1>
         <span className="font-sans text-sm font-semibold text-text-secondary">
           {won ? 'あなたの勝ちです' : 'あなたの負けです'}
         </span>
