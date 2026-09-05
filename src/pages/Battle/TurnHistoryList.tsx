@@ -28,10 +28,10 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
   return (
     <div className="flex min-h-0 flex-1 flex-col gap-2">
       <HistoryHeader />
-      <ul className="flex min-h-0 flex-1 flex-col gap-2 overflow-y-auto">
+      <ul className="flex min-h-0 flex-1 flex-col gap-px overflow-y-auto rounded-chip bg-bg-track">
         <li
           key={latest.turn}
-          className="flex flex-none flex-col gap-1.5 rounded-chip border border-l-[3px] border-border-emphasis border-l-accent bg-bg-surface px-3.5 py-3"
+          className="flex flex-none flex-col gap-1.5 border-l-[3px] border-l-accent bg-bg-row px-3.5 py-3"
         >
           <div className="flex items-center justify-between">
             <span className="font-mono text-[10px] font-bold tracking-[0.1em] text-text-secondary">
@@ -58,7 +58,7 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
         {rest.map((record) => (
           <li
             key={record.turn}
-            className="flex flex-none items-center gap-3 rounded-chip border border-border-default px-3.5 py-2.5"
+            className="flex flex-none items-center gap-3 bg-bg-row px-3.5 py-2.5"
           >
             <span className="w-[46px] flex-none font-mono text-[10px] font-semibold text-text-tertiary">
               TURN {record.turn}

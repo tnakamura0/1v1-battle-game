@@ -3,7 +3,7 @@ export type Action = 'charge' | 'attack' | 'guard'
 export type PlayerKey = 'player' | 'cpu'
 
 export interface BattlePreset {
-  initialHp: 3 | 5
+  initialHp: 2 | 3
   guardCooldownTurns: 2 | 3
 }
 

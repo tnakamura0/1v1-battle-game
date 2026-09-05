@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest'
 import { decideCpuAction } from '@/game/cpu'
 import type { BattlePreset, PlayerState } from '@/game/types'
 
-const preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 2 }
+const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
 function state(overrides: Partial<PlayerState> = {}): PlayerState {
   return { hp: 5, energy: 2, guardCooldownRemaining: 0, ...overrides }

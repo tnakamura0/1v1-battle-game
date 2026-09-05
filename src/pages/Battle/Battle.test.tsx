@@ -5,7 +5,7 @@ import { Battle } from '@/pages/Battle/Battle'
 import { INTRO_DURATION_MS, RESULT_DURATION_MS } from '@/game/presets'
 import type { BattlePreset } from '@/game/types'
 
-const preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 2 }
+const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
 function renderBattle(state?: { preset: BattlePreset }) {
   return render(
@@ -33,9 +33,14 @@ describe('Battle', () => {
     expect(screen.getByText('preset select screen')).toBeInTheDocument()
   })
 
-  it('shows the intro, then moves to hand selection', () => {
+  it('shows a countdown during the intro, then moves to hand selection', () => {
     renderBattle({ preset })
-    expect(screen.getByText('対戦開始')).toBeInTheDocument()
+    expect(screen.getByLabelText('残り3秒')).toBeInTheDocument()
+
+    act(() => {
+      vi.advanceTimersByTime(1000)
+    })
+    expect(screen.getByLabelText('残り2秒')).toBeInTheDocument()
 
     act(() => {
       vi.advanceTimersByTime(INTRO_DURATION_MS)

@@ -2,11 +2,12 @@ import type { BattlePreset } from '@/game/types'
 
 interface BattleIntroProps {
   preset: BattlePreset
+  secondsRemaining: number
 }
 
-export function BattleIntro({ preset }: BattleIntroProps) {
+export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
   return (
-    <div className="flex h-full flex-col items-center justify-center gap-8 p-6 text-center">
+    <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
       <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-text-tertiary">
         まもなく対戦開始
       </span>
@@ -32,7 +33,18 @@ export function BattleIntro({ preset }: BattleIntroProps) {
         </div>
       </div>
 
-      <span className="font-sans text-sm font-semibold text-text-secondary">対戦開始</span>
+      <div className="flex flex-col items-center gap-1">
+        <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-text-secondary">
+          対戦開始まで
+        </span>
+        <span
+          className="font-sans text-4xl font-extrabold text-text-primary tabular-nums"
+          aria-live="polite"
+          aria-label={`残り${secondsRemaining}秒`}
+        >
+          {secondsRemaining}
+        </span>
+      </div>
     </div>
   )
 }

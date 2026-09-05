@@ -16,9 +16,9 @@ function renderPage() {
 }
 
 describe('PresetSelect', () => {
-  it('defaults to HP 5 / cooldown 2 turns', () => {
+  it('defaults to HP 3 / cooldown 2 turns', () => {
     renderPage()
-    expect(screen.getByRole('radio', { name: '5' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '3' })).toBeChecked()
     expect(screen.getByRole('radio', { name: '2ターン' })).toBeChecked()
   })
 
@@ -26,10 +26,10 @@ describe('PresetSelect', () => {
     const user = userEvent.setup()
     renderPage()
 
-    await user.click(screen.getByRole('radio', { name: '3' }))
+    await user.click(screen.getByRole('radio', { name: '2' }))
     await user.click(screen.getByRole('radio', { name: '3ターン' }))
 
-    expect(screen.getByRole('radio', { name: '3' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: '2' })).toBeChecked()
     expect(screen.getByRole('radio', { name: '3ターン' })).toBeChecked()
   })
 

@@ -1,5 +1,16 @@
 @import 'tailwindcss';
 
+/*
+ * 配色の階層ルール（ダークテーマでの視覚的な強弱づけ）
+ * - Tier 0（ページ）        : bg-bg-page
+ * - Tier 1（静的カード）    : bg-bg-card + border-border-default + shadow-card
+ *                             （StatusPanel・特徴カード・結果画面のパネル等、非対話的な表示要素）
+ * - Tier 2（対話的コントロール）: bg-bg-surface + border-border-emphasis（idle）
+ *                             bg-bg-surface-active + border-accent（selected/active）
+ *                             （ActionButton等。Tier 1より明るく「押せそう」に見せる）
+ * - ネスト行                : bg-bg-track（外枠）+ bg-bg-row（各行、gap-pxで区切る）
+ * - 意味的アクセント境界     : border-accent/attack/danger 等の状態通知は上記と独立
+ */
 @theme {
   --color-bg-page: #06090d;
   --color-bg-card: #0a0e14;
@@ -37,6 +48,8 @@
   --radius-action: 14px;
   --radius-pill: 20px;
   --radius-chip: 6px;
+
+  --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset, 0 12px 24px -16px rgba(0, 0, 0, 0.65);
 }
 
 :root {

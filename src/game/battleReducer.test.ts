@@ -6,7 +6,7 @@ import {
 } from '@/game/battleReducer'
 import type { BattlePreset } from '@/game/types'
 
-const preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 2 }
+const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 const alwaysFirstLegal = () => 0
 
 describe('createInitialBattleState', () => {
@@ -14,8 +14,8 @@ describe('createInitialBattleState', () => {
     const state = createInitialBattleState(preset)
     expect(state.phase).toBe('intro')
     expect(state.turn).toBe(1)
-    expect(state.player).toEqual({ hp: 5, energy: 0, guardCooldownRemaining: 0 })
-    expect(state.cpu).toEqual({ hp: 5, energy: 0, guardCooldownRemaining: 0 })
+    expect(state.player).toEqual({ hp: 3, energy: 0, guardCooldownRemaining: 0 })
+    expect(state.cpu).toEqual({ hp: 3, energy: 0, guardCooldownRemaining: 0 })
     expect(state.history).toEqual([])
     expect(state.winner).toBeNull()
   })

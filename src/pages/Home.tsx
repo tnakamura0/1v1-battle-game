@@ -31,7 +31,7 @@ export function Home() {
         </span>
         <Link
           to="/rules"
-          className="font-sans text-sm font-semibold text-text-secondary hover:text-accent-hover"
+          className="flex h-9 items-center justify-center rounded-pill border border-border-default px-4 font-sans text-sm font-semibold text-text-secondary transition-colors hover:border-accent hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
         >
           ルール
         </Link>
@@ -59,7 +59,7 @@ export function Home() {
         {FEATURES.map((feature) => (
           <div
             key={feature.title}
-            className="flex flex-col gap-2 rounded-card border border-border-emphasis bg-bg-surface p-5"
+            className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-5 shadow-card"
           >
             <span className="font-sans text-sm font-extrabold text-text-primary">
               {feature.title}
