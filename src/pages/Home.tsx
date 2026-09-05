@@ -45,7 +45,7 @@ export function Home() {
           読み合いの1対1バトル
         </h1>
         <p className="max-w-md font-sans text-sm leading-relaxed text-text-secondary">
-          チャージ・攻撃・ガードの3択でCPUと駆け引きする、フロントエンド完結のシンプル対戦ゲーム。
+          登録不要、CPU相手にいつでも気軽に対戦できる。チャージ・攻撃・ガードの3択で駆け引きするシンプル対戦ゲーム。
         </p>
         <Link
           to="/preset"

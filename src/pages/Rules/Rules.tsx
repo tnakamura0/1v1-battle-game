@@ -2,11 +2,11 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 
 const TURN_STEPS = [
-  '行動を選択する（制限時間なし）',
-  '両者の行動を同時に公開する',
-  '組み合わせで結果を判定する',
-  '結果を8秒間表示する',
-  '自動的に次のターンへ進む',
+  '3つの行動から1つを選ぶ（時間制限なし）',
+  '選んだ行動がお互いに公開される',
+  '行動の組み合わせで勝敗が決まる',
+  '結果を確認する',
+  '次のターンに進む',
 ]
 
 const ACTIONS = [
@@ -167,13 +167,13 @@ export function Rules() {
       <div className="mb-10 flex flex-col gap-3 sm:flex-row">
         <Link
           to="/preset"
-          className="flex h-13 flex-1 touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-base font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
         >
           対戦を始める
         </Link>
         <Link
           to="/"
-          className="flex h-13 flex-1 touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-sm font-bold text-text-secondary transition-colors hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-base font-bold text-text-secondary transition-colors hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
         >
           トップへ戻る
         </Link>
