@@ -5,7 +5,7 @@ import type { BattlePreset, PlayerState } from '@/game/types'
 const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
 function state(overrides: Partial<PlayerState> = {}): PlayerState {
-  return { hp: 5, energy: 2, guardCooldownRemaining: 0, ...overrides }
+  return { hp: 3, energy: 2, guardCooldownRemaining: 0, ...overrides }
 }
 
 describe('decideCpuAction', () => {

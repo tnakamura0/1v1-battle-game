@@ -13,11 +13,11 @@ export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
       </span>
 
       <div className="flex items-center gap-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-emphasis bg-bg-surface font-sans text-sm font-bold text-accent-light">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-default bg-bg-card font-sans text-sm font-bold text-accent-light shadow-card">
           あなた
         </div>
         <span className="font-mono text-xs font-bold tracking-[0.06em] text-text-tertiary">VS</span>
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-emphasis bg-bg-surface font-sans text-sm font-bold text-text-secondary">
+        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-default bg-bg-card font-sans text-sm font-bold text-text-secondary shadow-card">
           CPU
         </div>
       </div>

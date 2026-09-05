@@ -52,7 +52,14 @@ export function HandSelection({
           </div>
         </div>
 
-        {/* モバイル専用：余った領域にターン履歴を表示（スクロール、全ターン表示は不要） */}
+        {/*
+          モバイル専用：余った領域にターン履歴を表示（スクロール、全ターン表示は不要）。
+          `TurnHistoryList` はこことデスクトップ用サイドバーの2箇所に描画しているが、
+          純粋な表示コンポーネントで共有可変状態は持たないため安全。ただし
+          `src/test/setup.ts` はCSSを読み込まずjsdomでは`hidden`/`lg:*`が効かないため、
+          このコンポーネント内のテキストを`getByText`等で単数取得するテストは追加しないこと
+          （`getAllByText`を使うか、`HandSelection`を経由しない単体テストにすること）。
+        */}
         <div className="min-h-0 flex-1 overflow-y-auto px-4 lg:hidden">
           <TurnHistoryList history={history} />
         </div>
