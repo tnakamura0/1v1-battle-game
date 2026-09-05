@@ -9,7 +9,7 @@ import {
 } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState } from '@/game/types'
 
-const preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 2 }
+const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
 function player(overrides: Partial<PlayerState> = {}): PlayerState {
   return { hp: 5, energy: 2, guardCooldownRemaining: 0, ...overrides }
@@ -178,7 +178,7 @@ describe('resolveTurn — full 3x3 outcome matrix', () => {
 
 describe('guard cooldown ticking', () => {
   it('becomes usable again exactly N turns later for cooldown=2', () => {
-    const cd2Preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 2 }
+    const cd2Preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
     let self = player({ guardCooldownRemaining: 0 })
     const opponent = player({ energy: 3 })
 
@@ -202,7 +202,7 @@ describe('guard cooldown ticking', () => {
   })
 
   it('becomes usable again exactly N turns later for cooldown=3', () => {
-    const cd3Preset: BattlePreset = { initialHp: 5, guardCooldownTurns: 3 }
+    const cd3Preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 3 }
     let self = player({ guardCooldownRemaining: 0 })
     const opponent = player({ energy: 3 })
 

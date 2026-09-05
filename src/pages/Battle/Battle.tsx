@@ -1,4 +1,4 @@
-import { useEffect, useReducer, useState } from 'react'
+import { useEffect, useReducer, useRef, useState } from 'react'
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { battleReducer, createInitialBattleState } from '@/game/battleReducer'
 import {
@@ -26,57 +26,63 @@ export function Battle() {
   return <BattleSession key={location.key} preset={preset} />
 }
 
-function BattleSession({ preset }: { preset: BattlePreset }) {
-  const navigate = useNavigate()
-  const [state, dispatch] = useReducer(battleReducer, preset, createInitialBattleState)
-  const [secondsRemaining, setSecondsRemaining] = useState(0)
+/**
+ * `active` になっている間だけ `totalMs` を秒単位でカウントダウンし、0に達したら
+ * `onComplete` を呼ぶ。intro/resultの両フェーズで同じタイマーパターンを共有するための
+ * ローカルフック。`onComplete` はrefで保持し、effectの依存配列を最小限に保つ。
+ */
+function useCountdown(active: boolean, totalMs: number, onComplete: () => void): number {
+  const [secondsRemaining, setSecondsRemaining] = useState(() => Math.ceil(totalMs / 1000))
+  const onCompleteRef = useRef(onComplete)
+  onCompleteRef.current = onComplete
 
   useEffect(() => {
-    if (state.phase !== 'intro') return
-    const timeoutId = window.setTimeout(
-      () => dispatch({ type: 'INTRO_COMPLETE' }),
-      INTRO_DURATION_MS,
-    )
-    return () => window.clearTimeout(timeoutId)
-  }, [state.phase])
-
-  useEffect(() => {
-    if (state.phase !== 'result') return
-
-    const totalMs = state.winner ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS
+    if (!active) return
     setSecondsRemaining(Math.ceil(totalMs / 1000))
 
     const startedAt = Date.now()
     const intervalId = window.setInterval(() => {
-      const remainingMs = Math.max(0, totalMs - (Date.now() - startedAt))
-      setSecondsRemaining(Math.ceil(remainingMs / 1000))
+      setSecondsRemaining(Math.ceil(Math.max(0, totalMs - (Date.now() - startedAt)) / 1000))
     }, 200)
-
-    const timeoutId = window.setTimeout(() => {
-      if (state.winner) {
-        const summary: BattleSummary = {
-          preset: state.preset,
-          winner: state.winner,
-          player: state.player,
-          cpu: state.cpu,
-          turnCount: state.turn,
-        }
-        navigate('/battle/result', { state: { summary }, replace: true })
-      } else {
-        dispatch({ type: 'ADVANCE_TURN' })
-      }
-    }, totalMs)
+    const timeoutId = window.setTimeout(() => onCompleteRef.current(), totalMs)
 
     return () => {
       window.clearInterval(intervalId)
       window.clearTimeout(timeoutId)
     }
-  }, [state, navigate])
+  }, [active, totalMs])
+
+  return secondsRemaining
+}
+
+function BattleSession({ preset }: { preset: BattlePreset }) {
+  const navigate = useNavigate()
+  const [state, dispatch] = useReducer(battleReducer, preset, createInitialBattleState)
+
+  const introSeconds = useCountdown(state.phase === 'intro', INTRO_DURATION_MS, () =>
+    dispatch({ type: 'INTRO_COMPLETE' }),
+  )
+
+  const resultTotalMs = state.winner ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS
+  const resultSeconds = useCountdown(state.phase === 'result', resultTotalMs, () => {
+    if (state.winner) {
+      const summary: BattleSummary = {
+        preset: state.preset,
+        winner: state.winner,
+        player: state.player,
+        cpu: state.cpu,
+        turnCount: state.turn,
+      }
+      navigate('/battle/result', { state: { summary }, replace: true })
+    } else {
+      dispatch({ type: 'ADVANCE_TURN' })
+    }
+  })
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col bg-bg-page">
+    <main className="mx-auto flex h-dvh w-full max-w-6xl flex-col overflow-hidden bg-bg-page">
       {state.phase === 'intro' ? (
-        <BattleIntro preset={preset} />
+        <BattleIntro preset={preset} secondsRemaining={introSeconds} />
       ) : state.phase === 'selecting' ? (
         <HandSelection
           player={state.player}
@@ -91,7 +97,7 @@ function BattleSession({ preset }: { preset: BattlePreset }) {
           lastTurn={state.lastTurn}
           preset={preset}
           turn={state.turn}
-          secondsRemaining={secondsRemaining}
+          secondsRemaining={resultSeconds}
           isFinal={state.winner !== null}
         />
       ) : null}

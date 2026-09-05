@@ -83,7 +83,7 @@ export function Rules() {
           {ACTIONS.map((action) => (
             <div
               key={action.name}
-              className="flex flex-col gap-2 rounded-card border border-border-emphasis bg-bg-surface p-4"
+              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
             >
               <span className={`font-sans text-base font-extrabold ${action.color}`}>
                 {action.name}
@@ -144,7 +144,7 @@ export function Rules() {
           {MATCHUP_ROWS.map((row) => (
             <div
               key={row.own}
-              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-surface p-4"
+              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
             >
               <span className="font-sans text-sm font-bold text-text-primary">自分：{row.own}</span>
               <ul className="flex flex-col gap-1 font-sans text-xs text-text-secondary">

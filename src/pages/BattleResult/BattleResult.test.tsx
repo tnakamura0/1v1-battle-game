@@ -5,7 +5,7 @@ import { BattleResult } from '@/pages/BattleResult/BattleResult'
 import type { BattleSummary } from '@/game/types'
 
 const summary: BattleSummary = {
-  preset: { initialHp: 5, guardCooldownTurns: 2 },
+  preset: { initialHp: 3, guardCooldownTurns: 2 },
   winner: 'player',
   player: { hp: 2, energy: 1, guardCooldownRemaining: 0 },
   cpu: { hp: 0, energy: 0, guardCooldownRemaining: 0 },

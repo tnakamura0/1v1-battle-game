@@ -1,5 +1,6 @@
 import { StatusPanel } from '@/components/StatusPanel'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
+import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
 import type { Action, BattlePreset, TurnRecord } from '@/game/types'
 
 interface TurnResultProps {
@@ -94,9 +95,12 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   const changeRows = buildChangeRows(lastTurn)
   const subline = outcomeSubline(lastTurn.outcome)
   const isHit = lastTurn.outcome === 'player-hit-cpu' || lastTurn.outcome === 'cpu-hit-player'
+  const totalSeconds = Math.ceil(
+    (isFinal ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS) / 1000,
+  )
 
   return (
-    <div className="flex h-full flex-col gap-4 p-4">
+    <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto p-4">
       <div className="flex flex-col gap-2 opacity-60">
         <StatusPanel
           role="opponent"
@@ -124,7 +128,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
       </div>
 
       <div className="flex items-stretch gap-2.5">
-        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-emphasis bg-bg-surface py-6">
+        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
           <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-accent-light">
             YOU
           </span>
@@ -138,7 +142,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         <div className="flex w-8 flex-none items-center justify-center font-mono text-xs font-extrabold tracking-[0.06em] text-text-tertiary">
           VS
         </div>
-        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-surface py-6">
+        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
           <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
             OPPONENT
           </span>
@@ -155,7 +159,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         className={
           isHit
             ? 'flex flex-col items-center gap-2 rounded-card border border-attack/30 bg-attack/10 px-4 py-6'
-            : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-surface px-4 py-6'
+            : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-card px-4 py-6 shadow-card'
         }
       >
         <span
@@ -187,7 +191,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           ))}
         </div>
       ) : (
-        <p className="rounded-chip border border-border-default bg-bg-surface px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary">
+        <p className="rounded-chip border border-border-default bg-bg-card px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary shadow-card">
           ステータス変化なし
         </p>
       )}
@@ -206,7 +210,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           <div
             className="h-full rounded-[2px] bg-[#566B80] transition-[width]"
             style={{
-              width: `${Math.max(0, Math.min(100, (secondsRemaining / (isFinal ? 3 : 8)) * 100))}%`,
+              width: `${Math.max(0, Math.min(100, (secondsRemaining / totalSeconds) * 100))}%`,
             }}
           />
         </div>

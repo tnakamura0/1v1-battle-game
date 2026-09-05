@@ -19,8 +19,8 @@ export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: St
     <div
       className={
         dimmed
-          ? 'flex flex-col gap-3 rounded-card border border-border-default bg-bg-surface p-4 opacity-60'
-          : 'flex flex-col gap-3 rounded-card border border-border-emphasis bg-bg-surface p-4'
+          ? 'flex flex-col gap-3 rounded-card border border-border-default bg-bg-card p-4 opacity-60 shadow-card'
+          : 'flex flex-col gap-3 rounded-card border border-border-default bg-bg-card p-4 shadow-card'
       }
     >
       <div className="flex items-center justify-between">
