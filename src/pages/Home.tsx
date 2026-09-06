@@ -26,9 +26,7 @@ export function Home() {
   return (
     <main className="mx-auto flex min-h-screen max-w-3xl flex-col gap-16 p-6 pb-20">
       <header className="flex items-center justify-between pt-4">
-        <span className="font-mono text-xs font-bold tracking-[0.14em] text-text-secondary">
-          1v1 BATTLE
-        </span>
+        <AppLogo />
         <Link
           to="/rules"
           className="flex h-9 items-center justify-center rounded-pill border border-border-default px-4 font-sans text-sm font-semibold text-text-secondary transition-colors hover:border-accent hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
@@ -95,5 +93,42 @@ export function Home() {
         </Link>
       </footer>
     </main>
+  )
+}
+
+function AppLogo() {
+  return (
+    <div className="flex items-center gap-2.5">
+      <svg width="28" height="28" viewBox="0 0 48 48" aria-hidden>
+        <rect
+          x="0.5"
+          y="0.5"
+          width="47"
+          height="47"
+          rx="11"
+          className="fill-bg-card stroke-border-default"
+        />
+        <path d="M14 34 L19 33 L34 14 L15 29 Z" fill="#3A4B5E" />
+        <path
+          d="M12 32 L16 36 M14 34 L10 38"
+          fill="none"
+          stroke="#5F7488"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+        <path d="M34 34 L29 33 L14 14 L33 29 Z" className="fill-accent" />
+        <path
+          d="M32 36 L36 32 M34 34 L38 38"
+          fill="none"
+          stroke="#5F7488"
+          strokeWidth="2"
+          strokeLinecap="round"
+        />
+      </svg>
+      <span className="flex items-baseline gap-[0.2em] font-sans text-base font-extrabold tracking-[-0.01em]">
+        <span className="text-text-primary">POCKET</span>
+        <span className="text-accent">DUEL</span>
+      </span>
+    </div>
   )
 }

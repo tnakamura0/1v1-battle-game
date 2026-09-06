@@ -45,11 +45,11 @@ function ActionIcon({ action }: { action: Action }) {
   }
   if (action === 'attack') {
     return (
-      <svg {...commonProps}>
-        <path d="M20 3v5l-9 9" />
-        <path d="M15 3h5v5" />
-        <path d="m8 13-5 5 3 3 5-5" />
-        <path d="m6 16 2 2" />
+      <svg width={26} height={26} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
+        <path d="M12 1.2 L13.7 5 L13.7 12.6 L10.3 12.6 L10.3 5 Z" />
+        <path d="M4.4 15.2 L8 12.4 L16 12.4 L19.6 15.2 L15.8 15.4 L8.2 15.4 Z" />
+        <rect x="10.9" y="15.4" width="2.2" height="4.6" rx="1.1" />
+        <circle cx="12" cy="21.3" r="1.5" />
       </svg>
     )
   }
