@@ -1,4 +1,5 @@
 import { StatusPanel } from '@/components/StatusPanel'
+import { ActionIcon } from '@/components/ActionIcon'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
 import type { Action, BattlePreset, TurnRecord } from '@/game/types'
@@ -133,7 +134,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             YOU
           </span>
           <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
-            <ActionGlyph action={lastTurn.playerAction} />
+            <ActionIcon action={lastTurn.playerAction} size={40} />
           </span>
           <span className="font-sans text-base font-extrabold text-text-primary">
             {ACTION_LABEL[lastTurn.playerAction]}
@@ -147,7 +148,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             OPPONENT
           </span>
           <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
-            <ActionGlyph action={lastTurn.cpuAction} />
+            <ActionIcon action={lastTurn.cpuAction} size={40} />
           </span>
           <span className="font-sans text-base font-extrabold text-text-primary">
             {ACTION_LABEL[lastTurn.cpuAction]}
@@ -216,41 +217,5 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         </div>
       </div>
     </div>
-  )
-}
-
-function ActionGlyph({ action }: { action: Action }) {
-  const props = {
-    width: 40,
-    height: 40,
-    viewBox: '0 0 24 24',
-    fill: 'none',
-    stroke: 'currentColor',
-    strokeWidth: 1.6,
-    strokeLinecap: 'round' as const,
-    strokeLinejoin: 'round' as const,
-    'aria-hidden': true,
-  }
-  if (action === 'charge') {
-    return (
-      <svg {...props}>
-        <path d="M13 2 4 14h6l-1 8 9-12h-6l1-8Z" />
-      </svg>
-    )
-  }
-  if (action === 'attack') {
-    return (
-      <svg width={40} height={40} viewBox="0 0 24 24" fill="currentColor" aria-hidden>
-        <path d="M12 1.2 L13.7 5 L13.7 12.6 L10.3 12.6 L10.3 5 Z" />
-        <path d="M4.4 15.2 L8 12.4 L16 12.4 L19.6 15.2 L15.8 15.4 L8.2 15.4 Z" />
-        <rect x="10.9" y="15.4" width="2.2" height="4.6" rx="1.1" />
-        <circle cx="12" cy="21.3" r="1.5" />
-      </svg>
-    )
-  }
-  return (
-    <svg {...props}>
-      <path d="M12 3l7 3v6c0 4.2-2.9 7.6-7 9-4.1-1.4-7-4.8-7-9V6l7-3Z" />
-    </svg>
   )
 }

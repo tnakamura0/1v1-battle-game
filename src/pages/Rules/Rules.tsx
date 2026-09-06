@@ -1,5 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { ActionIcon } from '@/components/ActionIcon'
+import type { Action } from '@/game/types'
 
 const TURN_STEPS = [
   '3つの行動から1つを選ぶ（時間制限なし）',
@@ -9,18 +11,21 @@ const TURN_STEPS = [
   '次のターンに進む',
 ]
 
-const ACTIONS = [
+const ACTIONS: Array<{ key: Action; name: string; color: string; description: string }> = [
   {
+    key: 'charge',
     name: 'チャージ',
     color: 'text-charge',
     description: '自分のエネルギーを+1する（最大5）。',
   },
   {
+    key: 'attack',
     name: '攻撃',
     color: 'text-attack',
     description: 'エネルギーを1消費して相手を攻撃する。自分のエネルギーが0のときは選択できない。',
   },
   {
+    key: 'guard',
     name: 'ガード',
     color: 'text-guard',
     description:
@@ -28,24 +33,38 @@ const ACTIONS = [
   },
 ]
 
+interface MatchupCell {
+  text: string
+  emphasis?: boolean
+}
+
 const MATCHUP_ROWS: Array<{
   own: string
-  vsCharge: string
-  vsAttack: string
-  vsGuard: string
+  color: string
+  vsCharge: MatchupCell
+  vsAttack: MatchupCell
+  vsGuard: MatchupCell
 }> = [
-  { own: 'チャージ', vsCharge: '変化なし', vsAttack: '自分に1ダメージ', vsGuard: '変化なし' },
+  {
+    own: 'チャージ',
+    color: 'text-charge',
+    vsCharge: { text: '変化なし' },
+    vsAttack: { text: '自分に1ダメージ', emphasis: true },
+    vsGuard: { text: '変化なし' },
+  },
   {
     own: '攻撃',
-    vsCharge: '相手に1ダメージ',
-    vsAttack: '相打ち・ダメージなし',
-    vsGuard: 'ガードされる・ダメージなし',
+    color: 'text-attack',
+    vsCharge: { text: '相手に1ダメージ', emphasis: true },
+    vsAttack: { text: '相打ち・ダメージなし' },
+    vsGuard: { text: 'ガードされる・ダメージなし' },
   },
   {
     own: 'ガード',
-    vsCharge: '変化なし',
-    vsAttack: 'ガード成功・ダメージなし',
-    vsGuard: '変化なし',
+    color: 'text-guard',
+    vsCharge: { text: '変化なし' },
+    vsAttack: { text: 'ガード成功・ダメージなし' },
+    vsGuard: { text: '変化なし' },
   },
 ]
 
@@ -59,7 +78,17 @@ export function Rules() {
         ← トップへ戻る
       </Link>
 
-      <h1 className="font-sans text-3xl font-extrabold text-text-primary">ルール / 遊び方</h1>
+      <div className="flex flex-col gap-2">
+        <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-accent">
+          HOW TO PLAY
+        </span>
+        <h1 className="font-sans text-3xl font-extrabold text-text-primary sm:text-4xl">
+          ルール / 遊び方
+        </h1>
+        <p className="max-w-md font-sans text-sm leading-relaxed text-text-secondary">
+          相手を読み、駆け引きを制する。対戦前に基本ルールを確認しましょう。
+        </p>
+      </div>
 
       <Section title="ゲームの目的">
         <p className="font-sans text-sm leading-relaxed text-text-secondary">
@@ -85,6 +114,9 @@ export function Rules() {
               key={action.name}
               className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
             >
+              <span className={action.color}>
+                <ActionIcon action={action.key} size={28} />
+              </span>
               <span className={`font-sans text-base font-extrabold ${action.color}`}>
                 {action.name}
               </span>
@@ -122,17 +154,19 @@ export function Rules() {
             <tbody>
               {MATCHUP_ROWS.map((row) => (
                 <tr key={row.own}>
-                  <th className="border-b border-r border-border-default bg-bg-row p-3 font-semibold text-text-primary">
+                  <th
+                    className={`border-b border-r border-border-default bg-bg-row p-3 font-semibold ${row.color}`}
+                  >
                     {row.own}
                   </th>
                   <td className="border-b border-r border-border-default p-3 text-text-secondary">
-                    {row.vsCharge}
+                    <MatchupOutcome cell={row.vsCharge} />
                   </td>
                   <td className="border-b border-r border-border-default p-3 text-text-secondary">
-                    {row.vsAttack}
+                    <MatchupOutcome cell={row.vsAttack} />
                   </td>
                   <td className="border-b border-border-default p-3 text-text-secondary">
-                    {row.vsGuard}
+                    <MatchupOutcome cell={row.vsGuard} />
                   </td>
                 </tr>
               ))}
@@ -146,11 +180,17 @@ export function Rules() {
               key={row.own}
               className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
             >
-              <span className="font-sans text-sm font-bold text-text-primary">自分：{row.own}</span>
+              <span className={`font-sans text-sm font-bold ${row.color}`}>自分：{row.own}</span>
               <ul className="flex flex-col gap-1 font-sans text-xs text-text-secondary">
-                <li>相手がチャージ → {row.vsCharge}</li>
-                <li>相手が攻撃 → {row.vsAttack}</li>
-                <li>相手がガード → {row.vsGuard}</li>
+                <li>
+                  相手がチャージ → <MatchupOutcome cell={row.vsCharge} />
+                </li>
+                <li>
+                  相手が攻撃 → <MatchupOutcome cell={row.vsAttack} />
+                </li>
+                <li>
+                  相手がガード → <MatchupOutcome cell={row.vsGuard} />
+                </li>
               </ul>
             </div>
           ))}
@@ -180,6 +220,10 @@ export function Rules() {
       </div>
     </main>
   )
+}
+
+function MatchupOutcome({ cell }: { cell: MatchupCell }) {
+  return <span className={cell.emphasis ? 'font-bold text-attack' : undefined}>{cell.text}</span>
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
