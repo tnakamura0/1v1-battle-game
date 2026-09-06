@@ -1,6 +1,7 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ActionIcon } from '@/components/ActionIcon'
+import { SectionHeading } from '@/components/SectionHeading'
 import type { Action } from '@/game/types'
 
 const TURN_STEPS = [
@@ -48,9 +49,9 @@ const MATCHUP_ROWS: Array<{
   {
     own: 'チャージ',
     color: 'text-charge',
-    vsCharge: { text: '変化なし' },
+    vsCharge: { text: 'ダメージなし' },
     vsAttack: { text: '自分に1ダメージ', emphasis: true },
-    vsGuard: { text: '変化なし' },
+    vsGuard: { text: 'ダメージなし' },
   },
   {
     own: '攻撃',
@@ -62,9 +63,9 @@ const MATCHUP_ROWS: Array<{
   {
     own: 'ガード',
     color: 'text-guard',
-    vsCharge: { text: '変化なし' },
+    vsCharge: { text: 'ダメージなし' },
     vsAttack: { text: 'ガード成功・ダメージなし' },
-    vsGuard: { text: '変化なし' },
+    vsGuard: { text: 'ダメージなし' },
   },
 ]
 
@@ -135,6 +136,9 @@ export function Rules() {
       </Section>
 
       <Section title="行動の組み合わせ">
+        <p className="-mt-1 font-sans text-xs text-text-tertiary">
+          組み合わせによって発生するダメージの一覧です。エネルギーやガードの状態変化は含みません。
+        </p>
         <div className="hidden overflow-x-auto sm:block">
           <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-card border border-border-default text-left font-sans text-sm">
             <thead>
@@ -229,7 +233,7 @@ function MatchupOutcome({ cell }: { cell: MatchupCell }) {
 function Section({ title, children }: { title: string; children: ReactNode }) {
   return (
     <section className="flex flex-col gap-3">
-      <h2 className="font-sans text-lg font-bold text-text-primary">{title}</h2>
+      <SectionHeading title={title} />
       {children}
     </section>
   )

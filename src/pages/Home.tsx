@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { SectionHeading } from '@/components/SectionHeading'
 
 const FEATURES = [
   {
@@ -10,8 +11,8 @@ const FEATURES = [
     description: 'エネルギーとガードの状態から、相手の次の一手を予測する。',
   },
   {
-    title: '制限時間なし',
-    description: 'じっくり考えて選択できる、落ち着いたターン制バトル。',
+    title: '紙一重の攻防',
+    description: '初期HPはわずか2〜3。一手のミスが命取りになる、最後まで気の抜けない緊張感。',
   },
 ]
 
@@ -53,24 +54,30 @@ export function Home() {
         </Link>
       </section>
 
-      <section className="grid gap-4 sm:grid-cols-3">
-        {FEATURES.map((feature) => (
-          <div
-            key={feature.title}
-            className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-5 shadow-card"
-          >
-            <span className="font-sans text-sm font-extrabold text-text-primary">
-              {feature.title}
-            </span>
-            <p className="font-sans text-xs leading-relaxed text-text-secondary">
-              {feature.description}
-            </p>
-          </div>
-        ))}
+      <section className="flex flex-col gap-4">
+        <SectionHeading title="ゲームの魅力" />
+        <div className="grid gap-4 sm:grid-cols-3">
+          {FEATURES.map((feature, index) => (
+            <div
+              key={feature.title}
+              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-5 shadow-card"
+            >
+              <span className="font-mono text-[10px] font-bold tracking-[0.14em] text-accent">
+                0{index + 1}
+              </span>
+              <span className="font-sans text-sm font-extrabold text-text-primary">
+                {feature.title}
+              </span>
+              <p className="font-sans text-xs leading-relaxed text-text-secondary">
+                {feature.description}
+              </p>
+            </div>
+          ))}
+        </div>
       </section>
 
       <section className="flex flex-col gap-4">
-        <h2 className="font-sans text-lg font-bold text-text-primary">遊び方</h2>
+        <SectionHeading title="遊び方" />
         <ol className="grid gap-3 sm:grid-cols-4">
           {STEPS.map((step, index) => (
             <li
