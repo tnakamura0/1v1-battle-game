@@ -134,7 +134,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             YOU
           </span>
           <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
-            <ActionIcon action={lastTurn.playerAction} size={40} />
+            <ActionIcon action={lastTurn.playerAction} size={40} strokeWidth={1.6} />
           </span>
           <span className="font-sans text-base font-extrabold text-text-primary">
             {ACTION_LABEL[lastTurn.playerAction]}
@@ -148,7 +148,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             OPPONENT
           </span>
           <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
-            <ActionIcon action={lastTurn.cpuAction} size={40} />
+            <ActionIcon action={lastTurn.cpuAction} size={40} strokeWidth={1.6} />
           </span>
           <span className="font-sans text-base font-extrabold text-text-primary">
             {ACTION_LABEL[lastTurn.cpuAction]}

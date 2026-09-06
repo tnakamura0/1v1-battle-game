@@ -3,16 +3,17 @@ import type { Action } from '@/game/types'
 interface ActionIconProps {
   action: Action
   size?: number
+  strokeWidth?: number
 }
 
-export function ActionIcon({ action, size = 26 }: ActionIconProps) {
+export function ActionIcon({ action, size = 26, strokeWidth = 1.8 }: ActionIconProps) {
   const strokeProps = {
     width: size,
     height: size,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',
-    strokeWidth: 1.8,
+    strokeWidth,
     strokeLinecap: 'round' as const,
     strokeLinejoin: 'round' as const,
     'aria-hidden': true,
