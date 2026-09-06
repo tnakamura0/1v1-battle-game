@@ -178,7 +178,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
       </div>
 
       {changeRows.length > 0 ? (
-        <div className="flex flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
+        <div className="flex flex-none flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
           {changeRows.map((row) => (
             <div key={row.label} className="flex items-center justify-between bg-bg-row px-4 py-3">
               <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
