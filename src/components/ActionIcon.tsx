@@ -27,6 +27,7 @@ export function ActionIcon({ action, size = 26, strokeWidth = 1.8 }: ActionIconP
     )
   }
   if (action === 'attack') {
+    // デザイン仕様により、attackのstrokeWidthはstrokeWidth propによらず常に1.3固定
     return (
       <svg {...strokeProps} strokeWidth={1.3}>
         <path d="M12 1.2 L13.7 5 L13.7 12.6 L10.3 12.6 L10.3 5 Z" />
