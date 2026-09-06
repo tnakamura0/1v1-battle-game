@@ -82,6 +82,13 @@ export function Home() {
             </li>
           ))}
         </ol>
+        <Link
+          to="/rules"
+          className="inline-flex w-fit items-center gap-1.5 self-center font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+        >
+          くわしいルールを見る
+          <span aria-hidden>→</span>
+        </Link>
       </section>
 
       <footer className="mt-8 flex justify-center">
@@ -99,7 +106,7 @@ export function Home() {
 function AppLogo() {
   return (
     <div className="flex items-center gap-2.5">
-      <svg width="28" height="28" viewBox="0 0 48 48" aria-hidden>
+      <svg width="40" height="40" viewBox="0 0 48 48" aria-hidden>
         <rect
           x="0.5"
           y="0.5"
@@ -125,7 +132,7 @@ function AppLogo() {
           strokeLinecap="round"
         />
       </svg>
-      <span className="flex items-baseline gap-[0.2em] font-sans text-base font-extrabold tracking-[-0.01em]">
+      <span className="flex items-baseline gap-[0.2em] font-sans text-2xl font-extrabold tracking-[-0.01em]">
         <span className="text-text-primary">POCKET</span>
         <span className="text-accent">DUEL</span>
       </span>
