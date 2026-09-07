@@ -13,7 +13,7 @@ export function PresetSelect() {
   >(DEFAULT_PRESET.guardCooldownTurns)
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 p-6">
+    <main className="mx-auto flex h-dvh max-w-md flex-col gap-8 p-6">
       <Link
         to="/"
         className="w-fit font-mono text-xs font-semibold text-text-tertiary hover:text-accent-hover"
