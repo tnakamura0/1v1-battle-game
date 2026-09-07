@@ -101,103 +101,111 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   )
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 overflow-y-auto p-4">
-      <div className="flex flex-col gap-2 opacity-60">
-        <StatusPanel
-          role="opponent"
-          state={lastTurn.cpuAfter}
-          maxHp={preset.initialHp}
-          hpBefore={lastTurn.cpuBefore.hp}
-          dimmed
-        />
-        <StatusPanel
-          role="player"
-          state={lastTurn.playerAfter}
-          maxHp={preset.initialHp}
-          hpBefore={lastTurn.playerBefore.hp}
-          dimmed
-        />
-      </div>
+    <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
+      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
+        <div className="flex flex-col gap-2 opacity-60">
+          <StatusPanel
+            role="opponent"
+            state={lastTurn.cpuAfter}
+            maxHp={preset.initialHp}
+            hpBefore={lastTurn.cpuBefore.hp}
+            dimmed
+          />
+          <StatusPanel
+            role="player"
+            state={lastTurn.playerAfter}
+            maxHp={preset.initialHp}
+            hpBefore={lastTurn.playerBefore.hp}
+            dimmed
+          />
+        </div>
 
-      <div className="flex items-center justify-between">
-        <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
-          TURN {turn}
-        </span>
-        <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
-          RESULT
-        </span>
-      </div>
-
-      <div className="flex items-stretch gap-2.5">
-        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-          <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-accent-light">
-            YOU
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
+            TURN {turn}
           </span>
-          <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
-            <ActionIcon action={lastTurn.playerAction} size={40} strokeWidth={1.6} />
-          </span>
-          <span className="font-sans text-base font-extrabold text-text-primary">
-            {ACTION_LABEL[lastTurn.playerAction]}
+          <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
+            RESULT
           </span>
         </div>
-        <div className="flex w-8 flex-none items-center justify-center font-mono text-xs font-extrabold tracking-[0.06em] text-text-tertiary">
-          VS
-        </div>
-        <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-          <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
-            OPPONENT
-          </span>
-          <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
-            <ActionIcon action={lastTurn.cpuAction} size={40} strokeWidth={1.6} />
-          </span>
-          <span className="font-sans text-base font-extrabold text-text-primary">
-            {ACTION_LABEL[lastTurn.cpuAction]}
-          </span>
-        </div>
-      </div>
 
-      <div
-        className={
-          isHit
-            ? 'flex flex-col items-center gap-2 rounded-card border border-attack/30 bg-attack/10 px-4 py-6'
-            : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-card px-4 py-6 shadow-card'
-        }
-      >
-        <span
+        <div className="flex items-stretch gap-2.5">
+          <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
+            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-accent-light">
+              YOU
+            </span>
+            <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
+              <ActionIcon action={lastTurn.playerAction} size={40} strokeWidth={1.6} />
+            </span>
+            <span className="font-sans text-base font-extrabold text-text-primary">
+              {ACTION_LABEL[lastTurn.playerAction]}
+            </span>
+          </div>
+          <div className="flex w-8 flex-none items-center justify-center font-mono text-xs font-extrabold tracking-[0.06em] text-text-tertiary">
+            VS
+          </div>
+          <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
+            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
+              OPPONENT
+            </span>
+            <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
+              <ActionIcon action={lastTurn.cpuAction} size={40} strokeWidth={1.6} />
+            </span>
+            <span className="font-sans text-base font-extrabold text-text-primary">
+              {ACTION_LABEL[lastTurn.cpuAction]}
+            </span>
+          </div>
+        </div>
+
+        <div
           className={
             isHit
-              ? 'font-sans text-3xl font-extrabold text-attack'
-              : 'font-sans text-3xl font-extrabold text-text-primary'
+              ? 'flex flex-col items-center gap-2 rounded-card border border-attack/30 bg-attack/10 px-4 py-6'
+              : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-card px-4 py-6 shadow-card'
           }
         >
-          {outcomeHeadline(lastTurn.outcome)}
-        </span>
-        {subline && (
-          <span className="font-sans text-sm font-semibold text-text-primary">{subline}</span>
+          <span
+            className={
+              isHit
+                ? 'font-sans text-3xl font-extrabold text-attack'
+                : 'font-sans text-3xl font-extrabold text-text-primary'
+            }
+          >
+            {outcomeHeadline(lastTurn.outcome)}
+          </span>
+          {subline && (
+            <span className="font-sans text-sm font-semibold text-text-primary">{subline}</span>
+          )}
+        </div>
+
+        {changeRows.length > 0 ? (
+          <div className="flex flex-none flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
+            {changeRows.map((row) => (
+              <div
+                key={row.label}
+                className="flex items-center justify-between bg-bg-row px-4 py-3"
+              >
+                <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+                  {row.label}
+                </span>
+                <span className="font-sans text-sm font-bold tabular-nums text-text-primary">
+                  {row.beforeText} <span className="text-text-tertiary">→</span>{' '}
+                  <span className={row.colorClass}>{row.afterText}</span>
+                </span>
+              </div>
+            ))}
+          </div>
+        ) : (
+          <p className="rounded-chip border border-border-default bg-bg-card px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary shadow-card">
+            ステータス変化なし
+          </p>
         )}
       </div>
 
-      {changeRows.length > 0 ? (
-        <div className="flex flex-none flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
-          {changeRows.map((row) => (
-            <div key={row.label} className="flex items-center justify-between bg-bg-row px-4 py-3">
-              <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
-                {row.label}
-              </span>
-              <span className="font-sans text-sm font-bold tabular-nums text-text-primary">
-                {row.beforeText} <span className="text-text-tertiary">→</span>{' '}
-                <span className={row.colorClass}>{row.afterText}</span>
-              </span>
-            </div>
-          ))}
-        </div>
-      ) : (
-        <p className="rounded-chip border border-border-default bg-bg-card px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary shadow-card">
-          ステータス変化なし
-        </p>
-      )}
-
-      <div className="mt-auto flex flex-col gap-2 border-t border-bg-track pt-4" aria-live="polite">
+      <div
+        className="flex flex-none flex-col gap-2 border-t border-bg-track pt-4"
+        aria-live="polite"
+      >
         <div className="flex items-baseline justify-between">
           <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-text-secondary">
             {isFinal ? '対戦結果へ' : 'NEXT TURN IN'}
