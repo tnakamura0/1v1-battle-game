@@ -83,8 +83,10 @@ export function resolveTurn(
     nextPlayer = { ...nextPlayer, hp: Math.max(0, nextPlayer.hp - 1) }
     outcome = 'cpu-hit-player'
   } else if (playerAction === 'attack' && cpuAction === 'guard') {
+    nextCpu = { ...nextCpu, energy: Math.min(MAX_ENERGY, nextCpu.energy + 1) }
     outcome = 'cpu-guarded'
   } else if (cpuAction === 'attack' && playerAction === 'guard') {
+    nextPlayer = { ...nextPlayer, energy: Math.min(MAX_ENERGY, nextPlayer.energy + 1) }
     outcome = 'player-guarded'
   }
 

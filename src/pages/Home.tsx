@@ -140,7 +140,7 @@ function AppLogo() {
         />
       </svg>
       <span className="flex items-baseline gap-[0.2em] font-sans text-2xl font-extrabold tracking-[-0.01em]">
-        <span className="text-text-primary">POCKET</span>
+        <span className="text-text-primary">OUTWIT</span>
         <span className="text-accent">DUEL</span>
       </span>
     </div>

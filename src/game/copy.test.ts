@@ -23,4 +23,9 @@ describe('outcomeHistoryLine', () => {
     expect(outcomeHistoryLine('player-hit-cpu')).toBe('→ 相手 HP -1')
     expect(outcomeHistoryLine('cpu-hit-player')).toBe('→ 自分 HP -1')
   })
+
+  it('describes which side gained energy from a successful guard', () => {
+    expect(outcomeHistoryLine('player-guarded')).toBe('→ ガード成功・自分のエネルギー+1')
+    expect(outcomeHistoryLine('cpu-guarded')).toBe('→ ガード成功・相手のエネルギー+1')
+  })
 })
