@@ -2,6 +2,7 @@ import { render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { BattleResult } from '@/pages/BattleResult/BattleResult'
+import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
 const summary: BattleSummary = {
@@ -38,5 +39,16 @@ describe('BattleResult', () => {
   it('shows a lose headline when the cpu wins', () => {
     renderPage({ summary: { ...summary, winner: 'cpu' } })
     expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
+  })
+
+  describe('X共有リンク', () => {
+    it('renders an external link to the twitter intent URL for the result', () => {
+      renderPage({ summary })
+
+      const link = screen.getByRole('link', { name: 'Xで結果をシェアする' })
+      expect(link).toHaveAttribute('href', buildShareUrl(summary))
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+    })
   })
 })

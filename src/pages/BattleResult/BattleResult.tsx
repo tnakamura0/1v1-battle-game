@@ -1,4 +1,5 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
 interface BattleResultLocationState {
@@ -67,6 +68,15 @@ export function BattleResult() {
           トップページに戻る
         </button>
       </div>
+
+      <a
+        href={buildShareUrl(summary)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex items-center font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+      >
+        Xで結果をシェアする
+      </a>
     </main>
   )
 }
