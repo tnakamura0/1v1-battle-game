@@ -27,7 +27,7 @@ function outcomeSubline(outcome: TurnRecord['outcome']): string {
     case 'clash':
       return 'お互いの攻撃が相殺された'
     case 'player-guarded':
-      return '相手の攻撃をガードした（エネルギー+1）'
+      return '相手の攻撃をガードした（自分のエネルギー+1）'
     case 'cpu-guarded':
       return '攻撃をガードされた（相手のエネルギー+1）'
     default:

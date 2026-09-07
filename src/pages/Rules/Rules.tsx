@@ -126,7 +126,7 @@ export function Rules() {
 
       <Section title="エネルギー">
         <p className="font-sans text-sm leading-relaxed text-text-secondary">
-          初期値は0、最大値は5です。チャージで+1、攻撃で-1されます。
+          初期値は0、最大値は5です。チャージで+1、攻撃で-1、ガードに成功すると+1されます。
         </p>
       </Section>
 
