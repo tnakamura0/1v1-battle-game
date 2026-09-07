@@ -1,13 +1,29 @@
 import { getLegalActions } from '@/game/rules'
-import type { Action, BattlePreset, PlayerState } from '@/game/types'
+import type { Action, BattlePreset, CpuDifficulty, PlayerState, TurnRecord } from '@/game/types'
 
 const BASE_WEIGHT = 1
+const PATTERN_WINDOW = 3
+
+// 各行動に対する「読み合い」上の最適な返し手。
+// charge→attack（無償で1ダメージ）、attack→guard（防御+エネルギー獲得）、
+// guard→charge（ガードに攻撃を当てて損をしない）
+const COUNTER_ACTION: Record<Action, Action> = {
+  charge: 'attack',
+  attack: 'guard',
+  guard: 'charge',
+}
+
+interface CpuDecisionContext {
+  difficulty?: CpuDifficulty
+  history?: TurnRecord[]
+}
 
 export function decideCpuAction(
   cpu: PlayerState,
   human: PlayerState,
   _preset: BattlePreset,
   rng: () => number = Math.random,
+  { difficulty = 'normal', history = [] }: CpuDecisionContext = {},
 ): Action {
   const legalActions = getLegalActions(cpu, human)
   const weights = new Map<Action, number>(legalActions.map((action) => [action, BASE_WEIGHT]))
@@ -37,7 +53,46 @@ export function decideCpuAction(
     bumpWeight('guard', 2.5)
   }
 
+  if (difficulty === 'strong') {
+    const predicted = predictHumanAction(history)
+    if (predicted) {
+      bumpWeight(COUNTER_ACTION[predicted], 3)
+      if (predicted === 'guard') {
+        // 予測が外れて攻撃がガードされると相手にエネルギーも与えてしまうため、
+        // 「ガードを読んだ」ときは攻撃の重みを積極的に下げる
+        bumpWeight('attack', 1 / 3)
+      }
+    }
+  }
+
   return pickWeighted(weights, rng)
+}
+
+// 直近PATTERN_WINDOW手の最頻出行動を「次も来る」と予測する。
+// サンプルが1手以下、または最多得票が1（同数タイを含む）で傾向がない場合は
+// 予測しない（null）。PATTERN_WINDOW=3では完全な同数タイ（1-1-1以外）は
+// 起こり得ないためMapの反復順には依存しないが、将来ウィンドウを偶数に
+// 変更する場合は2-2等の実タイが発生し得る点に注意（その場合は挿入順＝
+// 直近寄りの行動が優先される）。
+function predictHumanAction(history: TurnRecord[]): Action | null {
+  const recent = history.slice(0, PATTERN_WINDOW).map((turn) => turn.playerAction)
+  if (recent.length < 2) return null
+
+  const counts = new Map<Action, number>()
+  for (const action of recent) {
+    counts.set(action, (counts.get(action) ?? 0) + 1)
+  }
+
+  let best: Action | null = null
+  let bestCount = 0
+  for (const [action, count] of counts) {
+    if (count > bestCount) {
+      best = action
+      bestCount = count
+    }
+  }
+  if (bestCount <= 1) return null
+  return best
 }
 
 function pickWeighted(weights: Map<Action, number>, rng: () => number): Action {

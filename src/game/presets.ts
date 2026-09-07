@@ -4,9 +4,12 @@ export const INITIAL_HP_OPTIONS = [2, 3] as const
 
 export const GUARD_COOLDOWN_OPTIONS = [2, 3] as const
 
+export const CPU_DIFFICULTY_OPTIONS = ['normal', 'strong'] as const
+
 export const DEFAULT_PRESET: BattlePreset = {
   initialHp: 2,
   guardCooldownTurns: 3,
+  cpuDifficulty: 'normal',
 }
 
 export const MAX_ENERGY = 5

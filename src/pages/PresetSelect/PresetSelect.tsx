@@ -1,7 +1,17 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router'
-import { DEFAULT_PRESET, GUARD_COOLDOWN_OPTIONS, INITIAL_HP_OPTIONS } from '@/game/presets'
+import {
+  CPU_DIFFICULTY_OPTIONS,
+  DEFAULT_PRESET,
+  GUARD_COOLDOWN_OPTIONS,
+  INITIAL_HP_OPTIONS,
+} from '@/game/presets'
 import { SegmentedOption } from '@/pages/PresetSelect/SegmentedOption'
+
+const CPU_DIFFICULTY_LABEL: Record<(typeof CPU_DIFFICULTY_OPTIONS)[number], string> = {
+  normal: 'ふつう',
+  strong: 'つよい',
+}
 
 export function PresetSelect() {
   const navigate = useNavigate()
@@ -11,9 +21,12 @@ export function PresetSelect() {
   const [guardCooldownTurns, setGuardCooldownTurns] = useState<
     (typeof GUARD_COOLDOWN_OPTIONS)[number]
   >(DEFAULT_PRESET.guardCooldownTurns)
+  const [cpuDifficulty, setCpuDifficulty] = useState<(typeof CPU_DIFFICULTY_OPTIONS)[number]>(
+    DEFAULT_PRESET.cpuDifficulty ?? 'normal',
+  )
 
   return (
-    <main className="mx-auto flex min-h-screen max-w-md flex-col gap-8 p-6">
+    <main className="mx-auto flex h-dvh max-w-md flex-col gap-8 p-6">
       <Link
         to="/"
         className="w-fit font-mono text-xs font-semibold text-text-tertiary hover:text-accent-hover"
@@ -24,7 +37,7 @@ export function PresetSelect() {
       <div className="flex flex-col gap-1.5">
         <h1 className="font-sans text-2xl font-extrabold text-text-primary">対戦ルールを選ぶ</h1>
         <p className="font-sans text-sm text-text-secondary">
-          初期HPとガードのクールダウンをプリセットから選択してください。
+          初期HP・ガードのクールダウン・CPUの強さをプリセットから選択してください。
         </p>
       </div>
 
@@ -64,11 +77,29 @@ export function PresetSelect() {
         </div>
       </fieldset>
 
+      <fieldset className="flex flex-col gap-3">
+        <legend className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+          CPUの強さ
+        </legend>
+        <div className="flex gap-2.5">
+          {CPU_DIFFICULTY_OPTIONS.map((option) => (
+            <SegmentedOption
+              key={option}
+              name="cpuDifficulty"
+              value={option}
+              label={CPU_DIFFICULTY_LABEL[option]}
+              checked={cpuDifficulty === option}
+              onChange={() => setCpuDifficulty(option)}
+            />
+          ))}
+        </div>
+      </fieldset>
+
       <button
         type="button"
         onClick={() =>
           navigate('/battle', {
-            state: { preset: { initialHp, guardCooldownTurns } },
+            state: { preset: { initialHp, guardCooldownTurns, cpuDifficulty } },
             replace: true,
           })
         }

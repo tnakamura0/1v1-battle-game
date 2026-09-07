@@ -2,9 +2,12 @@ export type Action = 'charge' | 'attack' | 'guard'
 
 export type PlayerKey = 'player' | 'cpu'
 
+export type CpuDifficulty = 'normal' | 'strong'
+
 export interface BattlePreset {
   initialHp: 2 | 3
   guardCooldownTurns: 2 | 3
+  cpuDifficulty?: CpuDifficulty
 }
 
 export interface PlayerState {

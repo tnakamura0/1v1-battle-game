@@ -46,7 +46,10 @@ export function battleReducer(
     case 'SUBMIT_PLAYER_ACTION': {
       if (state.phase !== 'selecting') return state
 
-      const cpuAction = decideCpuAction(state.cpu, state.player, state.preset, action.rng)
+      const cpuAction = decideCpuAction(state.cpu, state.player, state.preset, action.rng, {
+        difficulty: state.preset.cpuDifficulty,
+        history: state.history,
+      })
       const { player, cpu, outcome } = resolveTurn(
         state.player,
         state.cpu,
