@@ -1,6 +1,7 @@
 import { render, screen } from '@testing-library/react'
+import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { describe, expect, it } from 'vitest'
+import { afterEach, describe, expect, it, vi } from 'vitest'
 import { BattleResult } from '@/pages/BattleResult/BattleResult'
 import type { BattleSummary } from '@/game/types'
 
@@ -38,5 +39,27 @@ describe('BattleResult', () => {
   it('shows a lose headline when the cpu wins', () => {
     renderPage({ summary: { ...summary, winner: 'cpu' } })
     expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
+  })
+
+  describe('X共有ボタン', () => {
+    afterEach(() => {
+      vi.restoreAllMocks()
+    })
+
+    it('opens a twitter intent URL with the result embedded in the text', async () => {
+      const user = userEvent.setup()
+      const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+      renderPage({ summary })
+
+      await user.click(screen.getByRole('button', { name: 'Xで結果をシェアする' }))
+
+      expect(openSpy).toHaveBeenCalledTimes(1)
+      const [openedUrl, target, features] = openSpy.mock.calls[0]
+      expect(String(openedUrl)).toContain('https://twitter.com/intent/tweet?')
+      expect(String(openedUrl)).toContain(encodeURIComponent('7ターン'))
+      expect(String(openedUrl)).toContain(encodeURIComponent('勝利'))
+      expect(target).toBe('_blank')
+      expect(features).toBe('noopener,noreferrer')
+    })
   })
 })
