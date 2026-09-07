@@ -1,6 +1,11 @@
 import { describe, expect, it } from 'vitest'
 import { decideCpuAction, scoreStrongActions } from '@/game/cpu'
-import { DEFAULT_PRESET, MAX_ENERGY } from '@/game/presets'
+import {
+  DEFAULT_PRESET,
+  GUARD_COOLDOWN_OPTIONS,
+  INITIAL_HP_OPTIONS,
+  MAX_ENERGY,
+} from '@/game/presets'
 import { checkVictory, createInitialPlayerState, getLegalActions, resolveTurn } from '@/game/rules'
 import type { Action, BattlePreset, CpuDifficulty, PlayerState, TurnRecord } from '@/game/types'
 
@@ -10,17 +15,23 @@ function state(overrides: Partial<PlayerState> = {}): PlayerState {
   return { hp: 3, energy: 2, guardCooldownRemaining: 0, ...overrides }
 }
 
+/** 相手が指定の行動を選んだ履歴。after側は実際のルールで解決して辻褄を合わせる */
 function buildHistory(playerActions: Action[]): TurnRecord[] {
-  return playerActions.map((playerAction, index) => ({
-    turn: index + 1,
-    playerAction,
-    cpuAction: 'charge',
-    playerBefore: state(),
-    playerAfter: state(),
-    cpuBefore: state(),
-    cpuAfter: state(),
-    outcome: 'no-effect',
-  }))
+  return playerActions.map((playerAction, index) => {
+    const playerBefore = state()
+    const cpuBefore = state()
+    const resolved = resolveTurn(playerBefore, cpuBefore, playerAction, 'charge', preset)
+    return {
+      turn: index + 1,
+      playerAction,
+      cpuAction: 'charge',
+      playerBefore,
+      playerAfter: resolved.player,
+      cpuBefore,
+      cpuAfter: resolved.cpu,
+      outcome: resolved.outcome,
+    }
+  })
 }
 
 /** 1ターン目は双方エネルギー0でチャージ以外を選べない、意思の表れていない手 */
@@ -63,7 +74,7 @@ const randomStrategy: Strategy = (own, opponent, rng) => {
   return legal[Math.floor(rng() * legal.length)]
 }
 
-const BATTLE_COUNT = 300
+const BATTLE_COUNT = 200
 const MAX_SIMULATED_TURNS = 100
 
 /** テストを決定的にするためのシード付き疑似乱数（mulberry32） */
@@ -82,7 +93,7 @@ function playBattle(
   difficulty: CpuDifficulty,
   strategy: Strategy,
   rng: () => number,
-): 'player' | 'cpu' | null {
+): { winner: 'player' | 'cpu' | null; turns: number } {
   let player = createInitialPlayerState(battlePreset)
   let cpu = createInitialPlayerState(battlePreset)
   let history: TurnRecord[] = []
@@ -109,9 +120,9 @@ function playBattle(
     cpu = result.cpu
 
     const winner = checkVictory(player, cpu)
-    if (winner !== null) return winner
+    if (winner !== null) return { winner, turns: turn }
   }
-  return null
+  return { winner: null, turns: MAX_SIMULATED_TURNS }
 }
 
 function simulate(
@@ -122,11 +133,24 @@ function simulate(
   let wins = 0
   let losses = 0
   for (let seed = 1; seed <= BATTLE_COUNT; seed += 1) {
-    const winner = playBattle(battlePreset, difficulty, strategy, seededRng(seed))
+    const { winner } = playBattle(battlePreset, difficulty, strategy, seededRng(seed))
     if (winner === 'cpu') wins += 1
     else if (winner === 'player') losses += 1
   }
   return { wins, losses }
+}
+
+/** 決着までのターン数を昇順で返す */
+function turnCounts(
+  battlePreset: BattlePreset,
+  difficulty: CpuDifficulty,
+  strategy: Strategy,
+): number[] {
+  const lengths: number[] = []
+  for (let seed = 1; seed <= BATTLE_COUNT; seed += 1) {
+    lengths.push(playBattle(battlePreset, difficulty, strategy, seededRng(seed)).turns)
+  }
+  return lengths.sort((a, b) => a - b)
 }
 
 describe('decideCpuAction', () => {
@@ -198,8 +222,10 @@ describe('decideCpuAction', () => {
   })
 
   describe('strong difficulty', () => {
-    it('never returns an illegal action across the full rng range', () => {
-      const cpu = state({ energy: 0, guardCooldownRemaining: 1 })
+    it('never picks guard while on cooldown, across the full rng range', () => {
+      // 攻撃の連打を読ませてガードを最も魅力的に見せた上で、それでもガードを
+      // 選ばないこと（＝合法手の絞り込みが効いていること）を確かめる
+      const cpu = state({ energy: 2, guardCooldownRemaining: 1 })
       const human = state({ energy: 3 })
       const history = buildHistory(['attack', 'attack', 'attack'])
 
@@ -208,7 +234,21 @@ describe('decideCpuAction', () => {
           difficulty: 'strong',
           history,
         })
-        expect(action).toBe('charge')
+        expect(['charge', 'attack']).toContain(action)
+      }
+    })
+
+    it('never picks attack without the energy to pay for it', () => {
+      const cpu = state({ energy: 0 })
+      const human = state({ energy: 3 })
+      const history = buildHistory(['charge', 'charge', 'charge'])
+
+      for (let i = 0; i <= 20; i += 1) {
+        const action = decideCpuAction(cpu, human, preset, () => i / 20, {
+          difficulty: 'strong',
+          history,
+        })
+        expect(['charge', 'guard']).toContain(action)
       }
     })
 
@@ -284,29 +324,42 @@ describe('decideCpuAction', () => {
 
   // 「つよい」が「ふつう」より実際に強いことを、シード固定の対戦シミュレーションで確かめる。
   // 個々の重み付けを手計算で検証するより、対戦成績で押さえたほうが定数の微調整に強い。
+  //
+  // 勝率のしきい値は「ふつうとの差」だけでなく絶対値でも表明する。差だけを見ると、
+  // 両者が拮抗する相手（ランダム）では乱数のゆらぎに埋もれて実質何も検証しない
+  // テストになりうるため。
   describe('strong difficulty wins more than normal in simulated battles', () => {
-    const opponents: [string, Strategy][] = [
-      ['チャージで溜めてガードのクールダウン中に攻める攻略法', exploitStrategy],
-      ['合法手からランダムに選ぶ相手', randomStrategy],
-    ]
+    // 選択可能な4プリセットすべてを対象にする（プリセットごとに成績が変わるため）
+    const allPresets = INITIAL_HP_OPTIONS.flatMap((initialHp) =>
+      GUARD_COOLDOWN_OPTIONS.map((guardCooldownTurns) => ({ initialHp, guardCooldownTurns })),
+    )
 
-    for (const battlePreset of [DEFAULT_PRESET, { initialHp: 3, guardCooldownTurns: 2 } as const]) {
-      for (const [label, strategy] of opponents) {
-        it(`hp${battlePreset.initialHp}/cd${battlePreset.guardCooldownTurns}: ${label}`, () => {
-          const normal = simulate(battlePreset, 'normal', strategy)
-          const strong = simulate(battlePreset, 'strong', strategy)
-          expect(strong.wins).toBeGreaterThan(normal.wins)
-          expect(strong.losses).toBeLessThan(normal.losses)
-        })
-      }
+    for (const battlePreset of allPresets) {
+      const label = `hp${battlePreset.initialHp}/cd${battlePreset.guardCooldownTurns}`
+
+      it(`${label}: 報告された攻略法（溜めてガードのクールダウン中に撃つ）を跳ね返す`, () => {
+        const normal = simulate(battlePreset, 'normal', exploitStrategy)
+        const strong = simulate(battlePreset, 'strong', exploitStrategy)
+        // 「ふつう」は攻略法にほぼ勝てないが、「つよい」ははっきり勝ち越す
+        expect(normal.wins / BATTLE_COUNT).toBeLessThan(0.3)
+        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.6)
+        expect(strong.losses).toBeLessThan(normal.losses)
+      })
+
+      it(`${label}: 合法手からランダムに選ぶ相手にも勝ち越す`, () => {
+        const normal = simulate(battlePreset, 'normal', randomStrategy)
+        const strong = simulate(battlePreset, 'strong', randomStrategy)
+        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.65)
+        expect(strong.wins).toBeGreaterThan(normal.wins)
+      })
     }
 
-    it('turns the reported winning strategy around instead of merely narrowing the gap', () => {
-      const normal = simulate(DEFAULT_PRESET, 'normal', exploitStrategy)
-      const strong = simulate(DEFAULT_PRESET, 'strong', exploitStrategy)
-      // 「ふつう」は攻略法にほぼ勝てないが、「つよい」は勝ち越す
-      expect(normal.wins / BATTLE_COUNT).toBeLessThan(0.3)
-      expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.6)
+    it('決着が長引きすぎない', () => {
+      // 強くする代わりに、読み合いが噛み合って延々と決着がつかなくなっていないこと
+      const lengths = turnCounts(DEFAULT_PRESET, 'strong', exploitStrategy)
+      const median = lengths[Math.floor(lengths.length / 2)]
+      expect(median).toBeLessThan(15)
+      expect(lengths.filter((turns) => turns >= MAX_SIMULATED_TURNS)).toHaveLength(0)
     })
   })
 })

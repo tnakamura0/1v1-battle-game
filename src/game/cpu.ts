@@ -8,7 +8,7 @@ const BASE_WEIGHT = 1
 // それより十分小さい値に置くことで「ダメージ最優先・ただしリソースも見る」評価になる。
 const DAMAGE_VALUE = 10
 const LETHAL_MULTIPLIER = 1.5
-const ENERGY_VALUE = 1.5
+const ENERGY_VALUE = 2.5
 const GUARD_TEMPO_PER_TURN = 1.5
 // 相手の行動頻度を予測にどれだけ強く反映するか（一様な事前分布に対する倍率）
 const PATTERN_BIAS = 3
@@ -190,7 +190,12 @@ function scorePair(
   return damageDealt - damageTaken + energyDelta * ENERGY_VALUE + guardTempo
 }
 
-/** 期待値を抽選用の重みに変換する。最大値を引いてから指数化してオーバーフローを避ける */
+/**
+ * 期待値を抽選用の重みに変換する。最大値を引いてから指数化してオーバーフローを避ける。
+ *
+ * getLegalActions は必ずチャージを含むため scores が空になることはない。
+ * 空だと best が -Infinity になり、続く pickWeighted も候補なしで破綻する。
+ */
 function toSoftmaxWeights(scores: Map<Action, number>): Map<Action, number> {
   const best = Math.max(...scores.values())
   return new Map(
