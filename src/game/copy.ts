@@ -32,8 +32,9 @@ export function outcomeHistoryLine(outcome: TurnOutcome): string {
     case 'clash':
       return '→ 相打ち・ダメージなし'
     case 'player-guarded':
+      return '→ ガード成功・自分のエネルギー+1'
     case 'cpu-guarded':
-      return '→ ガード成功・ダメージなし'
+      return '→ ガード成功・相手のエネルギー+1'
     case 'no-effect':
       return '→ 変化なし'
     default:

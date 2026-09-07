@@ -27,9 +27,9 @@ function outcomeSubline(outcome: TurnRecord['outcome']): string {
     case 'clash':
       return 'お互いの攻撃が相殺された'
     case 'player-guarded':
-      return '相手の攻撃をガードした'
+      return '相手の攻撃をガードした（自分のエネルギー+1）'
     case 'cpu-guarded':
-      return '攻撃をガードされた'
+      return '攻撃をガードされた（相手のエネルギー+1）'
     default:
       return ''
   }
@@ -66,7 +66,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '自分 ENERGY',
       beforeText: String(lastTurn.playerBefore.energy),
       afterText: String(lastTurn.playerAfter.energy),
-      colorClass: 'text-charge',
+      colorClass: lastTurn.outcome === 'player-guarded' ? 'text-guard' : 'text-charge',
     })
   }
   if (lastTurn.cpuBefore.energy !== lastTurn.cpuAfter.energy) {
@@ -74,7 +74,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '相手 ENERGY',
       beforeText: String(lastTurn.cpuBefore.energy),
       afterText: String(lastTurn.cpuAfter.energy),
-      colorClass: 'text-charge',
+      colorClass: lastTurn.outcome === 'cpu-guarded' ? 'text-guard' : 'text-charge',
     })
   }
   if (
