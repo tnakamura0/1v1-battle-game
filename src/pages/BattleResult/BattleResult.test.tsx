@@ -1,8 +1,8 @@
 import { render, screen } from '@testing-library/react'
-import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes } from 'react-router'
-import { afterEach, describe, expect, it, vi } from 'vitest'
+import { describe, expect, it } from 'vitest'
 import { BattleResult } from '@/pages/BattleResult/BattleResult'
+import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
 const summary: BattleSummary = {
@@ -41,25 +41,14 @@ describe('BattleResult', () => {
     expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
   })
 
-  describe('X共有ボタン', () => {
-    afterEach(() => {
-      vi.restoreAllMocks()
-    })
-
-    it('opens a twitter intent URL with the result embedded in the text', async () => {
-      const user = userEvent.setup()
-      const openSpy = vi.spyOn(window, 'open').mockImplementation(() => null)
+  describe('X共有リンク', () => {
+    it('renders an external link to the twitter intent URL for the result', () => {
       renderPage({ summary })
 
-      await user.click(screen.getByRole('button', { name: 'Xで結果をシェアする' }))
-
-      expect(openSpy).toHaveBeenCalledTimes(1)
-      const [openedUrl, target, features] = openSpy.mock.calls[0]
-      expect(String(openedUrl)).toContain('https://twitter.com/intent/tweet?')
-      expect(String(openedUrl)).toContain(encodeURIComponent('7ターン'))
-      expect(String(openedUrl)).toContain(encodeURIComponent('勝利'))
-      expect(target).toBe('_blank')
-      expect(features).toBe('noopener,noreferrer')
+      const link = screen.getByRole('link', { name: 'Xで結果をシェアする' })
+      expect(link).toHaveAttribute('href', buildShareUrl(summary))
+      expect(link).toHaveAttribute('target', '_blank')
+      expect(link).toHaveAttribute('rel', 'noopener noreferrer')
     })
   })
 })

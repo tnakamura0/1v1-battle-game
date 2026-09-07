@@ -1,21 +1,9 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
 interface BattleResultLocationState {
   summary?: BattleSummary
-}
-
-function buildShareText(summary: BattleSummary): string {
-  const won = summary.winner === 'player'
-  return `OUTWIT DUELでCPUと対戦し、${summary.turnCount}ターンで${won ? '勝利' : '敗北'}しました！`
-}
-
-function buildShareUrl(summary: BattleSummary): string {
-  const params = new URLSearchParams({
-    text: buildShareText(summary),
-    url: window.location.origin,
-  })
-  return `https://twitter.com/intent/tweet?${params.toString()}`
 }
 
 export function BattleResult() {
@@ -81,13 +69,14 @@ export function BattleResult() {
         </button>
       </div>
 
-      <button
-        type="button"
-        onClick={() => window.open(buildShareUrl(summary), '_blank', 'noopener,noreferrer')}
-        className="mt-2 inline-flex items-center gap-1.5 font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+      <a
+        href={buildShareUrl(summary)}
+        target="_blank"
+        rel="noopener noreferrer"
+        className="mt-2 inline-flex items-center font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
       >
         Xで結果をシェアする
-      </button>
+      </a>
     </main>
   )
 }
