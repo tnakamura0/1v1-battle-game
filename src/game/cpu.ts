@@ -69,7 +69,11 @@ export function decideCpuAction(
 }
 
 // 直近PATTERN_WINDOW手の最頻出行動を「次も来る」と予測する。
-// サンプルが1手以下、または票が割れて傾向がない場合は予測しない（null）。
+// サンプルが1手以下、または最多得票が1（同数タイを含む）で傾向がない場合は
+// 予測しない（null）。PATTERN_WINDOW=3では完全な同数タイ（1-1-1以外）は
+// 起こり得ないためMapの反復順には依存しないが、将来ウィンドウを偶数に
+// 変更する場合は2-2等の実タイが発生し得る点に注意（その場合は挿入順＝
+// 直近寄りの行動が優先される）。
 function predictHumanAction(history: TurnRecord[]): Action | null {
   const recent = history.slice(0, PATTERN_WINDOW).map((turn) => turn.playerAction)
   if (recent.length < 2) return null
