@@ -5,10 +5,8 @@ import { SectionHeading } from '@/components/SectionHeading'
 import type { Action } from '@/game/types'
 
 const TURN_STEPS = [
-  '3つの行動から1つを選ぶ（時間制限なし）',
-  '選んだ行動がお互いに公開される',
-  '行動の組み合わせで勝敗が決まる',
-  '結果を確認する',
+  '3つの行動から1つを選ぶ',
+  '行動が公開され、組み合わせに応じて勝敗が決まる',
   '次のターンに進む',
 ]
 
@@ -30,7 +28,7 @@ const ACTIONS: Array<{ key: Action; name: string; color: string; description: st
     name: 'ガード',
     color: 'text-guard',
     description:
-      '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。使用後は設定したターン数の間、再使用できない。',
+      '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。ガードに成功すると自分のエネルギーが1増える。使用後は設定したターン数の間、再使用できない。',
   },
 ]
 
@@ -86,9 +84,6 @@ export function Rules() {
         <h1 className="font-sans text-3xl font-extrabold text-text-primary sm:text-4xl">
           ルール / 遊び方
         </h1>
-        <p className="max-w-md font-sans text-sm leading-relaxed text-text-secondary">
-          相手を読み、駆け引きを制する。対戦前に基本ルールを確認しましょう。
-        </p>
       </div>
 
       <Section title="ゲームの目的">
@@ -131,7 +126,7 @@ export function Rules() {
 
       <Section title="エネルギー">
         <p className="font-sans text-sm leading-relaxed text-text-secondary">
-          初期値は0、最大値は5です。チャージで+1、攻撃で-1されます。
+          初期値は0、最大値は5です。チャージで+1、攻撃で-1、ガードに成功すると+1されます。
         </p>
       </Section>
 
@@ -203,8 +198,7 @@ export function Rules() {
 
       <Section title="ガードのクールダウン">
         <p className="font-sans text-sm leading-relaxed text-text-secondary">
-          ガード使用後は、対戦開始時に選んだターン数が経過するまで再使用できません（2ターン または
-          3ターン）。
+          ガード使用後は、対戦開始時に選んだターン数が経過するまで再使用できません。
         </p>
       </Section>
 

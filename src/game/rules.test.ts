@@ -7,6 +7,7 @@ import {
   isActionLegal,
   resolveTurn,
 } from '@/game/rules'
+import { MAX_ENERGY } from '@/game/presets'
 import type { Action, BattlePreset, PlayerState } from '@/game/types'
 
 const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
@@ -143,10 +144,18 @@ describe('resolveTurn — full 3x3 outcome matrix', () => {
       expect(result.player.hp).toBe(before.player.hp + playerHpDelta)
       expect(result.cpu.hp).toBe(before.cpu.hp + cpuHpDelta)
 
-      const expectedPlayerEnergy =
-        before.player.energy + (playerAction === 'charge' ? 1 : playerAction === 'attack' ? -1 : 0)
-      const expectedCpuEnergy =
-        before.cpu.energy + (cpuAction === 'charge' ? 1 : cpuAction === 'attack' ? -1 : 0)
+      const expectedPlayerEnergy = Math.min(
+        MAX_ENERGY,
+        before.player.energy +
+          (playerAction === 'charge' ? 1 : playerAction === 'attack' ? -1 : 0) +
+          (outcome === 'player-guarded' ? 1 : 0),
+      )
+      const expectedCpuEnergy = Math.min(
+        MAX_ENERGY,
+        before.cpu.energy +
+          (cpuAction === 'charge' ? 1 : cpuAction === 'attack' ? -1 : 0) +
+          (outcome === 'cpu-guarded' ? 1 : 0),
+      )
       expect(result.player.energy).toBe(expectedPlayerEnergy)
       expect(result.cpu.energy).toBe(expectedCpuEnergy)
     },
@@ -162,6 +171,28 @@ describe('resolveTurn — full 3x3 outcome matrix', () => {
     )
     expect(result.player.energy).toBe(5)
     expect(result.cpu.energy).toBe(5)
+  })
+
+  it('caps energy gain from guard success at MAX_ENERGY', () => {
+    const result = resolveTurn(
+      player({ energy: 5 }),
+      player({ energy: 2 }),
+      'guard',
+      'attack',
+      preset,
+    )
+    expect(result.player.energy).toBe(5)
+  })
+
+  it('grants the guarding player +1 energy on a successful guard', () => {
+    const result = resolveTurn(
+      player({ energy: 1 }),
+      player({ energy: 2 }),
+      'guard',
+      'attack',
+      preset,
+    )
+    expect(result.player.energy).toBe(2)
   })
 
   it('never lets HP drop below 0', () => {
