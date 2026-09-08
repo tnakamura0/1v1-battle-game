@@ -17,6 +17,14 @@ const CPU_DIFFICULTY_LABEL: Record<(typeof CPU_DIFFICULTY_OPTIONS)[number], stri
   strong: 'つよい',
 }
 
+const DEFAULT_SETUP: BattleSetup = {
+  initialHp: DEFAULT_PRESET.initialHp,
+  guardCooldownTurns: DEFAULT_PRESET.guardCooldownTurns,
+  cpuDifficulty: DEFAULT_PRESET.cpuDifficulty ?? 'normal',
+}
+
+// 「サクッと遊ぶ」は既定値そのものにする。初期表示でこのおすすめが選択中に
+// 見えるのはこの一致によるものなので、DEFAULT_PRESETから導出して同期を保つ。
 const RECOMMENDED_SETUPS: ReadonlyArray<{
   key: string
   title: string
@@ -27,7 +35,7 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
     key: 'casual',
     title: 'サクッと遊ぶ',
     description: '短期決戦でテンポよく',
-    setup: { initialHp: 2, guardCooldownTurns: 3, cpuDifficulty: 'normal' },
+    setup: DEFAULT_SETUP,
   },
   {
     key: 'serious',
@@ -37,8 +45,13 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
   },
 ]
 
+const RECOMMENDED_BUTTON_BASE =
+  'flex flex-1 touch-manipulation flex-col gap-1 rounded-[10px] border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
+const RECOMMENDED_BUTTON_ACTIVE = 'border-accent bg-bg-surface-active'
+const RECOMMENDED_BUTTON_IDLE = 'border-border-default bg-bg-card hover:border-border-emphasis'
+
 function summarizeSetup(setup: BattleSetup): string {
-  return `HP ${setup.initialHp} ／ ${setup.guardCooldownTurns}ターン ／ ${CPU_DIFFICULTY_LABEL[setup.cpuDifficulty]}`
+  return `HP${setup.initialHp} ／ ガード${setup.guardCooldownTurns}ターン ／ CPU${CPU_DIFFICULTY_LABEL[setup.cpuDifficulty]}`
 }
 
 function isSameSetup(a: BattleSetup, b: BattleSetup): boolean {
@@ -51,18 +64,27 @@ function isSameSetup(a: BattleSetup, b: BattleSetup): boolean {
 
 export function PresetSelect() {
   const navigate = useNavigate()
-  const [setup, setSetup] = useState<BattleSetup>({
-    initialHp: DEFAULT_PRESET.initialHp,
-    guardCooldownTurns: DEFAULT_PRESET.guardCooldownTurns,
-    cpuDifficulty: DEFAULT_PRESET.cpuDifficulty ?? 'normal',
-  })
+  const [setup, setSetup] = useState<BattleSetup>(DEFAULT_SETUP)
+  // おすすめを押すと下の設定がまとめて書き換わるが、画面外の変化には気づきにくい。
+  // スクリーンリーダー向けに、反映されたことを読み上げるためだけの状態。
+  const [appliedTitle, setAppliedTitle] = useState<string | null>(null)
+
+  const updateSetup = (changes: Partial<BattleSetup>) => {
+    setSetup((current) => ({ ...current, ...changes }))
+    setAppliedTitle(null)
+  }
 
   return (
-    <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden p-6">
-      <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto">
+    <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden">
+      {/*
+        contain-layout がないと、このスクロール領域からあふれた分だけページ全体が
+        スクロールできてしまう（祖先の overflow-hidden では止まらない）。
+        レイアウトの伝播だけを断つので、描画（フォーカスリング）は切られない。
+      */}
+      <div className="flex min-h-0 flex-1 flex-col gap-8 overflow-y-auto px-6 pt-6 contain-layout">
         <Link
           to="/"
-          className="w-fit font-mono text-xs font-semibold text-text-tertiary hover:text-accent-hover"
+          className="w-fit rounded-chip font-mono text-xs font-semibold text-text-tertiary transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
         >
           ← 戻る
         </Link>
@@ -78,6 +100,9 @@ export function PresetSelect() {
           <h2 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
             おすすめ設定
           </h2>
+          <p id="recommended-setups-hint" className="-mt-1 font-sans text-xs text-text-tertiary">
+            選ぶと下の3つの設定がまとめて切り替わります。あとから個別に変更できます。
+          </p>
           <div className="flex flex-col gap-2.5 sm:flex-row">
             {RECOMMENDED_SETUPS.map((recommended) => {
               const isActive = isSameSetup(setup, recommended.setup)
@@ -86,12 +111,12 @@ export function PresetSelect() {
                   key={recommended.key}
                   type="button"
                   aria-pressed={isActive}
-                  onClick={() => setSetup(recommended.setup)}
-                  className={
-                    isActive
-                      ? 'flex flex-1 touch-manipulation flex-col gap-1 rounded-[10px] border border-accent bg-bg-surface-active p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
-                      : 'flex flex-1 touch-manipulation flex-col gap-1 rounded-[10px] border border-border-default bg-bg-card p-3.5 text-left transition-colors hover:border-border-emphasis focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
-                  }
+                  aria-describedby="recommended-setups-hint"
+                  onClick={() => {
+                    setSetup({ ...recommended.setup })
+                    setAppliedTitle(recommended.title)
+                  }}
+                  className={`${RECOMMENDED_BUTTON_BASE} ${isActive ? RECOMMENDED_BUTTON_ACTIVE : RECOMMENDED_BUTTON_IDLE}`}
                 >
                   <span
                     className={
@@ -112,6 +137,9 @@ export function PresetSelect() {
               )
             })}
           </div>
+          <p role="status" className="sr-only">
+            {appliedTitle ? `${appliedTitle}の設定を反映しました` : ''}
+          </p>
         </section>
 
         <SettingGroup legend="初期HP">
@@ -122,7 +150,7 @@ export function PresetSelect() {
               value={String(option)}
               label={String(option)}
               checked={setup.initialHp === option}
-              onChange={() => setSetup((current) => ({ ...current, initialHp: option }))}
+              onChange={() => updateSetup({ initialHp: option })}
             />
           ))}
         </SettingGroup>
@@ -135,7 +163,7 @@ export function PresetSelect() {
               value={String(option)}
               label={`${option}ターン`}
               checked={setup.guardCooldownTurns === option}
-              onChange={() => setSetup((current) => ({ ...current, guardCooldownTurns: option }))}
+              onChange={() => updateSetup({ guardCooldownTurns: option })}
             />
           ))}
         </SettingGroup>
@@ -148,31 +176,26 @@ export function PresetSelect() {
               value={option}
               label={CPU_DIFFICULTY_LABEL[option]}
               checked={setup.cpuDifficulty === option}
-              onChange={() => setSetup((current) => ({ ...current, cpuDifficulty: option }))}
+              onChange={() => updateSetup({ cpuDifficulty: option })}
             />
           ))}
         </SettingGroup>
       </div>
 
-      <div className="flex flex-none flex-col pt-6">
-        <button
-          type="button"
-          onClick={() => navigate('/battle', { state: { preset: setup }, replace: true })}
-          className="flex h-13 touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
-        >
-          対戦を始める
-        </button>
-      </div>
+      <button
+        type="button"
+        onClick={() => navigate('/battle', { state: { preset: setup }, replace: true })}
+        className="mx-6 mb-6 mt-6 flex h-13 flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+      >
+        対戦を始める
+      </button>
     </main>
   )
 }
 
 function SettingGroup({ legend, children }: { legend: string; children: ReactNode }) {
   return (
-    // contain:layout は、Chromiumで<fieldset>のレイアウトはみ出しが祖先のoverflowを
-    // 突き抜け、ページ全体を余白分だけスクロールできてしまうのを防ぐためのもの。
-    // overflow-hiddenでも防げるが、選択肢のフォーカスリングが切れてしまうため使わない。
-    <fieldset className="flex flex-col gap-3 contain-layout">
+    <fieldset className="flex flex-col gap-3">
       <legend className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
         {legend}
       </legend>

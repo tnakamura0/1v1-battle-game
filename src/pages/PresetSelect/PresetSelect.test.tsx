@@ -1,15 +1,21 @@
 import { render, screen } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
-import { MemoryRouter, Route, Routes } from 'react-router'
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { PresetSelect } from '@/pages/PresetSelect/PresetSelect'
+
+/** 遷移先に渡された設定を検証できるよう、location.stateをそのまま描画する */
+function BattleScreenProbe() {
+  const location = useLocation()
+  return <div>battle screen {JSON.stringify(location.state)}</div>
+}
 
 function renderPage() {
   return render(
     <MemoryRouter initialEntries={['/preset']}>
       <Routes>
         <Route path="/preset" element={<PresetSelect />} />
-        <Route path="/battle" element={<div>battle screen</div>} />
+        <Route path="/battle" element={<BattleScreenProbe />} />
       </Routes>
     </MemoryRouter>,
   )
@@ -50,9 +56,22 @@ describe('PresetSelect', () => {
 
     await user.click(screen.getByRole('button', { name: '対戦を始める' }))
 
-    expect(screen.getByText('battle screen')).toBeInTheDocument()
+    expect(screen.getByText(/battle screen/)).toBeInTheDocument()
   })
 
+  it('hands the chosen setup to the battle screen', async () => {
+    const user = userEvent.setup()
+    renderPage()
+
+    await user.click(seriousButton())
+    await user.click(screen.getByRole('button', { name: '対戦を始める' }))
+
+    expect(
+      screen.getByText(/"preset":{"initialHp":3,"guardCooldownTurns":2,"cpuDifficulty":"strong"}/),
+    ).toBeInTheDocument()
+  })
+
+  // Issue #54 の再発防止：設定はプリセットから選ぶ仕様ではない
   it('does not describe the settings as presets', () => {
     renderPage()
     expect(screen.queryByText(/プリセット/)).not.toBeInTheDocument()
