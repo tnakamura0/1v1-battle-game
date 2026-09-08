@@ -42,8 +42,13 @@ export function BattleResult() {
         <StatRow
           label="最終HP（自分）"
           value={`${summary.player.hp}/${summary.preset.initialHp}`}
+          labelClassName="text-player"
         />
-        <StatRow label="最終HP（相手）" value={`${summary.cpu.hp}/${summary.preset.initialHp}`} />
+        <StatRow
+          label="最終HP（相手）"
+          value={`${summary.cpu.hp}/${summary.preset.initialHp}`}
+          labelClassName="text-opponent"
+        />
         <StatRow label="ターン数" value={`${summary.turnCount}ターン`} />
       </div>
 
@@ -81,10 +86,19 @@ export function BattleResult() {
   )
 }
 
-function StatRow({ label, value }: { label: string; value: string }) {
+function StatRow({
+  label,
+  value,
+  labelClassName = 'text-text-secondary',
+}: {
+  label: string
+  value: string
+  /** 自分/相手の識別色を当てる行だけ指定する */
+  labelClassName?: string
+}) {
   return (
     <div className="flex items-center justify-between bg-bg-row px-4 py-3">
-      <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+      <span className={`font-mono text-[11px] font-semibold tracking-[0.06em] ${labelClassName}`}>
         {label}
       </span>
       <span className="font-sans text-sm font-bold tabular-nums text-text-primary">{value}</span>

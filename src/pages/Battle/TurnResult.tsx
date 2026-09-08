@@ -40,7 +40,12 @@ interface ChangeRow {
   beforeText: string
   afterText: string
   colorClass: string
+  /** 誰の変化かをラベルの色でも示す（ステータスパネルと同じ識別色） */
+  labelClass: string
 }
+
+const PLAYER_LABEL_CLASS = 'text-player'
+const OPPONENT_LABEL_CLASS = 'text-opponent'
 
 function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
   const rows: ChangeRow[] = []
@@ -51,6 +56,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.cpuBefore.hp),
       afterText: String(lastTurn.cpuAfter.hp),
       colorClass: 'text-attack',
+      labelClass: OPPONENT_LABEL_CLASS,
     })
   }
   if (lastTurn.playerBefore.hp !== lastTurn.playerAfter.hp) {
@@ -59,6 +65,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.playerBefore.hp),
       afterText: String(lastTurn.playerAfter.hp),
       colorClass: 'text-attack',
+      labelClass: PLAYER_LABEL_CLASS,
     })
   }
   if (lastTurn.playerBefore.energy !== lastTurn.playerAfter.energy) {
@@ -67,6 +74,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.playerBefore.energy),
       afterText: String(lastTurn.playerAfter.energy),
       colorClass: lastTurn.outcome === 'player-guarded' ? 'text-guard' : 'text-charge',
+      labelClass: PLAYER_LABEL_CLASS,
     })
   }
   if (lastTurn.cpuBefore.energy !== lastTurn.cpuAfter.energy) {
@@ -75,6 +83,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.cpuBefore.energy),
       afterText: String(lastTurn.cpuAfter.energy),
       colorClass: lastTurn.outcome === 'cpu-guarded' ? 'text-guard' : 'text-charge',
+      labelClass: OPPONENT_LABEL_CLASS,
     })
   }
   if (
@@ -86,6 +95,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: 'READY',
       afterText: `${lastTurn.playerAfter.guardCooldownRemaining}T`,
       colorClass: 'text-accent-hover',
+      labelClass: PLAYER_LABEL_CLASS,
     })
   }
 
@@ -131,7 +141,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
 
         <div className="flex items-stretch gap-2.5">
           <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-accent-light">
+            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-player">
               YOU
             </span>
             <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
@@ -145,7 +155,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             VS
           </div>
           <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
+            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-opponent">
               OPPONENT
             </span>
             <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
@@ -185,7 +195,9 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
                 key={row.label}
                 className="flex items-center justify-between bg-bg-row px-4 py-3"
               >
-                <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+                <span
+                  className={`font-mono text-[11px] font-semibold tracking-[0.06em] ${row.labelClass}`}
+                >
                   {row.label}
                 </span>
                 <span className="font-sans text-sm font-bold tabular-nums text-text-primary">
