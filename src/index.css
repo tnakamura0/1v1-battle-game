@@ -10,6 +10,11 @@
  *                             （ActionButton等。Tier 1より明るく「押せそう」に見せる）
  * - ネスト行                : bg-bg-track（外枠）+ bg-bg-row（各行、gap-pxで区切る）
  * - 意味的アクセント境界     : border-accent/attack/danger 等の状態通知は上記と独立
+ *
+ * 色の3つの軸（互いに独立しているので混ぜない）
+ * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
+ * - 行動色         : charge / attack / guard。「何を選んだか」を表す
+ * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
  */
 @theme {
   --color-bg-page: #06090d;
@@ -37,6 +42,10 @@
   --color-charge: #f5b544;
   --color-attack: #fb7185;
   --color-guard: #22d3ee;
+
+  /* 対戦者の識別色。相手は行動色（琥珀・ローズ・シアン）と衝突しない色相にする */
+  --color-player: #22d3ee;
+  --color-opponent: #a78bfa;
 
   --color-danger: #e11d48;
   --color-lose: #e0899b;

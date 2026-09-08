@@ -1,9 +1,10 @@
 import { MAX_ENERGY } from '@/game/presets'
 import type { PlayerState } from '@/game/types'
 import { GuardBadge } from '@/components/GuardBadge'
+import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 
 interface StatusPanelProps {
-  role: 'player' | 'opponent'
+  role: BattleRole
   state: PlayerState
   maxHp: number
   /** 直前のHP（結果画面での「今回失ったセル」の表示に使う） */
@@ -11,27 +12,23 @@ interface StatusPanelProps {
   dimmed?: boolean
 }
 
+/**
+ * 自分と相手を一目で見分けられるよう、識別色をラベル・HPバー・左端の帯の
+ * 3箇所に効かせる。行動色（チャージ・攻撃・ガード）とは別軸の情報なので、
+ * 行動アイコンの色には使わない。
+ */
 export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: StatusPanelProps) {
-  const roleLabel = role === 'player' ? 'YOU' : 'OPPONENT'
+  const { label, textClass, hpCellClass, edgeClass } = ROLE_STYLE[role]
   const justDamagedIndex = hpBefore !== undefined && hpBefore > state.hp ? state.hp : null
 
   return (
+    // 枠線は全周1px、左端だけ3pxの識別色にする（border と border-l-* の併用）
     <div
-      className={
-        dimmed
-          ? 'flex flex-col gap-3 rounded-card border border-border-default bg-bg-card p-4 opacity-60 shadow-card'
-          : 'flex flex-col gap-3 rounded-card border border-border-default bg-bg-card p-4 shadow-card'
-      }
+      className={`flex flex-col gap-3 rounded-card border border-l-[3px] border-border-default ${edgeClass} bg-bg-card p-4 shadow-card ${dimmed ? 'opacity-60' : ''}`}
     >
       <div className="flex items-center justify-between">
-        <span
-          className={
-            role === 'player'
-              ? 'font-mono text-[10px] font-bold tracking-[0.14em] text-accent-light'
-              : 'font-mono text-[10px] font-bold tracking-[0.14em] text-text-secondary'
-          }
-        >
-          {roleLabel}
+        <span className={`font-mono text-[10px] font-bold tracking-[0.14em] ${textClass}`}>
+          {label}
         </span>
         <GuardBadge guardCooldownRemaining={state.guardCooldownRemaining} />
       </div>
@@ -47,7 +44,7 @@ export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: St
             const filled = index < state.hp
             const justDamaged = index === justDamagedIndex
             const cellClassName = filled
-              ? 'h-[7px] flex-1 rounded-[2px] bg-text-primary'
+              ? `h-[7px] flex-1 rounded-[2px] ${hpCellClass}`
               : justDamaged
                 ? 'h-[7px] flex-1 rounded-[2px] border border-attack bg-transparent'
                 : 'h-[7px] flex-1 rounded-[2px] bg-bg-hp-empty'
