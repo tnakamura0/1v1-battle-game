@@ -1,4 +1,5 @@
 import { StatusPanel } from '@/components/StatusPanel'
+import { ROLE_STYLE } from '@/components/roleStyle'
 import { ActionIcon } from '@/components/ActionIcon'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
@@ -44,9 +45,6 @@ interface ChangeRow {
   labelClass: string
 }
 
-const PLAYER_LABEL_CLASS = 'text-player'
-const OPPONENT_LABEL_CLASS = 'text-opponent'
-
 function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
   const rows: ChangeRow[] = []
 
@@ -56,7 +54,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.cpuBefore.hp),
       afterText: String(lastTurn.cpuAfter.hp),
       colorClass: 'text-attack',
-      labelClass: OPPONENT_LABEL_CLASS,
+      labelClass: ROLE_STYLE.opponent.textClass,
     })
   }
   if (lastTurn.playerBefore.hp !== lastTurn.playerAfter.hp) {
@@ -65,7 +63,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.playerBefore.hp),
       afterText: String(lastTurn.playerAfter.hp),
       colorClass: 'text-attack',
-      labelClass: PLAYER_LABEL_CLASS,
+      labelClass: ROLE_STYLE.player.textClass,
     })
   }
   if (lastTurn.playerBefore.energy !== lastTurn.playerAfter.energy) {
@@ -74,7 +72,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.playerBefore.energy),
       afterText: String(lastTurn.playerAfter.energy),
       colorClass: lastTurn.outcome === 'player-guarded' ? 'text-guard' : 'text-charge',
-      labelClass: PLAYER_LABEL_CLASS,
+      labelClass: ROLE_STYLE.player.textClass,
     })
   }
   if (lastTurn.cpuBefore.energy !== lastTurn.cpuAfter.energy) {
@@ -83,7 +81,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: String(lastTurn.cpuBefore.energy),
       afterText: String(lastTurn.cpuAfter.energy),
       colorClass: lastTurn.outcome === 'cpu-guarded' ? 'text-guard' : 'text-charge',
-      labelClass: OPPONENT_LABEL_CLASS,
+      labelClass: ROLE_STYLE.opponent.textClass,
     })
   }
   if (
@@ -95,7 +93,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       beforeText: 'READY',
       afterText: `${lastTurn.playerAfter.guardCooldownRemaining}T`,
       colorClass: 'text-accent-hover',
-      labelClass: PLAYER_LABEL_CLASS,
+      labelClass: ROLE_STYLE.player.textClass,
     })
   }
 
@@ -141,8 +139,10 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
 
         <div className="flex items-stretch gap-2.5">
           <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-player">
-              YOU
+            <span
+              className={`font-mono text-[9px] font-bold tracking-[0.14em] ${ROLE_STYLE.player.textClass}`}
+            >
+              {ROLE_STYLE.player.label}
             </span>
             <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
               <ActionIcon action={lastTurn.playerAction} size={40} strokeWidth={1.6} />
@@ -155,8 +155,10 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             VS
           </div>
           <div className="flex flex-1 flex-col items-center gap-3 rounded-card border border-border-default bg-bg-card py-6 shadow-card">
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-opponent">
-              OPPONENT
+            <span
+              className={`font-mono text-[9px] font-bold tracking-[0.14em] ${ROLE_STYLE.opponent.textClass}`}
+            >
+              {ROLE_STYLE.opponent.label}
             </span>
             <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
               <ActionIcon action={lastTurn.cpuAction} size={40} strokeWidth={1.6} />

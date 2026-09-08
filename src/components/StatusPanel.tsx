@@ -1,9 +1,10 @@
 import { MAX_ENERGY } from '@/game/presets'
 import type { PlayerState } from '@/game/types'
 import { GuardBadge } from '@/components/GuardBadge'
+import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 
 interface StatusPanelProps {
-  role: 'player' | 'opponent'
+  role: BattleRole
   state: PlayerState
   maxHp: number
   /** 直前のHP（結果画面での「今回失ったセル」の表示に使う） */
@@ -16,31 +17,17 @@ interface StatusPanelProps {
  * 3箇所に効かせる。行動色（チャージ・攻撃・ガード）とは別軸の情報なので、
  * 行動アイコンの色には使わない。
  */
-const ROLE_STYLE = {
-  player: {
-    label: 'YOU',
-    labelClass: 'text-player',
-    hpCellClass: 'bg-player',
-    edgeClass: 'border-l-player',
-  },
-  opponent: {
-    label: 'OPPONENT',
-    labelClass: 'text-opponent',
-    hpCellClass: 'bg-opponent',
-    edgeClass: 'border-l-opponent',
-  },
-} as const
-
 export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: StatusPanelProps) {
-  const { label, labelClass, hpCellClass, edgeClass } = ROLE_STYLE[role]
+  const { label, textClass, hpCellClass, edgeClass } = ROLE_STYLE[role]
   const justDamagedIndex = hpBefore !== undefined && hpBefore > state.hp ? state.hp : null
 
   return (
+    // 枠線は全周1px、左端だけ3pxの識別色にする（border と border-l-* の併用）
     <div
-      className={`flex flex-col gap-3 rounded-card border border-l-[3px] border-border-default ${edgeClass} bg-bg-card p-4 shadow-card${dimmed ? ' opacity-60' : ''}`}
+      className={`flex flex-col gap-3 rounded-card border border-l-[3px] border-border-default ${edgeClass} bg-bg-card p-4 shadow-card ${dimmed ? 'opacity-60' : ''}`}
     >
       <div className="flex items-center justify-between">
-        <span className={`font-mono text-[10px] font-bold tracking-[0.14em] ${labelClass}`}>
+        <span className={`font-mono text-[10px] font-bold tracking-[0.14em] ${textClass}`}>
           {label}
         </span>
         <GuardBadge guardCooldownRemaining={state.guardCooldownRemaining} />

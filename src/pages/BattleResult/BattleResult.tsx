@@ -1,4 +1,5 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
@@ -42,12 +43,12 @@ export function BattleResult() {
         <StatRow
           label="最終HP（自分）"
           value={`${summary.player.hp}/${summary.preset.initialHp}`}
-          labelClassName="text-player"
+          role="player"
         />
         <StatRow
           label="最終HP（相手）"
           value={`${summary.cpu.hp}/${summary.preset.initialHp}`}
-          labelClassName="text-opponent"
+          role="opponent"
         />
         <StatRow label="ターン数" value={`${summary.turnCount}ターン`} />
       </div>
@@ -89,16 +90,17 @@ export function BattleResult() {
 function StatRow({
   label,
   value,
-  labelClassName = 'text-text-secondary',
+  role,
 }: {
   label: string
   value: string
-  /** 自分/相手の識別色を当てる行だけ指定する */
-  labelClassName?: string
+  /** 自分/相手の情報を表す行だけ指定する。持ち主のいない行（ターン数など）は省略する */
+  role?: BattleRole
 }) {
+  const labelClass = role ? ROLE_STYLE[role].textClass : 'text-text-secondary'
   return (
     <div className="flex items-center justify-between bg-bg-row px-4 py-3">
-      <span className={`font-mono text-[11px] font-semibold tracking-[0.06em] ${labelClassName}`}>
+      <span className={`font-mono text-[11px] font-semibold tracking-[0.06em] ${labelClass}`}>
         {label}
       </span>
       <span className="font-sans text-sm font-bold tabular-nums text-text-primary">{value}</span>
