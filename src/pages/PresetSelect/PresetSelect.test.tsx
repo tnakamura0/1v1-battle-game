@@ -77,6 +77,20 @@ describe('PresetSelect', () => {
     expect(screen.queryByText(/プリセット/)).not.toBeInTheDocument()
   })
 
+  // Issue #67 の再発防止：おすすめ設定と個別設定が同じ強さで並んでいた
+  it('separates the recommendations from the individual settings', () => {
+    renderPage()
+    // 2つのセクションが同じレベルの見出しとして立っていること
+    expect(screen.getByRole('heading', { level: 2, name: 'おすすめ設定' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: '個別に設定する' })).toBeInTheDocument()
+    // 個別の設定は「見出し」ではなくフィールドのグループであること
+    // （見出しと同じ強さで並んでいたのが Issue #67 の原因なので、ここを分けて固定する）
+    for (const name of ['初期HP', 'ガード再使用クールダウン', 'CPUの強さ']) {
+      expect(screen.getByRole('group', { name })).toBeInTheDocument()
+      expect(screen.queryByRole('heading', { name })).not.toBeInTheDocument()
+    }
+  })
+
   describe('おすすめ設定', () => {
     it('applies all three settings at once for 真剣勝負', async () => {
       const user = userEvent.setup()
