@@ -4,7 +4,8 @@
  * 配色の階層ルール（ダークテーマでの視覚的な強弱づけ）
  * - Tier 0（ページ）        : bg-bg-page
  * - Tier 1（静的カード）    : bg-bg-card + border-border-default + shadow-card
- *                             （StatusPanel・特徴カード・結果画面のパネル等、非対話的な表示要素）
+ *                             （特徴カード・結果画面のパネル等、非対話的な表示要素。
+ *                               対戦者の識別色を持つカードは下記の派生形を使う）
  * - Tier 2（対話的コントロール）: bg-bg-surface + border-border-emphasis（idle）
  *                             bg-bg-surface-active + border-accent（selected/active）
  *                             （ActionButton等。Tier 1より明るく「押せそう」に見せる）
@@ -20,6 +21,8 @@
  * - 面のあるカード : Tier 1 の bg-bg-card + border-border-default の代わりに
  *                    bg-<役割>/10 + border-<役割>/30 を重ねた派生形にする
  * - 行            : 面を塗ると重いので border-l-[3px] の帯だけで示す
+ *   例外として、ターン履歴の「最新ターン」だけは同じ形の帯を accent で使っている
+ *   （持ち主ではなく新しさを示す。識別色を使う画面とは別の画面なので衝突しない）
  */
 @theme {
   --color-bg-page: #06090d;
