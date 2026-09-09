@@ -97,12 +97,12 @@ export function PresetSelect() {
         </div>
 
         <section className="flex flex-col gap-3">
-          <h2 className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
-            おすすめ設定
-          </h2>
-          <p id="recommended-setups-hint" className="-mt-1 font-sans text-xs text-text-tertiary">
-            選ぶと下の3つの設定がまとめて切り替わります。あとから個別に変更できます。
-          </p>
+          <div className="flex flex-col gap-1">
+            <SectionTitle>おすすめ設定</SectionTitle>
+            <p id="recommended-setups-hint" className="font-sans text-xs text-text-tertiary">
+              選ぶと下の3つの設定がまとめて切り替わります。あとから個別に変更できます。
+            </p>
+          </div>
           <div className="flex flex-col gap-2.5 sm:flex-row">
             {RECOMMENDED_SETUPS.map((recommended) => {
               const isActive = isSameSetup(setup, recommended.setup)
@@ -142,44 +142,53 @@ export function PresetSelect() {
           </p>
         </section>
 
-        <SettingGroup legend="初期HP">
-          {INITIAL_HP_OPTIONS.map((option) => (
-            <SegmentedOption
-              key={option}
-              name="initialHp"
-              value={String(option)}
-              label={String(option)}
-              checked={setup.initialHp === option}
-              onChange={() => updateSetup({ initialHp: option })}
-            />
-          ))}
-        </SettingGroup>
+        {/*
+          セクション内の間隔を、親が子の間に空ける間隔より詰めることで、3つの設定が
+          1つのまとまりとして読めるようにしている。同じ間隔だと、上のおすすめ設定と
+          並列に並んだ4つ目・5つ目の項目に見えてしまう。
+        */}
+        <section className="flex flex-col gap-5 border-t border-border-default pt-5">
+          <SectionTitle>個別に設定する</SectionTitle>
 
-        <SettingGroup legend="ガード再使用クールダウン">
-          {GUARD_COOLDOWN_OPTIONS.map((option) => (
-            <SegmentedOption
-              key={option}
-              name="guardCooldownTurns"
-              value={String(option)}
-              label={`${option}ターン`}
-              checked={setup.guardCooldownTurns === option}
-              onChange={() => updateSetup({ guardCooldownTurns: option })}
-            />
-          ))}
-        </SettingGroup>
+          <SettingGroup legend="初期HP">
+            {INITIAL_HP_OPTIONS.map((option) => (
+              <SegmentedOption
+                key={option}
+                name="initialHp"
+                value={String(option)}
+                label={String(option)}
+                checked={setup.initialHp === option}
+                onChange={() => updateSetup({ initialHp: option })}
+              />
+            ))}
+          </SettingGroup>
 
-        <SettingGroup legend="CPUの強さ">
-          {CPU_DIFFICULTY_OPTIONS.map((option) => (
-            <SegmentedOption
-              key={option}
-              name="cpuDifficulty"
-              value={option}
-              label={CPU_DIFFICULTY_LABEL[option]}
-              checked={setup.cpuDifficulty === option}
-              onChange={() => updateSetup({ cpuDifficulty: option })}
-            />
-          ))}
-        </SettingGroup>
+          <SettingGroup legend="ガード再使用クールダウン">
+            {GUARD_COOLDOWN_OPTIONS.map((option) => (
+              <SegmentedOption
+                key={option}
+                name="guardCooldownTurns"
+                value={String(option)}
+                label={`${option}ターン`}
+                checked={setup.guardCooldownTurns === option}
+                onChange={() => updateSetup({ guardCooldownTurns: option })}
+              />
+            ))}
+          </SettingGroup>
+
+          <SettingGroup legend="CPUの強さ">
+            {CPU_DIFFICULTY_OPTIONS.map((option) => (
+              <SegmentedOption
+                key={option}
+                name="cpuDifficulty"
+                value={option}
+                label={CPU_DIFFICULTY_LABEL[option]}
+                checked={setup.cpuDifficulty === option}
+                onChange={() => updateSetup({ cpuDifficulty: option })}
+              />
+            ))}
+          </SettingGroup>
+        </section>
       </div>
 
       <button
@@ -191,6 +200,18 @@ export function PresetSelect() {
       </button>
     </main>
   )
+}
+
+/**
+ * h1（24px）と legend（11px）の間に挟むセクション見出し。
+ * この段がないと「おすすめ設定」と legend が同じ強さになり、おすすめ設定が
+ * 下の3項目と並列の設定項目に見えてしまう。
+ * 16pxなのは、配下にあるおすすめカードのタイトル（14px bold）より一段上に置くため。
+ * 他画面の SectionHeading（18px＋accentの縦バー）は使わない。この画面はh1が24pxと
+ * スケールが小さく、かつ accent が「選択中」を表しているため、装飾で使うと意味が重なる。
+ */
+function SectionTitle({ children }: { children: ReactNode }) {
+  return <h2 className="font-sans text-base font-bold text-text-primary">{children}</h2>
 }
 
 function SettingGroup({ legend, children }: { legend: string; children: ReactNode }) {
