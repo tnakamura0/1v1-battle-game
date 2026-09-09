@@ -97,10 +97,13 @@ function StatRow({
   /** 自分/相手の情報を表す行だけ指定する。持ち主のいない行（ターン数など）は省略する */
   role?: BattleRole
 }) {
-  const labelClass = role ? ROLE_STYLE[role].textClass : 'text-text-secondary'
+  // 持ち主のいない行も同じ3pxを透明で確保して、テキストの左端を揃える
+  const edgeClass = role ? ROLE_STYLE[role].edgeClass : 'border-l-transparent'
   return (
-    <div className="flex items-center justify-between bg-bg-row px-4 py-3">
-      <span className={`font-mono text-[11px] font-semibold tracking-[0.06em] ${labelClass}`}>
+    <div
+      className={`flex items-center justify-between border-l-[3px] ${edgeClass} bg-bg-row px-4 py-3`}
+    >
+      <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
         {label}
       </span>
       <span className="font-sans text-sm font-bold tabular-nums text-text-primary">{value}</span>

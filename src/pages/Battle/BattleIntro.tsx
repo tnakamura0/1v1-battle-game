@@ -1,3 +1,4 @@
+import { ROLE_STYLE } from '@/components/roleStyle'
 import type { BattlePreset } from '@/game/types'
 
 interface BattleIntroProps {
@@ -13,11 +14,15 @@ export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
       </span>
 
       <div className="flex items-center gap-6">
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-default bg-bg-card font-sans text-sm font-bold text-accent-light shadow-card">
+        <div
+          className={`flex h-20 w-20 items-center justify-center rounded-full border ${ROLE_STYLE.player.surfaceClass} font-sans text-sm font-bold text-text-primary shadow-card`}
+        >
           あなた
         </div>
         <span className="font-mono text-xs font-bold tracking-[0.06em] text-text-tertiary">VS</span>
-        <div className="flex h-20 w-20 items-center justify-center rounded-full border border-border-default bg-bg-card font-sans text-sm font-bold text-text-secondary shadow-card">
+        <div
+          className={`flex h-20 w-20 items-center justify-center rounded-full border ${ROLE_STYLE.opponent.surfaceClass} font-sans text-sm font-bold text-text-primary shadow-card`}
+        >
           CPU
         </div>
       </div>

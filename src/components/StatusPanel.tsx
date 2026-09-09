@@ -18,13 +18,13 @@ interface StatusPanelProps {
  * 行動アイコンの色には使わない。
  */
 export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: StatusPanelProps) {
-  const { label, textClass, hpCellClass, edgeClass } = ROLE_STYLE[role]
+  const { label, textClass, hpCellClass, surfaceClass } = ROLE_STYLE[role]
   const justDamagedIndex = hpBefore !== undefined && hpBefore > state.hp ? state.hp : null
 
   return (
-    // 枠線は全周1px、左端だけ3pxの識別色にする（border と border-l-* の併用）
+    // 背景のティントと枠線で持ち主を示す（Tier 1のカードに識別色を重ねた派生形）
     <div
-      className={`flex flex-col gap-3 rounded-card border border-l-[3px] border-border-default ${edgeClass} bg-bg-card p-4 shadow-card ${dimmed ? 'opacity-60' : ''}`}
+      className={`flex flex-col gap-3 rounded-card border ${surfaceClass} p-4 shadow-card ${dimmed ? 'opacity-60' : ''}`}
     >
       <div className="flex items-center justify-between">
         <span className={`font-mono text-[10px] font-bold tracking-[0.14em] ${textClass}`}>

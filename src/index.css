@@ -15,6 +15,11 @@
  * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
  * - 行動色         : charge / attack / guard。「何を選んだか」を表す
  * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
+ *
+ * 識別色は文字ではなく「領域」で示す（詳細は components/roleStyle.ts）
+ * - 面のあるカード : Tier 1 の bg-bg-card + border-border-default の代わりに
+ *                    bg-<役割>/10 + border-<役割>/30 を重ねた派生形にする
+ * - 行            : 面を塗ると重いので border-l-[3px] の帯だけで示す
  */
 @theme {
   --color-bg-page: #06090d;
