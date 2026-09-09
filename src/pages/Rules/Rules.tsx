@@ -10,62 +10,78 @@ const TURN_STEPS = [
   '次のターンに進む',
 ]
 
-const ACTIONS: Array<{ key: Action; name: string; color: string; description: string }> = [
-  {
-    key: 'charge',
+const ACTION_META: Record<Action, { name: string; color: string; description: string }> = {
+  charge: {
     name: 'チャージ',
     color: 'text-charge',
     description: '自分のエネルギーを+1する（最大5）。',
   },
-  {
-    key: 'attack',
+  attack: {
     name: '攻撃',
     color: 'text-attack',
     description: 'エネルギーを1消費して相手を攻撃する。自分のエネルギーが0のときは選択できない。',
   },
-  {
-    key: 'guard',
+  guard: {
     name: 'ガード',
     color: 'text-guard',
     description:
       '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。ガードに成功すると自分のエネルギーが1増える。使用後は設定したターン数の間、再使用できない。',
   },
-]
-
-interface MatchupCell {
-  text: string
-  emphasis?: boolean
 }
 
-const MATCHUP_ROWS: Array<{
-  own: string
-  color: string
-  vsCharge: MatchupCell
-  vsAttack: MatchupCell
-  vsGuard: MatchupCell
-}> = [
-  {
-    own: 'チャージ',
-    color: 'text-charge',
-    vsCharge: { text: 'ダメージなし' },
-    vsAttack: { text: '自分に1ダメージ', emphasis: true },
-    vsGuard: { text: 'ダメージなし' },
+/** 行動カードの並び順と、組み合わせ表の行・列の並び順を兼ねる */
+const ACTION_ORDER: Action[] = ['charge', 'attack', 'guard']
+
+interface MatchupCell {
+  /** そのターンにHPが減る側。表の主となる情報 */
+  damage: 'none' | 'self' | 'opponent'
+  /** 相打ち・ガード成功といった補足。ダメージの結果には影響しない */
+  note?: string
+}
+
+/**
+ * 組み合わせごとの結果。外側のキーが自分の行動、内側のキーが相手の行動を表す。
+ * 非対称なので、charge×attack（自分がチャージ・相手が攻撃）と attack×charge を取り違えないこと。
+ */
+const MATCHUP: Record<Action, Record<Action, MatchupCell>> = {
+  charge: {
+    charge: { damage: 'none' },
+    attack: { damage: 'self' },
+    guard: { damage: 'none' },
   },
-  {
-    own: '攻撃',
-    color: 'text-attack',
-    vsCharge: { text: '相手に1ダメージ', emphasis: true },
-    vsAttack: { text: '相打ち・ダメージなし' },
-    vsGuard: { text: 'ガードされる・ダメージなし' },
+  attack: {
+    charge: { damage: 'opponent' },
+    attack: { damage: 'none', note: '相打ち' },
+    guard: { damage: 'none', note: 'ガードされる' },
   },
-  {
-    own: 'ガード',
-    color: 'text-guard',
-    vsCharge: { text: 'ダメージなし' },
-    vsAttack: { text: 'ガード成功・ダメージなし' },
-    vsGuard: { text: 'ダメージなし' },
+  guard: {
+    charge: { damage: 'none' },
+    attack: { damage: 'none', note: 'ガード成功' },
+    guard: { damage: 'none' },
   },
-]
+}
+
+/**
+ * `text` は表の中に出す短い表記、`readAs` はスクリーンリーダー向けの読み上げ。
+ * 「—」は音声だと意味をなさず、凡例（表の外・表より後ろ）もセルを辿る途中では届かないため、
+ * セルごとに読み上げ用の文言を持たせている。
+ */
+const DAMAGE_LABEL: Record<MatchupCell['damage'], { text: string; readAs: string }> = {
+  none: { text: '—', readAs: 'ダメージなし' },
+  self: { text: '自分に1', readAs: '自分に1ダメージ' },
+  opponent: { text: '相手に1', readAs: '相手に1ダメージ' },
+}
+
+const CELL_CLASS = 'border-border-default px-1 py-2 sm:px-3 sm:py-3'
+
+/*
+ * 表の外周は table の rounded-card + border が描き、内側の罫線は各セルの border-b / border-r が描く。
+ * overflow-hidden で角を落とす手もあるが、それだと table 直下の caption まで一緒に切り取られて
+ * 先頭の文字が欠けるため、角丸は四隅のセルに直接当てている。
+ * 外周と重ならないよう、最終行・最終列のセルでは border-b / border-r を外す。
+ */
+const isLastRow = (row: number) => row === ACTION_ORDER.length - 1
+const isLastColumn = (column: number) => column === ACTION_ORDER.length - 1
 
 export function Rules() {
   return (
@@ -105,22 +121,23 @@ export function Rules() {
 
       <Section title="3つの行動">
         <div className="grid gap-3 sm:grid-cols-3">
-          {ACTIONS.map((action) => (
-            <div
-              key={action.name}
-              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
-            >
-              <span className={action.color}>
-                <ActionIcon action={action.key} size={28} />
-              </span>
-              <span className={`font-sans text-base font-extrabold ${action.color}`}>
-                {action.name}
-              </span>
-              <p className="font-sans text-xs leading-relaxed text-text-secondary">
-                {action.description}
-              </p>
-            </div>
-          ))}
+          {ACTION_ORDER.map((action) => {
+            const { name, color, description } = ACTION_META[action]
+            return (
+              <div
+                key={action}
+                className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
+              >
+                <span className={color}>
+                  <ActionIcon action={action} size={28} />
+                </span>
+                <span className={`font-sans text-base font-extrabold ${color}`}>{name}</span>
+                <p className="font-sans text-xs leading-relaxed text-text-secondary">
+                  {description}
+                </p>
+              </div>
+            )
+          })}
         </div>
       </Section>
 
@@ -131,69 +148,69 @@ export function Rules() {
       </Section>
 
       <Section title="行動の組み合わせ">
-        <p className="-mt-1 font-sans text-xs text-text-tertiary">
+        <p className="-mt-1 font-sans text-sm font-semibold leading-relaxed text-text-primary">
+          ダメージが発生するのは、片方が攻撃・もう片方がチャージのときだけです。
+        </p>
+        <p className="font-sans text-xs text-text-tertiary">
           組み合わせによって発生するダメージの一覧です。エネルギーやガードの状態変化は含みません。
         </p>
-        <div className="hidden overflow-x-auto sm:block">
-          <table className="w-full border-separate border-spacing-0 overflow-hidden rounded-card border border-border-default text-left font-sans text-sm">
-            <thead>
-              <tr>
-                <th className="border-b border-r border-border-default bg-bg-row p-3 font-mono text-[11px] font-semibold text-text-tertiary">
-                  自分＼相手
-                </th>
-                <th className="border-b border-r border-border-default bg-bg-row p-3 text-charge">
-                  チャージ
-                </th>
-                <th className="border-b border-r border-border-default bg-bg-row p-3 text-attack">
-                  攻撃
-                </th>
-                <th className="border-b border-border-default bg-bg-row p-3 text-guard">ガード</th>
-              </tr>
-            </thead>
-            <tbody>
-              {MATCHUP_ROWS.map((row) => (
-                <tr key={row.own}>
-                  <th
-                    className={`border-b border-r border-border-default bg-bg-row p-3 font-semibold ${row.color}`}
-                  >
-                    {row.own}
-                  </th>
-                  <td className="border-b border-r border-border-default p-3 text-text-secondary">
-                    <MatchupOutcome cell={row.vsCharge} />
-                  </td>
-                  <td className="border-b border-r border-border-default p-3 text-text-secondary">
-                    <MatchupOutcome cell={row.vsAttack} />
-                  </td>
-                  <td className="border-b border-border-default p-3 text-text-secondary">
-                    <MatchupOutcome cell={row.vsGuard} />
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
-        </div>
 
-        <div className="flex flex-col gap-4 sm:hidden">
-          {MATCHUP_ROWS.map((row) => (
-            <div
-              key={row.own}
-              className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
-            >
-              <span className={`font-sans text-sm font-bold ${row.color}`}>自分：{row.own}</span>
-              <ul className="flex flex-col gap-1 font-sans text-xs text-text-secondary">
-                <li>
-                  相手がチャージ → <MatchupOutcome cell={row.vsCharge} />
-                </li>
-                <li>
-                  相手が攻撃 → <MatchupOutcome cell={row.vsAttack} />
-                </li>
-                <li>
-                  相手がガード → <MatchupOutcome cell={row.vsGuard} />
-                </li>
-              </ul>
-            </div>
-          ))}
-        </div>
+        {/*
+          9通りのうちダメージが出るのは2通りだけなので、セルは結果（—／自分に1／相手に1）を主とし、
+          相打ち・ガード成功といったニュアンスは注記に落とす。この短さのおかげでモバイル幅でも
+          横スクロールなしに4列が収まり、表を1つに統合できている。
+        */}
+        <table className="w-full table-fixed border-separate border-spacing-0 rounded-card border border-border-default text-center font-sans">
+          <caption className="mb-2 text-left font-mono text-[11px] text-text-tertiary">
+            行＝自分の行動 / 列＝相手の行動
+          </caption>
+          <thead>
+            <tr>
+              <th className={`w-[22%] rounded-tl-card bg-bg-row ${CELL_CLASS} border-b border-r`}>
+                <span className="sr-only">自分の行動</span>
+              </th>
+              {ACTION_ORDER.map((action, column) => (
+                <th
+                  key={action}
+                  scope="col"
+                  className={`bg-bg-row ${CELL_CLASS} border-b ${
+                    isLastColumn(column) ? 'rounded-tr-card' : 'border-r'
+                  }`}
+                >
+                  <ActionHeading action={action} />
+                </th>
+              ))}
+            </tr>
+          </thead>
+          <tbody>
+            {ACTION_ORDER.map((own, row) => (
+              <tr key={own}>
+                <th
+                  scope="row"
+                  className={`bg-bg-row ${CELL_CLASS} border-r ${
+                    isLastRow(row) ? 'rounded-bl-card' : 'border-b'
+                  }`}
+                >
+                  <ActionHeading action={own} />
+                </th>
+                {ACTION_ORDER.map((against, column) => (
+                  <td
+                    key={against}
+                    className={`${CELL_CLASS} ${isLastRow(row) ? '' : 'border-b'} ${
+                      isLastColumn(column) ? '' : 'border-r'
+                    } ${isLastRow(row) && isLastColumn(column) ? 'rounded-br-card' : ''}`}
+                  >
+                    <MatchupOutcome cell={MATCHUP[own][against]} />
+                  </td>
+                ))}
+              </tr>
+            ))}
+          </tbody>
+        </table>
+
+        <p className="font-mono text-[11px] text-text-tertiary">
+          — ＝ ダメージなし（数字は減るHPの量）
+        </p>
       </Section>
 
       <Section title="ガードのクールダウン">
@@ -220,8 +237,38 @@ export function Rules() {
   )
 }
 
+/** 表の行・列の見出し。アイコンと名前を縦に積んで、狭い幅でも行動を見分けられるようにする */
+function ActionHeading({ action }: { action: Action }) {
+  const { name, color } = ACTION_META[action]
+  return (
+    <span className={`flex flex-col items-center gap-1 ${color}`}>
+      <ActionIcon action={action} size={20} />
+      <span className="font-sans text-[11px] font-bold sm:text-sm">{name}</span>
+    </span>
+  )
+}
+
 function MatchupOutcome({ cell }: { cell: MatchupCell }) {
-  return <span className={cell.emphasis ? 'font-bold text-attack' : undefined}>{cell.text}</span>
+  const { text, readAs } = DAMAGE_LABEL[cell.damage]
+  const damaged = cell.damage !== 'none'
+  return (
+    <span className="flex flex-col items-center gap-0.5">
+      <span
+        aria-hidden
+        className={
+          damaged
+            ? 'text-[11px] font-bold text-attack sm:text-sm'
+            : 'text-[11px] text-text-tertiary sm:text-sm'
+        }
+      >
+        {text}
+      </span>
+      <span className="sr-only">{readAs}</span>
+      {cell.note && (
+        <span className="text-[10px] text-text-tertiary sm:text-[11px]">{cell.note}</span>
+      )}
+    </span>
+  )
 }
 
 function Section({ title, children }: { title: string; children: ReactNode }) {
