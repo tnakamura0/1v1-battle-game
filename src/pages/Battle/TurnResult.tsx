@@ -1,9 +1,10 @@
 import { StatusPanel } from '@/components/StatusPanel'
+import { ACTION_STYLE } from '@/components/actionStyle'
 import { ROLE_STYLE } from '@/components/roleStyle'
 import { ActionIcon } from '@/components/ActionIcon'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
-import type { Action, BattlePreset, TurnRecord } from '@/game/types'
+import type { BattlePreset, TurnRecord } from '@/game/types'
 
 interface TurnResultProps {
   lastTurn: TurnRecord
@@ -11,12 +12,6 @@ interface TurnResultProps {
   turn: number
   secondsRemaining: number
   isFinal: boolean
-}
-
-const ACTION_COLOR_CLASS: Record<Action, string> = {
-  charge: 'text-charge',
-  attack: 'text-attack',
-  guard: 'text-guard',
 }
 
 function outcomeSubline(outcome: TurnRecord['outcome']): string {
@@ -45,6 +40,11 @@ interface ChangeRow {
   edgeClass: string
 }
 
+/**
+ * HPの行の text-attack は「ダメージ」を表す色で、attack という行動を表しているわけではない。
+ * 色の値はたまたま同じだが軸が違うので、ACTION_STYLE には寄せずに直接書いている。
+ * 一方でエネルギーの行は「ガードで増えた／チャージで増えた」という行動由来なので ACTION_STYLE を使う。
+ */
 function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
   const rows: ChangeRow[] = []
 
@@ -71,7 +71,10 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '自分 ENERGY',
       beforeText: String(lastTurn.playerBefore.energy),
       afterText: String(lastTurn.playerAfter.energy),
-      colorClass: lastTurn.outcome === 'player-guarded' ? 'text-guard' : 'text-charge',
+      colorClass:
+        lastTurn.outcome === 'player-guarded'
+          ? ACTION_STYLE.guard.textClass
+          : ACTION_STYLE.charge.textClass,
       edgeClass: ROLE_STYLE.player.edgeClass,
     })
   }
@@ -80,7 +83,10 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '相手 ENERGY',
       beforeText: String(lastTurn.cpuBefore.energy),
       afterText: String(lastTurn.cpuAfter.energy),
-      colorClass: lastTurn.outcome === 'cpu-guarded' ? 'text-guard' : 'text-charge',
+      colorClass:
+        lastTurn.outcome === 'cpu-guarded'
+          ? ACTION_STYLE.guard.textClass
+          : ACTION_STYLE.charge.textClass,
       edgeClass: ROLE_STYLE.opponent.edgeClass,
     })
   }
@@ -144,7 +150,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.player.label}
             </span>
-            <span className={ACTION_COLOR_CLASS[lastTurn.playerAction]}>
+            <span className={ACTION_STYLE[lastTurn.playerAction].textClass}>
               <ActionIcon action={lastTurn.playerAction} size={40} strokeWidth={1.6} />
             </span>
             <span className="font-sans text-base font-extrabold text-text-primary">
@@ -160,7 +166,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.opponent.label}
             </span>
-            <span className={ACTION_COLOR_CLASS[lastTurn.cpuAction]}>
+            <span className={ACTION_STYLE[lastTurn.cpuAction].textClass}>
               <ActionIcon action={lastTurn.cpuAction} size={40} strokeWidth={1.6} />
             </span>
             <span className="font-sans text-base font-extrabold text-text-primary">
