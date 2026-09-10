@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { StatusPanel } from '@/components/StatusPanel'
 import type { PlayerState } from '@/game/types'
-import { ActionButton } from '@/pages/Battle/ActionButton'
+import { ActionButton } from '@/components/ActionButton'
 
 /**
  * LPに置く対戦画面のプレビュー。

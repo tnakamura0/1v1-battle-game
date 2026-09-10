@@ -1,6 +1,14 @@
+import { ACTION_ORDER, ACTION_STYLE } from '@/components/actionStyle'
 import { ActionIcon } from '@/components/ActionIcon'
 import { ACTION_LABEL } from '@/game/copy'
 import type { Action } from '@/game/types'
+
+/** バッジの文言はLP固有のコピーなので、色（ACTION_STYLE）とは分けてここに置く */
+const ACTION_EFFECT: Record<Action, string> = {
+  charge: 'ENERGY +1',
+  attack: 'ENERGY COST 1',
+  guard: '攻撃を防ぐ',
+}
 
 /**
  * LPで3つの行動を見せるセクション。
@@ -13,31 +21,11 @@ import type { Action } from '@/game/types'
  * レイアウトはPCが3カラム、モバイルが横長のリスト行。モバイルで3カラムのままだと
  * アイコンとラベルが窮屈になるので、1行1行動に組み替えている。
  */
-const ACTION_ORDER: Action[] = ['charge', 'attack', 'guard']
-
-const ACTION_STYLE: Record<Action, { textClass: string; badgeClass: string; badge: string }> = {
-  charge: {
-    textClass: 'text-charge',
-    badgeClass: 'border-charge/35 text-charge',
-    badge: 'ENERGY +1',
-  },
-  attack: {
-    textClass: 'text-attack',
-    badgeClass: 'border-attack/35 text-attack',
-    badge: 'ENERGY COST 1',
-  },
-  guard: {
-    textClass: 'text-guard',
-    badgeClass: 'border-guard/35 text-guard',
-    badge: '攻撃を防ぐ',
-  },
-}
-
 export function ActionShowcase() {
   return (
     <ul aria-label="3つの行動" className="flex flex-col gap-3 sm:flex-row sm:gap-5">
       {ACTION_ORDER.map((action) => {
-        const { textClass, badgeClass, badge } = ACTION_STYLE[action]
+        const { textClass, badgeClass } = ACTION_STYLE[action]
         return (
           <li
             key={action}
@@ -52,7 +40,7 @@ export function ActionShowcase() {
             <span
               className={`flex-none rounded-pill border px-2.5 py-1 font-mono text-[10px] font-semibold tracking-[0.04em] sm:px-3.5 sm:py-1.5 sm:text-[11px] ${badgeClass}`}
             >
-              {badge}
+              {ACTION_EFFECT[action]}
             </span>
           </li>
         )

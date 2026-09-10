@@ -1,5 +1,6 @@
 import type { Action } from '@/game/types'
 import { ACTION_LABEL } from '@/game/copy'
+import { ACTION_STYLE } from '@/components/actionStyle'
 import { ActionIcon } from '@/components/ActionIcon'
 
 export type ActionButtonStatus = 'idle' | 'selected' | 'disabled'
@@ -16,12 +17,6 @@ const DEFAULT_CAPTION: Record<Action, string> = {
   charge: 'EN +1',
   attack: 'COST 1',
   guard: 'READY',
-}
-
-const ACTION_COLOR_CLASS: Record<Action, string> = {
-  charge: 'text-charge',
-  attack: 'text-attack',
-  guard: 'text-guard',
 }
 
 export function ActionButton({ action, status, reasonLabel, onSelect }: ActionButtonProps) {
@@ -47,7 +42,7 @@ export function ActionButton({ action, status, reasonLabel, onSelect }: ActionBu
           SELECTED
         </span>
       )}
-      <span className={isDisabled ? 'text-text-tertiary' : ACTION_COLOR_CLASS[action]}>
+      <span className={isDisabled ? 'text-text-tertiary' : ACTION_STYLE[action].textClass}>
         <ActionIcon action={action} />
       </span>
       <span
@@ -63,7 +58,7 @@ export function ActionButton({ action, status, reasonLabel, onSelect }: ActionBu
         className={
           isDisabled
             ? 'font-mono text-[9px] font-semibold tracking-[0.06em] text-text-tertiary'
-            : `font-mono text-[9px] font-semibold tracking-[0.06em] ${ACTION_COLOR_CLASS[action]}`
+            : `font-mono text-[9px] font-semibold tracking-[0.06em] ${ACTION_STYLE[action].textClass}`
         }
       >
         {caption}

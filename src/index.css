@@ -15,10 +15,12 @@
  * 色の3つの軸（互いに独立しているので混ぜない）
  * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
  * - 行動色         : charge / attack / guard。「何を選んだか」を表す
+ *                    （詳細は components/actionStyle.ts）
  * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
  *
  * 行動色をLPで使うときは、アイコンとアウトラインのバッジに限定して面は塗らない。
  * 塗ると3つの行動カードが主張しすぎて「操作は3択、それだけ」という主旨と食い違うため。
+ * このバッジの配色は actionStyle.ts の badgeClass として実体化している。
  *
  * 識別色は文字ではなく「領域」で示す（詳細は components/roleStyle.ts）
  * - 面のあるカード : Tier 1 の bg-bg-card + border-border-default の代わりに
