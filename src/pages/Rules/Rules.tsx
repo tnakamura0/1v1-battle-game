@@ -1,7 +1,9 @@
 import type { ReactNode } from 'react'
 import { Link } from 'react-router'
+import { ACTION_ORDER, ACTION_STYLE } from '@/components/actionStyle'
 import { ActionIcon } from '@/components/ActionIcon'
 import { SectionHeading } from '@/components/SectionHeading'
+import { ACTION_LABEL } from '@/game/copy'
 import type { Action } from '@/game/types'
 
 const TURN_STEPS = [
@@ -10,27 +12,13 @@ const TURN_STEPS = [
   '次のターンに進む',
 ]
 
-const ACTION_META: Record<Action, { name: string; color: string; description: string }> = {
-  charge: {
-    name: 'チャージ',
-    color: 'text-charge',
-    description: '自分のエネルギーを+1する（最大5）。',
-  },
-  attack: {
-    name: '攻撃',
-    color: 'text-attack',
-    description: 'エネルギーを1消費して相手を攻撃する。自分のエネルギーが0のときは選択できない。',
-  },
-  guard: {
-    name: 'ガード',
-    color: 'text-guard',
-    description:
-      '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。ガードに成功すると自分のエネルギーが1増える。使用後は設定したターン数の間、再使用できない。',
-  },
+/** この画面でだけ出す行動の説明。名前は ACTION_LABEL、色は ACTION_STYLE を使う */
+const ACTION_DESCRIPTION: Record<Action, string> = {
+  charge: '自分のエネルギーを+1する（最大5）。',
+  attack: 'エネルギーを1消費して相手を攻撃する。自分のエネルギーが0のときは選択できない。',
+  guard:
+    '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。ガードに成功すると自分のエネルギーが1増える。使用後は設定したターン数の間、再使用できない。',
 }
-
-/** 行動カードの並び順と、組み合わせ表の行・列の並び順を兼ねる */
-const ACTION_ORDER: Action[] = ['charge', 'attack', 'guard']
 
 interface MatchupCell {
   /** そのターンにHPが減る側。表の主となる情報 */
@@ -122,18 +110,20 @@ export function Rules() {
       <Section title="3つの行動">
         <div className="grid gap-3 sm:grid-cols-3">
           {ACTION_ORDER.map((action) => {
-            const { name, color, description } = ACTION_META[action]
+            const { textClass } = ACTION_STYLE[action]
             return (
               <div
                 key={action}
                 className="flex flex-col gap-2 rounded-card border border-border-default bg-bg-card p-4 shadow-card"
               >
-                <span className={color}>
+                <span className={textClass}>
                   <ActionIcon action={action} size={28} />
                 </span>
-                <span className={`font-sans text-base font-extrabold ${color}`}>{name}</span>
+                <span className={`font-sans text-base font-extrabold ${textClass}`}>
+                  {ACTION_LABEL[action]}
+                </span>
                 <p className="font-sans text-xs leading-relaxed text-text-secondary">
-                  {description}
+                  {ACTION_DESCRIPTION[action]}
                 </p>
               </div>
             )
@@ -239,11 +229,10 @@ export function Rules() {
 
 /** 表の行・列の見出し。アイコンと名前を縦に積んで、狭い幅でも行動を見分けられるようにする */
 function ActionHeading({ action }: { action: Action }) {
-  const { name, color } = ACTION_META[action]
   return (
-    <span className={`flex flex-col items-center gap-1 ${color}`}>
+    <span className={`flex flex-col items-center gap-1 ${ACTION_STYLE[action].textClass}`}>
       <ActionIcon action={action} size={20} />
-      <span className="font-sans text-[11px] font-bold sm:text-sm">{name}</span>
+      <span className="font-sans text-[11px] font-bold sm:text-sm">{ACTION_LABEL[action]}</span>
     </span>
   )
 }

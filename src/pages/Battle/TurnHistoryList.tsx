@@ -1,14 +1,9 @@
-import type { Action, TurnRecord } from '@/game/types'
+import { ACTION_STYLE } from '@/components/actionStyle'
 import { ACTION_LABEL, outcomeHistoryLine } from '@/game/copy'
+import type { TurnRecord } from '@/game/types'
 
 interface TurnHistoryListProps {
   history: TurnRecord[]
-}
-
-const ACTION_COLOR_CLASS: Record<Action, string> = {
-  charge: 'text-charge',
-  attack: 'text-attack',
-  guard: 'text-guard',
 }
 
 export function TurnHistoryList({ history }: TurnHistoryListProps) {
@@ -42,11 +37,11 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
             </span>
           </div>
           <div className="flex items-center gap-2 font-sans text-sm font-bold text-text-primary">
-            <span className={ACTION_COLOR_CLASS[latest.playerAction]}>
+            <span className={ACTION_STYLE[latest.playerAction].textClass}>
               {ACTION_LABEL[latest.playerAction]}
             </span>
             <span className="font-mono text-[9px] font-semibold text-text-tertiary">VS</span>
-            <span className={ACTION_COLOR_CLASS[latest.cpuAction]}>
+            <span className={ACTION_STYLE[latest.cpuAction].textClass}>
               {ACTION_LABEL[latest.cpuAction]}
             </span>
           </div>

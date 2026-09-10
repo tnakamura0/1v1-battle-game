@@ -1,4 +1,5 @@
 import { ActionButton, type ActionButtonStatus } from '@/components/ActionButton'
+import { ACTION_ORDER } from '@/components/actionStyle'
 import { StatusPanel } from '@/components/StatusPanel'
 import { getIllegalReason } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
@@ -12,8 +13,6 @@ interface HandSelectionProps {
   history: TurnRecord[]
   onSelectAction: (action: Action) => void
 }
-
-const ACTIONS: Action[] = ['charge', 'attack', 'guard']
 
 function reasonLabel(
   reason: 'own-energy-zero' | 'opponent-energy-zero' | 'guard-cooldown',
@@ -56,7 +55,7 @@ export function HandSelection({
       <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">
         <StatusPanel role="player" state={player} maxHp={preset.initialHp} />
         <div className="grid grid-cols-3 gap-2.5">
-          {ACTIONS.map((action) => {
+          {ACTION_ORDER.map((action) => {
             const reason = getIllegalReason(action, player, cpu)
             const status: ActionButtonStatus = reason ? 'disabled' : 'idle'
             return (
