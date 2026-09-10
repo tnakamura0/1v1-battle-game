@@ -1,8 +1,18 @@
+## [0.12.2] - 2026-09-10
+
+### 🚜 Refactor
+
+- ActionButtonをcomponents配下へ移動する (#78)
+- 行動色のクラスマップをactionStyleに集約する (#79)
 ## [0.12.1] - 2026-09-10
 
 ### 🐛 Bug Fixes
 
 - モバイルで「相手を読む」セクションだけ左寄せになるのを直す (#76)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.12.1
 ## [0.12.0] - 2026-09-10
 
 ### 🚀 Features
