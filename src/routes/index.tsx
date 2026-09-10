@@ -1,5 +1,5 @@
 import { Routes, Route } from 'react-router'
-import { Home } from '@/pages/Home'
+import { Home } from '@/pages/Home/Home'
 import { Rules } from '@/pages/Rules/Rules'
 import { PresetSelect } from '@/pages/PresetSelect/PresetSelect'
 import { Battle } from '@/pages/Battle/Battle'

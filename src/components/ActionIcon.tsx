@@ -4,12 +4,18 @@ interface ActionIconProps {
   action: Action
   size?: number
   strokeWidth?: number
+  /**
+   * size をブレークポイントごとに変えたいときに使う（例: 'sm:h-9 sm:w-9'）。
+   * CSSのwidth/heightはsize由来のwidth/height属性より優先されるので上書きできる。
+   */
+  className?: string
 }
 
-export function ActionIcon({ action, size = 26, strokeWidth = 1.8 }: ActionIconProps) {
+export function ActionIcon({ action, size = 26, strokeWidth = 1.8, className }: ActionIconProps) {
   const strokeProps = {
     width: size,
     height: size,
+    className,
     viewBox: '0 0 24 24',
     fill: 'none',
     stroke: 'currentColor',

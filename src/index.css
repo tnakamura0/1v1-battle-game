@@ -17,6 +17,9 @@
  * - 行動色         : charge / attack / guard。「何を選んだか」を表す
  * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
  *
+ * 行動色をLPで使うときは、アイコンとアウトラインのバッジに限定して面は塗らない。
+ * 塗ると3つの行動カードが主張しすぎて「操作は3択、それだけ」という主旨と食い違うため。
+ *
  * 識別色は文字ではなく「領域」で示す（詳細は components/roleStyle.ts）
  * - 面のあるカード : Tier 1 の bg-bg-card + border-border-default の代わりに
  *                    bg-<役割>/10 + border-<役割>/30 を重ねた派生形にする
@@ -57,6 +60,9 @@
 
   --color-danger: #e11d48;
   --color-lose: #e0899b;
+
+  /* LPのヒーローに敷く格子の罫線。地（bg-page）とほぼ同化する明度に留める */
+  --color-grid-line: #101720;
 
   --font-sans: 'Manrope', ui-sans-serif, system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', ui-monospace, monospace;
