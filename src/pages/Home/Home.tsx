@@ -34,7 +34,7 @@ export function Home() {
       <Hero />
 
       <LandingSection tone="sunken">
-        <SectionIntro meta="3 ACTIONS" title="操作は3択、それだけ" align="center" />
+        <SectionIntro meta="3 ACTIONS" title="操作は3択、それだけ" />
         <ActionShowcase />
       </LandingSection>
 
@@ -45,6 +45,7 @@ export function Home() {
               meta="READ THE ENEMY"
               title="相手を読む、という奥深さ"
               description="相手のエネルギーとガードの状態から、次の一手を予測する。初期HPはわずか2〜3。一手のミスが命取りになる。"
+              align="split"
             />
           </div>
           <div className="flex flex-1 justify-center">
@@ -54,7 +55,7 @@ export function Home() {
       </LandingSection>
 
       <LandingSection tone="sunken">
-        <SectionIntro meta="FLOW" title="1ターンの流れ" align="center" />
+        <SectionIntro meta="FLOW" title="1ターンの流れ" />
         <ol className="grid gap-3 sm:grid-cols-4">
           {STEPS.map((step, index) => (
             <li
@@ -81,7 +82,7 @@ export function Home() {
 
       <LandingSection>
         <div className="flex flex-col items-center gap-6 text-center">
-          <SectionIntro meta="READY?" title="最初の対戦を始めよう" align="center" />
+          <SectionIntro meta="READY?" title="最初の対戦を始めよう" />
           <Link to="/preset" className={PRIMARY_CTA_CLASS}>
             対戦を始める
           </Link>
