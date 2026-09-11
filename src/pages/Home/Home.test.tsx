@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { BrowserRouter } from 'react-router'
+import { ROLE_STYLE } from '@/components/roleStyle'
 import { Home } from '@/pages/Home/Home'
 
 function renderHome() {
@@ -49,6 +50,18 @@ describe('Home', () => {
       '1ターンの流れ',
       '最初の対戦を始めよう',
     ])
+  })
+
+  // Issue #82 の再発防止：プレビューだけ自分のステータスと行動ボタンが上下逆だった。
+  // 実コンポーネントを使っていても並び順までは揃わないので、順序そのものを固定する。
+  // 上下関係はCSSではなくDOM順が決めているため、DOM順で判定してよい。
+  it('stacks the preview like the real battle screen, with the player status above the actions', () => {
+    renderHome()
+    const playerStatus = screen.getByText(ROLE_STYLE.player.label)
+    const chargeButton = screen.getByRole('button', { name: /チャージ/ })
+    expect(playerStatus.compareDocumentPosition(chargeButton)).toBe(
+      Node.DOCUMENT_POSITION_FOLLOWING,
+    )
   })
 
   // プレビューは飾りなので、中の行動ボタンを操作させない。
