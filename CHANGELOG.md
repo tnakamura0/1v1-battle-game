@@ -1,9 +1,22 @@
+## [0.13.0] - 2026-09-11
+
+### 🚀 Features
+
+- PCサイズで対戦・設定・ルール画面が画面幅を活かすようにする (#85)
+
+### 🐛 Bug Fixes
+
+- LPプレビューの自分のステータスと行動ボタンの上下を対戦画面に揃える (#83)
 ## [0.12.2] - 2026-09-10
 
 ### 🚜 Refactor
 
 - ActionButtonをcomponents配下へ移動する (#78)
 - 行動色のクラスマップをactionStyleに集約する (#79)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.12.2
 ## [0.12.1] - 2026-09-10
 
 ### 🐛 Bug Fixes
