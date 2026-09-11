@@ -10,6 +10,9 @@ import { ActionButton } from '@/components/ActionButton'
  * そこで StatusPanel と ActionButton をそのまま描画している。ここに出ている
  * アイコン・行動色・HPバーは、対戦画面で実際に見えるものと同一。
  *
+ * ただし実コンポーネントを使っても並び順までは揃わない。自分のステータスは必ず
+ * 行動ボタンより上に置くこと（HandSelection と同じ並び）。ここが逆だったのが Issue #82。
+ *
  * ターンタイマーは描かない。参照デザインには秒数とプログレスバーがあるが、
  * それはリアルタイム対人戦を前提にした別仕様のもので、このゲームには存在しない。
  */
@@ -30,12 +33,12 @@ export function BattlePreview() {
         <div className="rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light">
           行動を選択してください
         </div>
+        <StatusPanel role="player" state={PLAYER} maxHp={PREVIEW_MAX_HP} />
         <div className="grid grid-cols-3 gap-2.5">
           <ActionButton action="charge" status="idle" onSelect={noop} />
           <ActionButton action="attack" status="idle" onSelect={noop} />
           <ActionButton action="guard" status="idle" onSelect={noop} />
         </div>
-        <StatusPanel role="player" state={PLAYER} maxHp={PREVIEW_MAX_HP} />
       </div>
     </PreviewFrame>
   )
