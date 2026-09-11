@@ -43,6 +43,14 @@ Issueを作成する際は、必ず以下のいずれかのテンプレートを
 - 作業ブランチから`develop`へのPRは、**小さな修正であっても必ずPR経由**とする（`develop`への直接pushは禁止）。
 - PRテンプレート：`.github/pull_request_template.md`（Claude Codeでは `/new-pr` スキル）
 - PRタイトルはConventional Commits形式に沿う（Squash merge時のコミットメッセージになるため）。
+- **レビュー中・オープン中のPRに、後から別の変更を足さない**。別Issue・別PRに分ける。
+  Squash mergeではPRタイトルがそのままコミットメッセージになり、CHANGELOGは`git cliff`が
+  そのコミットメッセージから生成するため、**後から足した変更はCHANGELOGに現れない**。
+  しかもCHANGELOGは毎回ファイル全体が再生成されるので、手で追記しても次のリリースで上書きされる。
+  - 例外：**新規ファイルへの依存がある場合は、先に元のPRをマージしてから着手する**。
+    `develop`から分岐しても対象ファイルがまだ存在しないため。
+  - それでも分けられない場合は、Squash merge時のコミットメッセージを手で複数行にする
+    （`gh pr merge --squash --body "..."`）。こうすれば`git cliff`が拾える。
 - レビュー：個人開発のため必須Approve人数は設定しない。ただし`.claude/hooks/`のフックによるテンプレート・命名規則の機械チェックをレビューの代替ゲートとする。
 - マージ方法：**Squash merge**
 
@@ -58,6 +66,10 @@ Issueを作成する際は、必ず以下のいずれかのテンプレートを
    ```bash
    git cliff --bump -o CHANGELOG.md
    ```
+   生成結果に**今回リリースする変更がすべて載っているか目視で確認する**。
+   1PRに複数の変更をまとめてしまった場合、PRタイトル以外はここに現れない。
+   漏れがあった場合、CHANGELOGを手で直しても次回の生成で消えるので、
+   リリースPRの本文に実際の内容を明記して補う。
 3. `CHANGELOG.md`の変更をコミットする（`chore: update changelog for vX.Y.Z`）
 4. `release/vX.Y.Z` → `main` のPRを作成し、**Merge commit**でマージする
 5. マージ後、`main`上でタグを打つ
