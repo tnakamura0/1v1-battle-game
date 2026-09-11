@@ -1,9 +1,10 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Battle } from '@/pages/Battle/Battle'
 import { INTRO_DURATION_MS, RESULT_DURATION_MS } from '@/game/presets'
 import type { BattlePreset } from '@/game/types'
+import { expectRenderedBefore } from '@/test/domOrder'
 
 const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
@@ -17,6 +18,19 @@ function renderBattle(state?: { preset: BattlePreset }) {
       </Routes>
     </MemoryRouter>,
   )
+}
+
+/**
+ * 左カラム（intro / 行動選択 / 結果が入れ替わる領域）。
+ * lg以上では右にターン履歴が並び、"TURN 1" のようなテキストは両方に出る。
+ * どちらの話をしているかが曖昧にならないよう、この領域で絞ってから引く。
+ */
+function battleArea() {
+  return screen.getByRole('region', { name: 'バトル' })
+}
+
+function turnHistory() {
+  return screen.getByRole('complementary', { name: 'ターン履歴' })
 }
 
 beforeEach(() => {
@@ -49,6 +63,18 @@ describe('Battle', () => {
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
   })
 
+  // Issue #82 の再発防止：LPのプレビューがこの並びを再現している。
+  // 片側だけ固定しても乖離は防げないので、実物側の並びもここで固定する。
+  // 対になる検証が Home.test.tsx にある。
+  it('puts the player status above the action buttons', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    expectRenderedBefore(screen.getByText('YOU'), screen.getByRole('button', { name: /チャージ/ }))
+  })
+
   it('resolves a turn on submit and auto-advances to the next turn', () => {
     renderBattle({ preset })
     act(() => {
@@ -59,14 +85,34 @@ describe('Battle', () => {
       screen.getByRole('button', { name: /チャージ/ }).click()
     })
 
-    expect(screen.getByText('TURN 1')).toBeInTheDocument()
-    expect(screen.getByText('変化なし')).toBeInTheDocument()
+    const battle = within(battleArea())
+    expect(battle.getByText('TURN 1')).toBeInTheDocument()
+    expect(battle.getByText('変化なし')).toBeInTheDocument()
 
     act(() => {
       vi.advanceTimersByTime(RESULT_DURATION_MS)
     })
 
-    expect(screen.getByText('TURN 2')).toBeInTheDocument()
+    expect(within(battleArea()).getByText('TURN 2')).toBeInTheDocument()
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
+  })
+
+  // Issue #84：lg以上で右カラムに出す履歴。フェーズをまたいで出しっぱなしにするので、
+  // 結果フェーズでも過去のターンを追えることをここで固定する
+  it('keeps the turn history alongside the battle in every phase', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    expect(within(turnHistory()).getByText('まだ履歴はありません')).toBeInTheDocument()
+
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    // 結果表示中も履歴は残り、今解決したターンが最新として入っている
+    expect(within(turnHistory()).getByText('TURN 1')).toBeInTheDocument()
+    expect(within(turnHistory()).getByText('LATEST')).toBeInTheDocument()
   })
 })
