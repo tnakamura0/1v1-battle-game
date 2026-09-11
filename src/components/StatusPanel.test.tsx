@@ -6,9 +6,9 @@ import type { PlayerState } from '@/game/types'
 const state: PlayerState = { hp: 3, energy: 2, guardCooldownRemaining: 0 }
 
 describe('StatusPanel', () => {
-  it('labels the player panel YOU', () => {
+  it('labels the player panel PLAYER', () => {
     render(<StatusPanel role="player" state={state} maxHp={5} />)
-    expect(screen.getByText('YOU')).toBeInTheDocument()
+    expect(screen.getByText('PLAYER')).toBeInTheDocument()
   })
 
   it('labels the opponent panel OPPONENT', () => {
