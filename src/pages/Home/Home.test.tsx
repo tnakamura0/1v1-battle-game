@@ -57,7 +57,10 @@ describe('Home', () => {
   // 対になる検証が Battle.test.tsx にもある。両方揃って初めて乖離を防げる。
   it('stacks the preview like the real battle screen, with the player status above the actions', () => {
     renderHome()
-    expectRenderedBefore(screen.getByText('YOU'), screen.getByRole('button', { name: /チャージ/ }))
+    expectRenderedBefore(
+      screen.getByText('PLAYER'),
+      screen.getByRole('button', { name: /チャージ/ }),
+    )
   })
 
   // プレビューは飾りなので、中の行動ボタンを操作させない。

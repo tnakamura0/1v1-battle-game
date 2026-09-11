@@ -52,7 +52,7 @@ describe('Battle', () => {
     expect(screen.getByLabelText('残り3秒')).toBeInTheDocument()
     // introと行動選択中は同じ Versus を共有している。両フェーズで出ることを
     // 固定しておかないと、片方から消えても気づけない
-    expect(screen.getByText('あなた')).toBeInTheDocument()
+    expect(screen.getByText('プレイヤー')).toBeInTheDocument()
     expect(screen.getByText('CPU')).toBeInTheDocument()
 
     act(() => {
@@ -76,7 +76,10 @@ describe('Battle', () => {
       vi.advanceTimersByTime(INTRO_DURATION_MS)
     })
 
-    expectRenderedBefore(screen.getByText('YOU'), screen.getByRole('button', { name: /チャージ/ }))
+    expectRenderedBefore(
+      screen.getByText('PLAYER'),
+      screen.getByRole('button', { name: /チャージ/ }),
+    )
   })
 
   it('resolves a turn on submit and auto-advances to the next turn', () => {
@@ -115,7 +118,7 @@ describe('Battle', () => {
     expect(battle.getByText(caption)).toBeInTheDocument()
     // 対峙の円そのものも固定する。キャプションだけだと、Versus が別物に
     // 差し替わっても気づけない
-    expect(battle.getByText('あなた')).toBeInTheDocument()
+    expect(battle.getByText('プレイヤー')).toBeInTheDocument()
     expect(battle.getByText('CPU')).toBeInTheDocument()
 
     act(() => {
