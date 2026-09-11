@@ -5,17 +5,18 @@
  * 枠線（surfaceClass）で、行のように面を塗ると重くなる要素は左端の帯（edgeClass）で
  * 示し、文字そのものには色を付けない。文字に色を付けて回ると、行動色やダメージ色と
  * 混ざって画面の色数が増え、散らかった印象になるため。
- * 例外はステータスパネルのラベル（YOU / OPPONENT）だけで、ここは画面内で持ち主を
+ * 例外はステータスパネルのラベル（PLAYER / OPPONENT）だけで、ここは画面内で持ち主を
  * 判断する基準点になるため textClass で色を残している。
  *
  * 自分の色は既存のaccent／guardと同じシアンで、値としては重複している。
  * ガードを選んだターンは面とアイコンが同系色になるが、識別色は常に
- * YOU / OPPONENT や「自分」「相手」という文字と一緒に出るため、色だけで
+ * PLAYER / OPPONENT や「自分」「相手」という文字と一緒に出るため、色だけで
  * 意味が決まる場面はない。アプリの基調色をそのまま自分の色に使うほうが
  * 画面全体としてまとまるので、あえて別のシアンにはしていない。
  *
- * 4画面（BattleIntro / StatusPanel / TurnResult / BattleResult）から参照するため、
+ * 4箇所（StatusPanel / Versus / TurnResult / BattleResult）から参照するため、
  * 配色を変えるときの変更点が1箇所で済むようここにまとめている。
+ * 対戦開始前と行動選択中の対峙表現は Versus 経由で参照している。
  */
 export type BattleRole = 'player' | 'opponent'
 
@@ -34,7 +35,7 @@ export const ROLE_STYLE: Record<
   }
 > = {
   player: {
-    label: 'YOU',
+    label: 'PLAYER',
     textClass: 'text-player',
     hpCellClass: 'bg-player',
     surfaceClass: 'border-player/30 bg-player/10',

@@ -50,6 +50,10 @@ describe('Battle', () => {
   it('shows a countdown during the intro, then moves to hand selection', () => {
     renderBattle({ preset })
     expect(screen.getByLabelText('残り3秒')).toBeInTheDocument()
+    // introと行動選択中は同じ Versus を共有している。両フェーズで出ることを
+    // 固定しておかないと、片方から消えても気づけない
+    expect(screen.getByText('プレイヤー')).toBeInTheDocument()
+    expect(screen.getByText('CPU')).toBeInTheDocument()
 
     act(() => {
       vi.advanceTimersByTime(1000)
@@ -72,7 +76,10 @@ describe('Battle', () => {
       vi.advanceTimersByTime(INTRO_DURATION_MS)
     })
 
-    expectRenderedBefore(screen.getByText('YOU'), screen.getByRole('button', { name: /チャージ/ }))
+    expectRenderedBefore(
+      screen.getByText('PLAYER'),
+      screen.getByRole('button', { name: /チャージ/ }),
+    )
   })
 
   it('resolves a turn on submit and auto-advances to the next turn', () => {
@@ -95,6 +102,30 @@ describe('Battle', () => {
 
     expect(within(battleArea()).getByText('TURN 2')).toBeInTheDocument()
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
+  })
+
+  // Issue #87：lg以上で履歴が右へ移ったあとの空きに置く対峙の表現。
+  // 表示・非表示はCSS（幅と高さ）で決めておりjsdomでは判定できないので、
+  // 「どのフェーズのDOMに置かれるか」だけを固定する。
+  it('shows the versus arena while choosing an action, but not in the result', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    const caption = '両者の行動は同時に公開されます'
+    const battle = within(battleArea())
+    expect(battle.getByText(caption)).toBeInTheDocument()
+    // 対峙の円そのものも固定する。キャプションだけだと、Versus が別物に
+    // 差し替わっても気づけない
+    expect(battle.getByText('プレイヤー')).toBeInTheDocument()
+    expect(battle.getByText('CPU')).toBeInTheDocument()
+
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    expect(screen.queryByText(caption)).not.toBeInTheDocument()
   })
 
   // Issue #84：lg以上で右カラムに出す履歴。フェーズをまたいで出しっぱなしにするので、
