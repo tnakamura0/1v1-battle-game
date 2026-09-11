@@ -10,6 +10,11 @@ import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
  *
  * 並びは自分が左・相手が右。TurnResult の行動カードも同じ並びで、
  * 画面をまたいでどちら側が自分かが入れ替わらないようにしている。
+ *
+ * 文言は ROLE_STYLE.label（YOU / OPPONENT）ではなく「あなた」「CPU」。ここを
+ * ROLE_STYLE.label に揃えると、行動選択中の画面に YOU が2つ出ることになる
+ * （StatusPanel のラベルと重なる）。識別ラベルはステータスパネルの役目なので、
+ * 対峙の円は日本語の呼び名のままにしておくこと。
  */
 export function Versus() {
   return (

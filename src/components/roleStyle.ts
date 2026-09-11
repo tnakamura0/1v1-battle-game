@@ -14,8 +14,9 @@
  * 意味が決まる場面はない。アプリの基調色をそのまま自分の色に使うほうが
  * 画面全体としてまとまるので、あえて別のシアンにはしていない。
  *
- * 4画面（BattleIntro / StatusPanel / TurnResult / BattleResult）から参照するため、
+ * 4箇所（StatusPanel / Versus / TurnResult / BattleResult）から参照するため、
  * 配色を変えるときの変更点が1箇所で済むようここにまとめている。
+ * 対戦開始前と行動選択中の対峙表現は Versus 経由で参照している。
  */
 export type BattleRole = 'player' | 'opponent'
 

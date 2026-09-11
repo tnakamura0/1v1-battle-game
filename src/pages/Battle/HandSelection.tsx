@@ -78,6 +78,11 @@ export function HandSelection({
         lg未満は履歴、lg以上は対峙の表現。ちょうど裏返しの関係で入れ替わる。
         外側の flex-1 は残すこと。これを消すと上下のブロックがくっつき、
         自分のステータスと行動ボタンが画面下端から離れてしまう。
+
+        lg:overflow-hidden なのは、lg以上でスクロールする中身がなくなるため。
+        h-full のアリーナが余分なスクロールを作らないようにしている。
+        lg以上でもここに履歴を出したくなったら、この修飾子を外すこと。
+        付けたままだと、あふれた履歴が無言で切り取られる。
       */}
       <div className="min-h-0 flex-1 overflow-y-auto px-4 lg:overflow-hidden">
         {/* lg以上では履歴は右カラム（Battle.tsx の aside）に出るので、ここは隠す */}

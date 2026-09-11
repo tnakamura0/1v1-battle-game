@@ -50,6 +50,10 @@ describe('Battle', () => {
   it('shows a countdown during the intro, then moves to hand selection', () => {
     renderBattle({ preset })
     expect(screen.getByLabelText('残り3秒')).toBeInTheDocument()
+    // introと行動選択中は同じ Versus を共有している。両フェーズで出ることを
+    // 固定しておかないと、片方から消えても気づけない
+    expect(screen.getByText('あなた')).toBeInTheDocument()
+    expect(screen.getByText('CPU')).toBeInTheDocument()
 
     act(() => {
       vi.advanceTimersByTime(1000)
@@ -107,7 +111,12 @@ describe('Battle', () => {
     })
 
     const caption = '両者の行動は同時に公開されます'
-    expect(within(battleArea()).getByText(caption)).toBeInTheDocument()
+    const battle = within(battleArea())
+    expect(battle.getByText(caption)).toBeInTheDocument()
+    // 対峙の円そのものも固定する。キャプションだけだと、Versus が別物に
+    // 差し替わっても気づけない
+    expect(battle.getByText('あなた')).toBeInTheDocument()
+    expect(battle.getByText('CPU')).toBeInTheDocument()
 
     act(() => {
       screen.getByRole('button', { name: /チャージ/ }).click()
