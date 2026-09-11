@@ -115,7 +115,15 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   )
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
+    /*
+      lg以上では右のターン履歴と並ぶので、「今のターンの結果」と「過去の履歴」を
+      名前で区別できるようにしておく。
+    */
+    <div
+      role="region"
+      aria-label="ターン結果"
+      className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4"
+    >
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
         <div className="flex flex-col gap-2">
           <StatusPanel

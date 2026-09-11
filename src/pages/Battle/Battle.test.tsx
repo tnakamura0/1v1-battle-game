@@ -1,4 +1,4 @@
-import { act, render, screen } from '@testing-library/react'
+import { act, render, screen, within } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Battle } from '@/pages/Battle/Battle'
@@ -18,6 +18,15 @@ function renderBattle(state?: { preset: BattlePreset }) {
       </Routes>
     </MemoryRouter>,
   )
+}
+
+/** 結果パネル。lg以上では右のターン履歴と並ぶので、テキストを引くときはこれで絞る */
+function turnResult() {
+  return screen.getByRole('region', { name: 'ターン結果' })
+}
+
+function turnHistory() {
+  return screen.getByRole('complementary', { name: 'ターン履歴' })
 }
 
 beforeEach(() => {
@@ -72,7 +81,8 @@ describe('Battle', () => {
       screen.getByRole('button', { name: /チャージ/ }).click()
     })
 
-    expect(screen.getByText('TURN 1')).toBeInTheDocument()
+    // lg以上では結果の隣にターン履歴が並ぶ。どちらにも "TURN 1" が出るので領域で絞る
+    expect(within(turnResult()).getByText('TURN 1')).toBeInTheDocument()
     expect(screen.getByText('変化なし')).toBeInTheDocument()
 
     act(() => {
@@ -81,5 +91,24 @@ describe('Battle', () => {
 
     expect(screen.getByText('TURN 2')).toBeInTheDocument()
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
+  })
+
+  // Issue #84：lg以上で右カラムに出す履歴。フェーズをまたいで出しっぱなしにするので、
+  // 結果フェーズでも過去のターンを追えることをここで固定する
+  it('keeps the turn history alongside the battle in every phase', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    expect(within(turnHistory()).getByText('まだ履歴はありません')).toBeInTheDocument()
+
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    // 結果表示中も履歴は残り、今解決したターンが最新として入っている
+    expect(within(turnHistory()).getByText('TURN 1')).toBeInTheDocument()
+    expect(within(turnHistory()).getByText('LATEST')).toBeInTheDocument()
   })
 })
