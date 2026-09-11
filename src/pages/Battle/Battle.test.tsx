@@ -4,6 +4,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest'
 import { Battle } from '@/pages/Battle/Battle'
 import { INTRO_DURATION_MS, RESULT_DURATION_MS } from '@/game/presets'
 import type { BattlePreset } from '@/game/types'
+import { expectRenderedBefore } from '@/test/domOrder'
 
 const preset: BattlePreset = { initialHp: 3, guardCooldownTurns: 2 }
 
@@ -47,6 +48,18 @@ describe('Battle', () => {
     })
 
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
+  })
+
+  // Issue #82 の再発防止：LPのプレビューがこの並びを再現している。
+  // 片側だけ固定しても乖離は防げないので、実物側の並びもここで固定する。
+  // 対になる検証が Home.test.tsx にある。
+  it('puts the player status above the action buttons', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    expectRenderedBefore(screen.getByText('YOU'), screen.getByRole('button', { name: /チャージ/ }))
   })
 
   it('resolves a turn on submit and auto-advances to the next turn', () => {
