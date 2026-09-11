@@ -4,6 +4,7 @@ import { StatusPanel } from '@/components/StatusPanel'
 import { getIllegalReason } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
 import { TurnHistoryList } from '@/pages/Battle/TurnHistoryList'
+import { Versus } from '@/pages/Battle/Versus'
 
 interface HandSelectionProps {
   player: PlayerState
@@ -21,6 +22,31 @@ function reasonLabel(
   if (reason === 'own-energy-zero') return 'ENERGY 0'
   if (reason === 'opponent-energy-zero') return '相手EN 0'
   return `あと${guardCooldownRemaining}T`
+}
+
+/**
+ * lg以上で履歴が右カラムへ移ったあとの空きに置く、対峙の表現。
+ *
+ * intro（誰と戦うか）→ 選択（対峙中）→ 結果（何が起きたか）を同じ構図でつなぐための
+ * 装飾で、盤面から読み取れる情報を増やすものではない。この空きは lg 以上にしか
+ * 存在しないため、ここに有利不利を左右するものを置くとデバイスで難易度が変わる。
+ *
+ * aria-hidden なのは、円が示す「自分と相手がいる」ことを StatusPanel が既に
+ * 伝えているため。BattleIntro 側の Versus は本文なので aria-hidden にしていない。
+ *
+ * 高さの条件は、アリーナ（約150px）と上下の固定ブロック（約470px）の合計に余裕を
+ * 見たもの。これがないと背の低いウィンドウで円が上下に切れる。
+ */
+function BattleArena() {
+  return (
+    <div
+      aria-hidden
+      className="hidden h-full flex-col items-center justify-center gap-4 lg:[@media(min-height:700px)]:flex"
+    >
+      <Versus />
+      <p className="font-mono text-[11px] text-text-tertiary">両者の行動は同時に公開されます</p>
+    </div>
+  )
 }
 
 export function HandSelection({
@@ -49,14 +75,16 @@ export function HandSelection({
       </div>
 
       {/*
-        lg以上では履歴を右カラム（Battle.tsx の aside）に出すので、ここは隠す。
+        lg未満は履歴、lg以上は対峙の表現。ちょうど裏返しの関係で入れ替わる。
         外側の flex-1 は残すこと。これを消すと上下のブロックがくっつき、
         自分のステータスと行動ボタンが画面下端から離れてしまう。
       */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4">
+      <div className="min-h-0 flex-1 overflow-y-auto px-4 lg:overflow-hidden">
+        {/* lg以上では履歴は右カラム（Battle.tsx の aside）に出るので、ここは隠す */}
         <div className="lg:hidden">
           <TurnHistoryList history={history} />
         </div>
+        <BattleArena />
       </div>
 
       <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">

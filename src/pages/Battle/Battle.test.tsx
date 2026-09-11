@@ -97,6 +97,25 @@ describe('Battle', () => {
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
   })
 
+  // Issue #87：lg以上で履歴が右へ移ったあとの空きに置く対峙の表現。
+  // 表示・非表示はCSS（幅と高さ）で決めておりjsdomでは判定できないので、
+  // 「どのフェーズのDOMに置かれるか」だけを固定する。
+  it('shows the versus arena while choosing an action, but not in the result', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    const caption = '両者の行動は同時に公開されます'
+    expect(within(battleArea()).getByText(caption)).toBeInTheDocument()
+
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    expect(screen.queryByText(caption)).not.toBeInTheDocument()
+  })
+
   // Issue #84：lg以上で右カラムに出す履歴。フェーズをまたいで出しっぱなしにするので、
   // 結果フェーズでも過去のターンを追えることをここで固定する
   it('keeps the turn history alongside the battle in every phase', () => {
