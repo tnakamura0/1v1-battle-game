@@ -75,7 +75,7 @@ export function PresetSelect() {
   }
 
   return (
-    <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden">
+    <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden lg:max-w-3xl">
       {/*
         contain-layout がないと、このスクロール領域からあふれた分だけページ全体が
         スクロールできてしまう（祖先の overflow-hidden では止まらない）。
@@ -150,51 +150,59 @@ export function PresetSelect() {
         <section className="flex flex-col gap-5 border-t border-border-default pt-5">
           <SectionTitle>個別に設定する</SectionTitle>
 
-          <SettingGroup legend="初期HP">
-            {INITIAL_HP_OPTIONS.map((option) => (
-              <SegmentedOption
-                key={option}
-                name="initialHp"
-                value={String(option)}
-                label={String(option)}
-                checked={setup.initialHp === option}
-                onChange={() => updateSetup({ initialHp: option })}
-              />
-            ))}
-          </SettingGroup>
+          {/*
+            lg以上は3つの設定を横並びにする。選択肢がどれも2つずつしかないので、
+            コンテナを広げるだけでは1つの選択肢が横に伸びるだけになる（幅の使い道が
+            「2」の一文字になってしまう）。縦積みを横並びに変えることで幅を使う。
+          */}
+          <div className="flex flex-col gap-5 lg:grid lg:grid-cols-3 lg:gap-6">
+            <SettingGroup legend="初期HP">
+              {INITIAL_HP_OPTIONS.map((option) => (
+                <SegmentedOption
+                  key={option}
+                  name="initialHp"
+                  value={String(option)}
+                  label={String(option)}
+                  checked={setup.initialHp === option}
+                  onChange={() => updateSetup({ initialHp: option })}
+                />
+              ))}
+            </SettingGroup>
 
-          <SettingGroup legend="ガード再使用クールダウン">
-            {GUARD_COOLDOWN_OPTIONS.map((option) => (
-              <SegmentedOption
-                key={option}
-                name="guardCooldownTurns"
-                value={String(option)}
-                label={`${option}ターン`}
-                checked={setup.guardCooldownTurns === option}
-                onChange={() => updateSetup({ guardCooldownTurns: option })}
-              />
-            ))}
-          </SettingGroup>
+            <SettingGroup legend="ガード再使用クールダウン">
+              {GUARD_COOLDOWN_OPTIONS.map((option) => (
+                <SegmentedOption
+                  key={option}
+                  name="guardCooldownTurns"
+                  value={String(option)}
+                  label={`${option}ターン`}
+                  checked={setup.guardCooldownTurns === option}
+                  onChange={() => updateSetup({ guardCooldownTurns: option })}
+                />
+              ))}
+            </SettingGroup>
 
-          <SettingGroup legend="CPUの強さ">
-            {CPU_DIFFICULTY_OPTIONS.map((option) => (
-              <SegmentedOption
-                key={option}
-                name="cpuDifficulty"
-                value={option}
-                label={CPU_DIFFICULTY_LABEL[option]}
-                checked={setup.cpuDifficulty === option}
-                onChange={() => updateSetup({ cpuDifficulty: option })}
-              />
-            ))}
-          </SettingGroup>
+            <SettingGroup legend="CPUの強さ">
+              {CPU_DIFFICULTY_OPTIONS.map((option) => (
+                <SegmentedOption
+                  key={option}
+                  name="cpuDifficulty"
+                  value={option}
+                  label={CPU_DIFFICULTY_LABEL[option]}
+                  checked={setup.cpuDifficulty === option}
+                  onChange={() => updateSetup({ cpuDifficulty: option })}
+                />
+              ))}
+            </SettingGroup>
+          </div>
         </section>
       </div>
 
+      {/* lg以上は幅いっぱいに伸ばさない。768px幅の主ボタンは画面の中で重すぎる */}
       <button
         type="button"
         onClick={() => navigate('/battle', { state: { preset: setup }, replace: true })}
-        className="mx-6 mb-6 mt-6 flex h-13 flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+        className="mx-6 mb-6 mt-6 flex h-13 flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page lg:mx-auto lg:w-80"
       >
         対戦を始める
       </button>

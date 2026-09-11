@@ -73,7 +73,12 @@ const isLastColumn = (column: number) => column === ACTION_ORDER.length - 1
 
 export function Rules() {
   return (
-    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 p-6">
+    /*
+      lg以上では外枠を広げるが、説明文は Section の既定値（prose）で672pxに留める。
+      日本語の説明文は1行が長くなるほど次の行頭に視線が戻りにくくなるので、
+      幅を使ってよいのはカードと表だけ。
+    */
+    <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 p-6 lg:max-w-4xl">
       <Link
         to="/"
         className="w-fit font-mono text-xs font-semibold text-text-tertiary hover:text-accent-hover"
@@ -107,7 +112,7 @@ export function Rules() {
         </ol>
       </Section>
 
-      <Section title="3つの行動">
+      <Section title="3つの行動" width="wide">
         <div className="grid gap-3 sm:grid-cols-3">
           {ACTION_ORDER.map((action) => {
             const { textClass } = ACTION_STYLE[action]
@@ -137,11 +142,12 @@ export function Rules() {
         </p>
       </Section>
 
-      <Section title="行動の組み合わせ">
-        <p className="-mt-1 font-sans text-sm font-semibold leading-relaxed text-text-primary">
+      {/* 表だけは幅を使いたいが、前後の文章は本文なので個別に prose 幅に留める */}
+      <Section title="行動の組み合わせ" width="wide">
+        <p className="-mt-1 max-w-2xl font-sans text-sm font-semibold leading-relaxed text-text-primary">
           ダメージが発生するのは、片方が攻撃・もう片方がチャージのときだけです。
         </p>
-        <p className="font-sans text-xs text-text-tertiary">
+        <p className="max-w-2xl font-sans text-xs text-text-tertiary">
           組み合わせによって発生するダメージの一覧です。エネルギーやガードの状態変化は含みません。
         </p>
 
@@ -198,7 +204,7 @@ export function Rules() {
           </tbody>
         </table>
 
-        <p className="font-mono text-[11px] text-text-tertiary">
+        <p className="max-w-2xl font-mono text-[11px] text-text-tertiary">
           — ＝ ダメージなし（数字は減るHPの量）
         </p>
       </Section>
@@ -209,7 +215,8 @@ export function Rules() {
         </p>
       </Section>
 
-      <div className="mb-10 flex flex-col gap-3 sm:flex-row">
+      {/* 本文と同じ幅に留める。896px幅に2つ並ぶと1つあたりが440px近くになって間延びする */}
+      <div className="mb-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
         <Link
           to="/preset"
           className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-base font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
@@ -260,11 +267,28 @@ function MatchupOutcome({ cell }: { cell: MatchupCell }) {
   )
 }
 
-function Section({ title, children }: { title: string; children: ReactNode }) {
+interface SectionProps {
+  title: string
+  /**
+   * prose = 本文として読ませる幅（672px）に収める。この画面はほとんどが説明文なので既定値。
+   * wide  = 親の幅いっぱいまで使う。カードや表など、横に広いほうが見やすいもの用。
+   *
+   * 「広い/狭い」ではなく「中身が何か」で名前を付けている。適切な幅はブレークポイントに
+   * よって変わる（lg未満では親が672pxなので両者は同じ幅になる）ため、見た目の値で
+   * 持たせると値のほうが先に嘘になる。既定値を多数派の prose にしてあるのは、
+   * 指定を忘れたセクションが正しい側に倒れるようにするため（SectionIntro の align と同じ考え）。
+   */
+  width?: 'prose' | 'wide'
+  children: ReactNode
+}
+
+function Section({ title, width = 'prose', children }: SectionProps) {
   return (
     <section className="flex flex-col gap-3">
       <SectionHeading title={title} />
-      {children}
+      <div className={`flex flex-col gap-3 ${width === 'prose' ? 'max-w-2xl' : ''}`}>
+        {children}
+      </div>
     </section>
   )
 }

@@ -48,8 +48,15 @@ export function HandSelection({
         </div>
       </div>
 
+      {/*
+        lg以上では履歴を右カラム（Battle.tsx の aside）に出すので、ここは隠す。
+        外側の flex-1 は残すこと。これを消すと上下のブロックがくっつき、
+        自分のステータスと行動ボタンが画面下端から離れてしまう。
+      */}
       <div className="min-h-0 flex-1 overflow-y-auto px-4">
-        <TurnHistoryList history={history} />
+        <div className="lg:hidden">
+          <TurnHistoryList history={history} />
+        </div>
       </div>
 
       <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">
