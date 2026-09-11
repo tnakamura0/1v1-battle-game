@@ -83,17 +83,28 @@ function BattleSession({ preset }: { preset: BattlePreset }) {
   return (
     /*
       lg以上は「左＝バトル / 右＝ターン履歴」の2カラム。
-      左カラムを lg:w-112（=max-w-md と同じ448px）で固定しているのが要で、これがないと
+      左カラムを lg:w-md（=max-w-md と同じ448px）で固定しているのが要で、これがないと
       選択フェーズと結果フェーズで幅が変わり、ターンごとにレイアウトが揺れる。
       もとは max-w-6xl が指定されていたが、子が max-w-md で潰していて効いていなかった。
+
+      lg:max-w-4xl は2カラムの合計（448 + 340 + 罫線1 = 789px）から導いた値ではなく、
+      それを上回る余裕を持たせた上限。lg:justify-center があるので差分は左右の余白になる。
+      カラム幅を広げるときは合計がこの上限を超えないか確認すること。超えると
+      flex-none 同士が main の overflow-hidden で無言で切られる。
     */
     <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden bg-bg-page lg:max-w-4xl lg:flex-row lg:justify-center">
       {/*
         lg未満（縦積み）は flex-1 で画面の高さいっぱいに伸ばす。これがないと
         中身の高さで止まり、自分のステータスと行動ボタンが画面下端から離れる。
-        lg以上（横並び）は伸縮させず lg:w-112 の固定幅にする。
+        lg以上（横並び）は伸縮させず lg:w-md の固定幅にする。
+
+        aria-label はフェーズに依らず付けたいのでここに置く。TurnResult 側に付けると
+        結果フェーズにしか名前がなく、右のターン履歴と対にならない。
       */}
-      <div className="flex min-h-0 w-full flex-1 flex-col overflow-hidden lg:w-112 lg:flex-none">
+      <section
+        aria-label="バトル"
+        className="flex min-h-0 w-full flex-1 flex-col overflow-hidden lg:w-md lg:flex-none"
+      >
         {state.phase === 'intro' ? (
           <BattleIntro preset={preset} secondsRemaining={introSeconds} />
         ) : state.phase === 'selecting' ? (
@@ -114,7 +125,7 @@ function BattleSession({ preset }: { preset: BattlePreset }) {
             isFinal={state.winner !== null}
           />
         ) : null}
-      </div>
+      </section>
 
       {/*
         introフェーズでも描画する。3秒後に急にカラムが増えると画面が揺れるため。

@@ -20,9 +20,13 @@ function renderBattle(state?: { preset: BattlePreset }) {
   )
 }
 
-/** 結果パネル。lg以上では右のターン履歴と並ぶので、テキストを引くときはこれで絞る */
-function turnResult() {
-  return screen.getByRole('region', { name: 'ターン結果' })
+/**
+ * 左カラム（intro / 行動選択 / 結果が入れ替わる領域）。
+ * lg以上では右にターン履歴が並び、"TURN 1" のようなテキストは両方に出る。
+ * どちらの話をしているかが曖昧にならないよう、この領域で絞ってから引く。
+ */
+function battleArea() {
+  return screen.getByRole('region', { name: 'バトル' })
 }
 
 function turnHistory() {
@@ -81,15 +85,15 @@ describe('Battle', () => {
       screen.getByRole('button', { name: /チャージ/ }).click()
     })
 
-    // lg以上では結果の隣にターン履歴が並ぶ。どちらにも "TURN 1" が出るので領域で絞る
-    expect(within(turnResult()).getByText('TURN 1')).toBeInTheDocument()
-    expect(screen.getByText('変化なし')).toBeInTheDocument()
+    const battle = within(battleArea())
+    expect(battle.getByText('TURN 1')).toBeInTheDocument()
+    expect(battle.getByText('変化なし')).toBeInTheDocument()
 
     act(() => {
       vi.advanceTimersByTime(RESULT_DURATION_MS)
     })
 
-    expect(screen.getByText('TURN 2')).toBeInTheDocument()
+    expect(within(battleArea()).getByText('TURN 2')).toBeInTheDocument()
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
   })
 
