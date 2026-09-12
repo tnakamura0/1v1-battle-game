@@ -93,12 +93,28 @@ describe('PresetSelect', () => {
     expect(screen.queryByText(/プリセット/)).not.toBeInTheDocument()
   })
 
+  // Issue #95：個別の調整は必須の手順ではないので、任意であることを見出しで示す
+  it('marks the individual settings as optional', () => {
+    renderPage()
+    // 「任意」は序数と違い読み上げる価値のある情報なので、見出しの名前に含める
+    expect(screen.getByRole('heading', { level: 2, name: /任意/ })).toBeInTheDocument()
+    expect(screen.getByText('おすすめのままでも始められます。')).toBeInTheDocument()
+  })
+
+  // Issue #95 の再発防止：順番に進む操作に見えるので序数はやめた
+  it('does not number the sections', () => {
+    renderPage()
+    expect(screen.queryByText('01')).not.toBeInTheDocument()
+    expect(screen.queryByText('02')).not.toBeInTheDocument()
+  })
+
   // Issue #67 の再発防止：おすすめ設定と個別設定が同じ強さで並んでいた
   it('separates the recommendations from the individual settings', () => {
     renderPage()
-    // 2つのセクションが同じレベルの見出しとして立っていること
+    // 2つのセクションが同じレベルの見出しとして立っていること。
+    // 個別設定だけ部分一致なのは、見出しに「任意」バッジが含まれるため（Issue #95）
     expect(screen.getByRole('heading', { level: 2, name: 'おすすめ設定' })).toBeInTheDocument()
-    expect(screen.getByRole('heading', { level: 2, name: '個別に設定する' })).toBeInTheDocument()
+    expect(screen.getByRole('heading', { level: 2, name: /個別に調整する/ })).toBeInTheDocument()
     // 個別の設定は「見出し」ではなくフィールドのグループであること
     // （見出しと同じ強さで並んでいたのが Issue #67 の原因なので、ここを分けて固定する）
     for (const name of ['初期HP', 'ガード再使用クールダウン', 'CPUの強さ']) {
