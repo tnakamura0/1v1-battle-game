@@ -329,19 +329,42 @@ describe('decideCpuAction', () => {
   // 両者が拮抗する相手（ランダム）では乱数のゆらぎに埋もれて実質何も検証しない
   // テストになりうるため。
   describe('strong difficulty wins more than normal in simulated battles', () => {
-    // 選択可能な4プリセットすべてを対象にする（プリセットごとに成績が変わるため）
+    // 選択可能なプリセットの全組み合わせを対象にする（プリセットごとに成績が変わるため）
     const allPresets = INITIAL_HP_OPTIONS.flatMap((initialHp) =>
       GUARD_COOLDOWN_OPTIONS.map((guardCooldownTurns) => ({ initialHp, guardCooldownTurns })),
     )
 
+    /**
+     * しきい値は初期HPで変える。HP1（サドンデス）だけ緩い。理由は2つある。
+     *
+     * 1. 最初に通った1発で決着するので、読みの差が勝敗に反映される機会が1回しかない。
+     *    「ふつう」でも運で勝ち切ることが増える。
+     * 2. exploitStrategy は `own.hp <= 1` ならガードを最優先するため、初期HPが1だと
+     *    1ターン目から条件を満たし、**「溜めてクールダウン中に撃つ」という攻略法そのものが
+     *    成立しない**。実質「ガードできるならガードする」相手との対戦になっている。
+     *
+     * HP2/3と同じ上限にすると hp1/cd3 が上限0.3に対して実測0.295（Issue #92 時点）で、
+     * 200戦中1戦差でしか通らない。回帰ではなくノイズを検知するテストになり、CPUの定数を
+     * 少し触るだけで落ちるため、HP1は上限を緩めて余裕を持たせる。
+     *
+     * 緩めるのは「ふつう」の上限と、ランダム相手の「つよい」の下限だけ。
+     * 「つよい」が0.6を超えることと、両者の差そのものは緩めない。
+     * サドンデスでも「つよい」が明確に強いことは変わらないため。
+     */
+    const thresholdsFor = (initialHp: BattlePreset['initialHp']) =>
+      initialHp === 1
+        ? { normalMaxVsExploit: 0.4, strongMinVsRandom: 0.6 }
+        : { normalMaxVsExploit: 0.3, strongMinVsRandom: 0.65 }
+
     for (const battlePreset of allPresets) {
       const label = `hp${battlePreset.initialHp}/cd${battlePreset.guardCooldownTurns}`
+      const { normalMaxVsExploit, strongMinVsRandom } = thresholdsFor(battlePreset.initialHp)
 
       it(`${label}: 報告された攻略法（溜めてガードのクールダウン中に撃つ）を跳ね返す`, () => {
         const normal = simulate(battlePreset, 'normal', exploitStrategy)
         const strong = simulate(battlePreset, 'strong', exploitStrategy)
         // 「ふつう」は攻略法にほぼ勝てないが、「つよい」ははっきり勝ち越す
-        expect(normal.wins / BATTLE_COUNT).toBeLessThan(0.3)
+        expect(normal.wins / BATTLE_COUNT).toBeLessThan(normalMaxVsExploit)
         expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.6)
         expect(strong.losses).toBeLessThan(normal.losses)
       })
@@ -349,7 +372,7 @@ describe('decideCpuAction', () => {
       it(`${label}: 合法手からランダムに選ぶ相手にも勝ち越す`, () => {
         const normal = simulate(battlePreset, 'normal', randomStrategy)
         const strong = simulate(battlePreset, 'strong', randomStrategy)
-        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.65)
+        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(strongMinVsRandom)
         expect(strong.wins).toBeGreaterThan(normal.wins)
       })
     }

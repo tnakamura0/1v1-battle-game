@@ -1,8 +1,9 @@
 import type { BattlePreset } from '@/game/types'
 
-export const INITIAL_HP_OPTIONS = [2, 3] as const
+// 1はサドンデス用。1発で決着するため運の比重が上がる（cpu.test.ts の勝率のしきい値も参照）
+export const INITIAL_HP_OPTIONS = [1, 2, 3] as const
 
-export const GUARD_COOLDOWN_OPTIONS = [2, 3] as const
+export const GUARD_COOLDOWN_OPTIONS = [1, 2, 3] as const
 
 export const CPU_DIFFICULTY_OPTIONS = ['normal', 'strong'] as const
 

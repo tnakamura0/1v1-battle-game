@@ -44,7 +44,7 @@ export function Home() {
             <SectionIntro
               meta="READ THE ENEMY"
               title="相手を読む、という奥深さ"
-              description="相手のエネルギーとガードの状態から、次の一手を予測する。初期HPはわずか2〜3。一手のミスが命取りになる。"
+              description="相手のエネルギーとガードの状態から、次の一手を予測する。初期HPはわずか1〜3。一手のミスが命取りになる。"
               align="split"
             />
           </div>
