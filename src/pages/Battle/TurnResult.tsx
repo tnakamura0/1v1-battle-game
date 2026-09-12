@@ -41,8 +41,8 @@ interface ChangeRow {
 }
 
 /**
- * HPの行の text-attack は「ダメージ」を表す色で、attack という行動を表しているわけではない。
- * 色の値はたまたま同じだが軸が違うので、ACTION_STYLE には寄せずに直接書いている。
+ * HPの行の text-damage は「ダメージ」を表す色で、attack という行動を表しているわけではない。
+ * 色の値はたまたま同じだが軸が違うので、ACTION_STYLE ではなく専用のトークンを使う。
  * 一方でエネルギーの行は「ガードで増えた／チャージで増えた」という行動由来なので ACTION_STYLE を使う。
  */
 function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
@@ -53,7 +53,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '相手 HP',
       beforeText: String(lastTurn.cpuBefore.hp),
       afterText: String(lastTurn.cpuAfter.hp),
-      colorClass: 'text-attack',
+      colorClass: 'text-damage',
       edgeClass: ROLE_STYLE.opponent.edgeClass,
     })
   }
@@ -62,7 +62,7 @@ function buildChangeRows(lastTurn: TurnRecord): ChangeRow[] {
       label: '自分 HP',
       beforeText: String(lastTurn.playerBefore.hp),
       afterText: String(lastTurn.playerAfter.hp),
-      colorClass: 'text-attack',
+      colorClass: 'text-damage',
       edgeClass: ROLE_STYLE.player.edgeClass,
     })
   }
@@ -178,14 +178,14 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         <div
           className={
             isHit
-              ? 'flex flex-col items-center gap-2 rounded-card border border-attack/30 bg-attack/10 px-4 py-6'
+              ? 'flex flex-col items-center gap-2 rounded-card border border-damage/30 bg-damage/10 px-4 py-6'
               : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-card px-4 py-6 shadow-card'
           }
         >
           <span
             className={
               isHit
-                ? 'font-sans text-3xl font-extrabold text-attack'
+                ? 'font-sans text-3xl font-extrabold text-damage'
                 : 'font-sans text-3xl font-extrabold text-text-primary'
             }
           >
