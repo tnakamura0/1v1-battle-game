@@ -35,7 +35,7 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
    * 枠線とチップにだけ乗せて面は塗らない（面を塗ると3枚のうち1枚だけ光り、
    * accentが表す「選択中」と紛らわしくなる）。
    */
-  tone?: 'default' | 'danger'
+  tone?: 'danger'
 }> = [
   {
     key: 'casual',
@@ -68,12 +68,17 @@ const RECOMMENDED_BUTTON_IDLE_DANGER = 'border-danger/45 bg-bg-card hover:border
 /**
  * 設定値を3つのチップに分ける。1本の文字列（`HP2 ／ ガード3ターン ／ CPUふつう`）だと
  * カードが3枚並んだときに幅が足りず、区切り文字の途中で折り返して読みにくくなる。
+ * チップ単位なら折り返しても意味の切れ目で折れる。
+ *
+ * 「ターン」を「T」に略さず、「つよい」に CPU を付けたままにしているのは、
+ * チップがボタンのアクセシブルネームの一部として読み上げられるため。
+ * 「サドンデス 一撃で決着 HP1 ガード1T つよい」では何がつよいのか分からない。
  */
 function setupChips(setup: BattleSetup): string[] {
   return [
     `HP${setup.initialHp}`,
-    `ガード${setup.guardCooldownTurns}T`,
-    CPU_DIFFICULTY_LABEL[setup.cpuDifficulty],
+    `ガード${setup.guardCooldownTurns}ターン`,
+    `CPU${CPU_DIFFICULTY_LABEL[setup.cpuDifficulty]}`,
   ]
 }
 
@@ -173,13 +178,19 @@ export function PresetSelect() {
                   <span className="font-sans text-xs text-text-tertiary">
                     {recommended.description}
                   </span>
+                  {/*
+                    チップは選択中もdangerのまま。dangerが表すのは「このモードの性格」で、
+                    枠線のaccentが表す「選択中」とは別の軸なので、選択しても消さない。
+                    文字が danger-light なのは、danger そのものだと10pxの文字には
+                    コントラストが足りないため（index.css の定義を参照）。
+                  */}
                   <span className="flex flex-wrap gap-1.5">
                     {setupChips(recommended.setup).map((chip) => (
                       <span
                         key={chip}
                         className={`rounded-chip border px-1.5 py-0.5 font-mono text-[10px] font-semibold ${
                           isDanger
-                            ? 'border-danger/45 text-danger'
+                            ? 'border-danger/45 text-danger-light'
                             : 'border-border-emphasis text-text-secondary'
                         }`}
                       >

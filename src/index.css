@@ -11,6 +11,8 @@
  *                             （ActionButton等。Tier 1より明るく「押せそう」に見せる）
  * - ネスト行                : bg-bg-track（外枠）+ bg-bg-row（各行、gap-pxで区切る）
  * - 意味的アクセント境界     : border-accent/attack/danger 等の状態通知は上記と独立
+ *                             （dangerは「サドンデス」のようなモードの性格づけにも使う。
+ *                               その場合も枠線と文字だけで、面は塗らない）
  *
  * 色の3つの軸（互いに独立しているので混ぜない）
  * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
@@ -61,6 +63,12 @@
   --color-opponent: #a78bfa;
 
   --color-danger: #e11d48;
+  /*
+   * dangerの明るい側。dangerそのものは地（bg-card）に対して4.12:1しかなく、
+   * 小さい文字に使うとAA（4.5:1）に届かない。文字にはこちらを使う（6.36:1、
+   * 選択中の面でも5.16:1）。dangerは枠線のように面積を取る用途に留める。
+   */
+  --color-danger-light: #f2647f;
   --color-lose: #e0899b;
 
   /* LPのヒーローに敷く格子の罫線。地（bg-page）とほぼ同化する明度に留める */

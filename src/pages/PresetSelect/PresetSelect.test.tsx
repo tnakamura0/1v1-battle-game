@@ -43,14 +43,14 @@ describe('PresetSelect', () => {
 
   it('offers every option of each setting', () => {
     renderPage()
-    const namesIn = (group: string) =>
+    const valuesIn = (group: string) =>
       within(screen.getByRole('group', { name: group }))
         .getAllByRole('radio')
         .map((radio) => radio.getAttribute('value'))
 
-    expect(namesIn('初期HP')).toEqual(['1', '2', '3'])
-    expect(namesIn('ガード再使用クールダウン')).toEqual(['1', '2', '3'])
-    expect(namesIn('CPUの強さ')).toEqual(['normal', 'strong'])
+    expect(valuesIn('初期HP')).toEqual(['1', '2', '3'])
+    expect(valuesIn('ガード再使用クールダウン')).toEqual(['1', '2', '3'])
+    expect(valuesIn('CPUの強さ')).toEqual(['normal', 'strong'])
   })
 
   it('lets the user change the setup before starting', async () => {
