@@ -6,6 +6,13 @@ interface SegmentedOptionProps {
   onChange: () => void
 }
 
+/*
+ * cursor-pointer をここだけ個別に書いているのは、これが button ではなく
+ * label の中の span だから。button には index.css がまとめて当てているが、
+ * label は常に操作要素とは限らないので一括では当てていない（index.css の理由を参照）。
+ * cursor は継承されるので label 側に書いても同じように効くが、実際に面を持ち
+ * カーソルが当たるのはこの span なので、対応が分かるようこちらに置いている。
+ */
 const OPTION_BASE =
   'flex min-h-11 cursor-pointer touch-manipulation items-center justify-center rounded-[10px] border font-sans text-sm font-semibold transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-page'
 

@@ -68,7 +68,7 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
 ]
 
 const RECOMMENDED_BUTTON_BASE =
-  'flex flex-1 cursor-pointer touch-manipulation flex-col gap-2 rounded-card border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
+  'flex flex-1 touch-manipulation flex-col gap-2 rounded-card border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
 /*
  * カードの枠線と面が表すのは「選択中かどうか」だけで、tone では変えない。
  * 3枚が取りうるのはこの2つの定数のどちらかだけなので、どれが選ばれているかが
@@ -313,7 +313,7 @@ export function PresetSelect() {
       <button
         type="button"
         onClick={() => navigate('/battle', { state: { preset: setup }, replace: true })}
-        className="mx-6 mb-6 mt-6 flex h-13 flex-none cursor-pointer touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page lg:mx-auto lg:w-80"
+        className="mx-6 mb-6 mt-6 flex h-13 flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page lg:mx-auto lg:w-80"
       >
         対戦を始める
       </button>

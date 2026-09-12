@@ -102,6 +102,31 @@ body {
   -webkit-tap-highlight-color: transparent;
 }
 
+/*
+ * Tailwind v4 の preflight は、v3 と違って button に cursor: pointer を当てない。
+ * 放っておくとアプリ中のボタンが矢印カーソルのままで、押せることが伝わらない。
+ * 個々のボタンに cursor-pointer を書いて回ると必ず付け忘れるので、ここで一度だけ当てる。
+ *
+ * :not(:disabled) を付けるのは、無効なボタンまでポインタにしないため。
+ * ActionButton の disabled:cursor-not-allowed とは、そもそも適用範囲が重ならない。
+ *
+ * @layer base に入れているのは、ユーティリティ側から上書きできるようにするため。
+ * 素の（レイヤ外の）規則にすると、どんな cursor-* ユーティリティよりも強くなってしまう。
+ *
+ * label は対象にしない。button と違って label は常に操作要素とは限らない
+ * （テキスト入力の label ならカーソルは I ビームであるべき）。
+ * ラジオを包む label の中の span だけは SegmentedOption 側で個別に指定している。
+ *
+ * セレクタが button だけで足りるのは、今のところ操作要素が button と a しかないため
+ * （a はブラウザ既定でポインタになる）。[role="button"] や summary、select を
+ * 使い始めたらここを見直すこと。
+ */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
