@@ -10,10 +10,12 @@ const OPTION_BASE =
   'flex min-h-11 cursor-pointer touch-manipulation items-center justify-center rounded-[10px] border font-sans text-sm font-semibold transition-colors peer-focus-visible:outline-none peer-focus-visible:ring-2 peer-focus-visible:ring-accent peer-focus-visible:ring-offset-2 peer-focus-visible:ring-offset-bg-page'
 
 /*
- * ホバーは ActionButton と同じ使い分けにする（components/ActionButton.tsx を参照）。
- * 未選択は accent/60 で「選べる」ことを、選択中は accent で「選んである」ことを表し、
- * 濃さで両者を区別する。選択中にもホバーを付けるのは、反応がないと
- * 「押しても何も起きない要素」に見えてしまうため。
+ * 未選択のホバーは ActionButton と同じ accent/60（components/ActionButton.tsx を参照）。
+ * 平常時の accent が「選んである」ことを表すので、ホバーはそれより薄くして
+ * 「選べる」に留める。
+ * ActionButton は選択中にホバーを持たないが、ここでは持たせる。2〜3個が横に並ぶので、
+ * 選択中の1個だけ無反応だと押せない要素に見えてしまうため。選択中は平常時が既に accent
+ * なので、薄くする方向は使えず accent-hover（明るい側）へ動かす。
  */
 const OPTION_CHECKED =
   'border-accent bg-bg-surface-active text-text-primary hover:border-accent-hover'

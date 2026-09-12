@@ -61,12 +61,16 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
 const RECOMMENDED_BUTTON_BASE =
   'flex flex-1 cursor-pointer touch-manipulation flex-col gap-2 rounded-card border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
 /*
- * ホバーは ActionButton と同じ使い分け（components/ActionButton.tsx を参照）。
- * 未選択は accent/60、選択中は accent で、濃さで「選べる」と「選んである」を区別する。
- * 選択中にもホバーを付けるのは、反応がないと押せない要素に見えてしまうため。
+ * 未選択のホバーは ActionButton と同じ accent/60（components/ActionButton.tsx を参照）。
+ * 平常時の accent が「選んである」ことを表すので、ホバーはそれより薄くして
+ * 「選べる」に留める。
+ * ActionButton は選択中にホバーを持たないが、ここでは持たせる。おすすめは3枚が並ぶので、
+ * 選択中の1枚だけ無反応だと押せない要素に見えてしまうため。選択中は平常時が既に accent
+ * なので、薄くする方向は使えず accent-hover（明るい側）へ動かす。
  * サドンデスだけ accent ではなく danger のままにするのは、このカードの色の軸を
- * 混ぜないため（下の tone のコメントを参照）。面の持ち上げは3枚に共通で入れて、
- * ホバーの手応えの強さを揃える。
+ * 混ぜないため（下の tone のコメントを参照）。
+ * 面の持ち上げは未選択の2種類にだけ入れる。選択中は既に面が上がっており、
+ * さらに明るい面のトークンがない。
  */
 // 選択中は tone に関係なく accent。dangerに「選択中」の意味を持たせない
 const RECOMMENDED_BUTTON_ACTIVE = 'border-accent bg-bg-surface-active hover:border-accent-hover'
@@ -160,7 +164,7 @@ export function PresetSelect() {
               <SectionTitle>おすすめ設定</SectionTitle>
               {/*
                 おすすめも3枚になったので「下の3つの設定」だとどちらの3つか紛らわしい。
-                数を言わずに「個別の設定」と呼ぶ。下のセクション名とも揃う。
+                数を言わずに「個別の設定」と呼ぶ。
               */}
               <p id="recommended-setups-hint" className="font-sans text-xs text-text-tertiary">
                 選ぶと個別の設定がまとめて切り替わります。あとから変更できます。
@@ -345,7 +349,8 @@ function SectionTitle({ badge, children }: { badge?: string; children: ReactNode
  *
  * wide は lg以上で2列分を占める指定。ガード再使用クールダウンにだけ渡している。
  * 選択肢が「1ターン」と4文字あり、均等な列幅では各ボタンが57pxまで縮んで窮屈になる。
- * 「T」と略せば収まるが、選択肢の文言は読み上げられるので略さない（setupChips のコメント参照）。
+ * 「1T」と略せば均等幅でも収まるが、ラジオのラベルはそのままアクセシブルネームになるので
+ * 略さない。おすすめカードのチップで同じ判断をしている（setupChips のコメントを参照）。
  */
 function SettingGroup({
   legend,
