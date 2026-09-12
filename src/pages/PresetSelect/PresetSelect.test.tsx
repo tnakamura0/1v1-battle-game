@@ -167,12 +167,45 @@ describe('PresetSelect', () => {
      * 色そのものは jsdom では見えない（CSSが評価されない）ので、
      * 「tone がカード自身のクラスに影響しない」という形で固定する。
      */
-    it('styles the sudden death card like the others when unselected', () => {
+    it('styles the sudden death card like the others in both states', async () => {
+      const user = userEvent.setup()
       renderPage()
+
       // 初期値は「サクッと遊ぶ」と一致するので、残り2枚はどちらも未選択
       expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'false')
       expect(seriousButton()).toHaveAttribute('aria-pressed', 'false')
       expect(suddenDeathButton().className).toBe(seriousButton().className)
+
+      // 選択中どうしでも揃っていること。ここを見ないと、選択中のクラスにだけ
+      // tone の分岐を足す退行を素通ししてしまう
+      await user.click(seriousButton())
+      const seriousActiveClass = seriousButton().className
+      await user.click(suddenDeathButton())
+      expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'true')
+      expect(suddenDeathButton().className).toBe(seriousActiveClass)
+    })
+
+    /*
+     * Issue #98 のもう一方の柱：性格は状態で変化しないものが担う。
+     * タイトルの色が選択で動くと、選んだ瞬間に danger が薄れてしまう。
+     */
+    it('keeps the sudden death title styled the same whether selected or not', async () => {
+      const user = userEvent.setup()
+      renderPage()
+
+      const suddenTitle = () => within(suddenDeathButton()).getByText('サドンデス')
+      const seriousTitle = () => within(seriousButton()).getByText('真剣勝負')
+      const suddenIdleClass = suddenTitle().className
+      const seriousIdleClass = seriousTitle().className
+
+      await user.click(suddenDeathButton())
+      expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'true')
+      expect(suddenTitle().className).toBe(suddenIdleClass)
+
+      // 他の2枚は従来どおり選択で明るくなること。これがないと「全部のタイトルを
+      // 固定した」退行も通ってしまうので、サドンデスだけの例外であることを固定する
+      await user.click(seriousButton())
+      expect(seriousTitle().className).not.toBe(seriousIdleClass)
     })
 
     it('marks the recommendation matching the current setup as pressed', async () => {
