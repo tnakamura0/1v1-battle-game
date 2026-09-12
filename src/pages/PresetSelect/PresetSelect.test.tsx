@@ -160,6 +160,21 @@ describe('PresetSelect', () => {
       expect(screen.getByRole('radio', { name: 'ふつう' })).toBeChecked()
     })
 
+    /*
+     * Issue #98 の再発防止：カードの枠線と面は「選択中かどうか」だけを表す。
+     * サドンデスの枠線を danger にしていたせいで、選ぶと accent に変わり、
+     * 1本の枠線が「モードの性格」と「選択されている状態」で意味を乗り換えていた。
+     * 色そのものは jsdom では見えない（CSSが評価されない）ので、
+     * 「tone がカード自身のクラスに影響しない」という形で固定する。
+     */
+    it('styles the sudden death card like the others when unselected', () => {
+      renderPage()
+      // 初期値は「サクッと遊ぶ」と一致するので、残り2枚はどちらも未選択
+      expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'false')
+      expect(seriousButton()).toHaveAttribute('aria-pressed', 'false')
+      expect(suddenDeathButton().className).toBe(seriousButton().className)
+    })
+
     it('marks the recommendation matching the current setup as pressed', async () => {
       const user = userEvent.setup()
       renderPage()
