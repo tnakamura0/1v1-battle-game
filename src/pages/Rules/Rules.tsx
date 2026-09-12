@@ -253,7 +253,7 @@ function MatchupOutcome({ cell }: { cell: MatchupCell }) {
         aria-hidden
         className={
           damaged
-            ? 'text-[11px] font-bold text-attack sm:text-sm'
+            ? 'text-[11px] font-bold text-damage sm:text-sm'
             : 'text-[11px] text-text-tertiary sm:text-sm'
         }
       >

@@ -48,7 +48,7 @@ export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: St
             const cellClassName = filled
               ? `h-[7px] flex-1 rounded-[2px] ${hpCellClass}`
               : justDamaged
-                ? 'h-[7px] flex-1 rounded-[2px] border border-attack bg-transparent'
+                ? 'h-[7px] flex-1 rounded-[2px] border border-damage bg-transparent'
                 : 'h-[7px] flex-1 rounded-[2px] bg-bg-hp-empty'
             return <div key={index} className={cellClassName} />
           })}
@@ -70,7 +70,7 @@ export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: St
                 key={index}
                 className={
                   index < state.energy
-                    ? 'h-[7px] w-[7px] rounded-full bg-charge'
+                    ? 'h-[7px] w-[7px] rounded-full bg-energy'
                     : 'h-[7px] w-[7px] rounded-full bg-bg-energy-empty'
                 }
               />
