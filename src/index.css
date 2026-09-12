@@ -115,7 +115,11 @@ body {
  *
  * label は対象にしない。button と違って label は常に操作要素とは限らない
  * （テキスト入力の label ならカーソルは I ビームであるべき）。
- * ラジオを包む label だけは SegmentedOption 側で個別に指定している。
+ * ラジオを包む label の中の span だけは SegmentedOption 側で個別に指定している。
+ *
+ * セレクタが button だけで足りるのは、今のところ操作要素が button と a しかないため
+ * （a はブラウザ既定でポインタになる）。[role="button"] や summary、select を
+ * 使い始めたらここを見直すこと。
  */
 @layer base {
   button:not(:disabled) {
