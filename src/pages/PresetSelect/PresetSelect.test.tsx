@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { render, screen, within } from '@testing-library/react'
 import userEvent from '@testing-library/user-event'
 import { MemoryRouter, Route, Routes, useLocation } from 'react-router'
 import { describe, expect, it } from 'vitest'
@@ -29,12 +29,28 @@ function seriousButton() {
   return screen.getByRole('button', { name: /真剣勝負/ })
 }
 
+function suddenDeathButton() {
+  return screen.getByRole('button', { name: /サドンデス/ })
+}
+
 describe('PresetSelect', () => {
   it('defaults to HP 2 / cooldown 3 turns / ふつう', () => {
     renderPage()
     expect(screen.getByRole('radio', { name: '2' })).toBeChecked()
     expect(screen.getByRole('radio', { name: '3ターン' })).toBeChecked()
     expect(screen.getByRole('radio', { name: 'ふつう' })).toBeChecked()
+  })
+
+  it('offers every option of each setting', () => {
+    renderPage()
+    const namesIn = (group: string) =>
+      within(screen.getByRole('group', { name: group }))
+        .getAllByRole('radio')
+        .map((radio) => radio.getAttribute('value'))
+
+    expect(namesIn('初期HP')).toEqual(['1', '2', '3'])
+    expect(namesIn('ガード再使用クールダウン')).toEqual(['1', '2', '3'])
+    expect(namesIn('CPUの強さ')).toEqual(['normal', 'strong'])
   })
 
   it('lets the user change the setup before starting', async () => {
@@ -101,6 +117,19 @@ describe('PresetSelect', () => {
       expect(screen.getByRole('radio', { name: '3' })).toBeChecked()
       expect(screen.getByRole('radio', { name: '2ターン' })).toBeChecked()
       expect(screen.getByRole('radio', { name: 'つよい' })).toBeChecked()
+    })
+
+    // Issue #92：初期HP1・クールダウン1で一撃で決着するモード
+    it('applies all three settings at once for サドンデス', async () => {
+      const user = userEvent.setup()
+      renderPage()
+
+      await user.click(suddenDeathButton())
+
+      expect(screen.getByRole('radio', { name: '1' })).toBeChecked()
+      expect(screen.getByRole('radio', { name: '1ターン' })).toBeChecked()
+      expect(screen.getByRole('radio', { name: 'つよい' })).toBeChecked()
+      expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'true')
     })
 
     it('applies all three settings at once for サクッと遊ぶ', async () => {
