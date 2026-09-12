@@ -21,8 +21,9 @@
  * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
  * - 行動色         : charge / attack / guard。「何を選んだか」を表す
  *                    （詳細は components/actionStyle.ts）
- * - 盤面の状態色   : damage（HPが減った）/ energy（エネルギー量）。
- *                    「盤面がどうなっているか」を表す。値は行動色と同じだが別の軸
+ * - 盤面の状態・変化色 : damage（HPが減った・命中した）/ energy（エネルギー量）。
+ *                    「盤面がどうなったか」を表す。値は行動色と同じだが別の軸。
+ *                    damage は変化を表す色なので「HPが少ない状態」には使わない
  * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
  *
  * 行動色をLPで使うときは、アイコンとアウトラインのバッジに限定して面は塗らない。
@@ -66,9 +67,12 @@
   /*
    * 盤面の状態を表す色。値は attack / charge と同じだが、「何を選んだか」ではなく
    * 「盤面がどうなっているか」を表す別の軸なので、独立したトークンにしている。
-   * 行動色を変えてもこちらは追従しない（逆も同じ）。ダメージ用途で attack を、
-   * エネルギー用途で charge を直接参照しないこと。
+   * 行動色を変えてもこちらは追従しない（逆も同じ）。値が同じだからといって
+   * var(--color-attack) で束ねないこと。束ねた時点で別の軸である意味がなくなる。
+   * ダメージ用途で attack を、エネルギー用途で charge を直接参照するのも同様に不可
+   * （eslint.config.js の no-restricted-syntax で lint エラーになる）。
    * 経緯は components/actionStyle.ts の JSDoc を参照。
+   * energy と対になる「空の粒」は上の --color-bg-energy-empty。
    */
   --color-damage: #fb7185;
   --color-energy: #f5b544;

@@ -14,9 +14,11 @@ import type { Action } from '@/game/types'
  * - エネルギー量の色（StatusPanel のドット）。琥珀だが「チャージを選んだ」わけではない
  *
  * かつては呼び出し側で text-attack / bg-charge と直接書いており、この使い分けは
- * このコメントにしか存在しなかった。行動色を集約した経緯（Issue #74）だけを見て
+ * コメントにしか存在しなかった。行動色を集約した経緯（Issue #74）だけを見て
  * ACTION_STYLE に寄せられてしまう余地があったため、トークンに名前を付けて
  * コード側でも区別が分かるようにした（Issue #80）。
+ * 合わせて、このファイル以外で text-attack / bg-charge 等を直接書くと
+ * lint エラーになるようにしている（eslint.config.js の no-restricted-syntax）。
  */
 export const ACTION_STYLE: Record<
   Action,
