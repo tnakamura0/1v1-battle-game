@@ -12,12 +12,18 @@
  * - ネスト行                : bg-bg-track（外枠）+ bg-bg-row（各行、gap-pxで区切る）
  * - 意味的アクセント境界     : border-accent/attack/danger 等の状態通知は上記と独立
  *                             （dangerは「サドンデス」のようなモードの性格づけにも使う。
- *                               その場合も枠線と文字だけで、面は塗らない）
+ *                               その場合に乗せてよいのは文字とチップ（チップ自身の細い
+ *                               枠線を含む）まで。カードの枠線と面には乗せない。
+ *                               カードの枠線は「選択中」を表す accent のチャンネルなので、
+ *                               性格づけに使うと選んだ瞬間に意味が乗り換わってしまう）
  *
- * 色の3つの軸（互いに独立しているので混ぜない）
+ * 色の4つの軸（互いに独立しているので混ぜない）
  * - 対戦者の識別色 : player（自分）/ opponent（相手）。「誰の情報か」を表す
  * - 行動色         : charge / attack / guard。「何を選んだか」を表す
  *                    （詳細は components/actionStyle.ts）
+ * - 盤面の状態・変化色 : damage（HPが減った・命中した）/ energy（エネルギー量）。
+ *                    「盤面がどうなったか」を表す。値は行動色と同じだが別の軸。
+ *                    damage は変化を表す色なので「HPが少ない状態」には使わない
  * - UIのアクセント : accent。操作可能な要素やフォーカスを表す
  *
  * 行動色をLPで使うときは、アイコンとアウトラインのバッジに限定して面は塗らない。
@@ -58,6 +64,19 @@
   --color-attack: #fb7185;
   --color-guard: #22d3ee;
 
+  /*
+   * 盤面の状態を表す色。値は attack / charge と同じだが、「何を選んだか」ではなく
+   * 「盤面がどうなっているか」を表す別の軸なので、独立したトークンにしている。
+   * 行動色を変えてもこちらは追従しない（逆も同じ）。値が同じだからといって
+   * var(--color-attack) で束ねないこと。束ねた時点で別の軸である意味がなくなる。
+   * ダメージ用途で attack を、エネルギー用途で charge を直接参照するのも同様に不可
+   * （eslint.config.js の no-restricted-syntax で lint エラーになる）。
+   * 経緯は components/actionStyle.ts の JSDoc を参照。
+   * energy と対になる「空の粒」は上の --color-bg-energy-empty。
+   */
+  --color-damage: #fb7185;
+  --color-energy: #f5b544;
+
   /* 対戦者の識別色。相手は行動色（琥珀・ローズ・シアン）と衝突しない色相にする */
   --color-player: #22d3ee;
   --color-opponent: #a78bfa;
@@ -65,8 +84,11 @@
   --color-danger: #e11d48;
   /*
    * dangerの明るい側。dangerそのものは地（bg-card）に対して4.12:1しかなく、
-   * 小さい文字に使うとAA（4.5:1）に届かない。文字にはこちらを使う（6.36:1、
-   * 選択中の面でも5.16:1）。dangerは枠線のように面積を取る用途に留める。
+   * 小さい文字に使うとAA（4.5:1）に届かない。文字にはこちらを使う。
+   * 乗りうる3つの面すべてでAAを満たす：
+   * bg-card 6.36:1 ／ bg-surface（ホバー）5.76:1 ／ bg-surface-active（選択中）5.16:1。
+   * danger そのものはチップの枠線のような、文字以外の用途に留める
+   * （カードの枠線は選択状態のチャンネルなので除く。上の階層ルールを参照）。
    */
   --color-danger-light: #f2647f;
   --color-lose: #e0899b;
@@ -94,6 +116,31 @@ body {
   color: var(--color-text-primary);
   font-family: var(--font-sans);
   -webkit-tap-highlight-color: transparent;
+}
+
+/*
+ * Tailwind v4 の preflight は、v3 と違って button に cursor: pointer を当てない。
+ * 放っておくとアプリ中のボタンが矢印カーソルのままで、押せることが伝わらない。
+ * 個々のボタンに cursor-pointer を書いて回ると必ず付け忘れるので、ここで一度だけ当てる。
+ *
+ * :not(:disabled) を付けるのは、無効なボタンまでポインタにしないため。
+ * ActionButton の disabled:cursor-not-allowed とは、そもそも適用範囲が重ならない。
+ *
+ * @layer base に入れているのは、ユーティリティ側から上書きできるようにするため。
+ * 素の（レイヤ外の）規則にすると、どんな cursor-* ユーティリティよりも強くなってしまう。
+ *
+ * label は対象にしない。button と違って label は常に操作要素とは限らない
+ * （テキスト入力の label ならカーソルは I ビームであるべき）。
+ * ラジオを包む label の中の span だけは SegmentedOption 側で個別に指定している。
+ *
+ * セレクタが button だけで足りるのは、今のところ操作要素が button と a しかないため
+ * （a はブラウザ既定でポインタになる）。[role="button"] や summary、select を
+ * 使い始めたらここを見直すこと。
+ */
+@layer base {
+  button:not(:disabled) {
+    cursor: pointer;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
