@@ -32,8 +32,17 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
   setup: BattleSetup
   /**
    * danger は「一撃で決まる特殊なモード」を色でも伝えるためのもの。
-   * 枠線とチップにだけ乗せて面は塗らない（面を塗ると3枚のうち1枚だけ光り、
-   * accentが表す「選択中」と紛らわしくなる）。
+   * 乗せるのは**タイトルの文字とチップだけ**で、カードの枠線と面には乗せない。
+   *
+   * 枠線に乗せないのは、枠線が「選択中」を表すチャンネルだから。かつては未選択時だけ
+   * 枠線を danger にしていたが、選択すると accent に変わるため、1本の枠線が
+   * 「モードの性格」と「選択されている状態」のあいだで意味を乗り換えていた。
+   * 選んだ瞬間にいちばん強い手がかりが消えるうえ、1つのチャンネルに2つの意味を
+   * 同じ場所で載せないという既定方針（index.css 冒頭を参照）にも反する。
+   * 文字とチップは状態で変化しないので、選んでも性格が消えない。
+   *
+   * 面を塗らないのは、3枚のうち1枚だけ光ると accent が表す「選択中」と
+   * 紛らわしくなるため。
    */
   tone?: 'danger'
 }> = [
@@ -61,23 +70,19 @@ const RECOMMENDED_SETUPS: ReadonlyArray<{
 const RECOMMENDED_BUTTON_BASE =
   'flex flex-1 cursor-pointer touch-manipulation flex-col gap-2 rounded-card border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
 /*
- * 未選択のホバーは ActionButton と同じ accent/60（components/ActionButton.tsx を参照）。
- * 平常時の accent が「選んである」ことを表すので、ホバーはそれより薄くして
- * 「選べる」に留める。
- * ActionButton は選択中にホバーを持たないが、ここでは持たせる。おすすめは3枚が並ぶので、
- * 選択中の1枚だけ無反応だと押せない要素に見えてしまうため。選択中は平常時が既に accent
- * なので、薄くする方向は使えず accent-hover（明るい側）へ動かす。
- * サドンデスだけ accent ではなく danger のままにするのは、このカードの色の軸を
- * 混ぜないため（下の tone のコメントを参照）。
- * 面の持ち上げは未選択の2種類にだけ入れる。選択中は既に面が上がっており、
- * さらに明るい面のトークンがない。
+ * カードの枠線と面が表すのは「選択中かどうか」だけで、tone では変えない。
+ * 3枚が取りうるのはこの2つの定数のどちらかだけなので、どれが選ばれているかが
+ * 一目で分かる。サドンデスの danger は文字とチップが担う（上の tone のコメントを参照）。
  */
-// 選択中は tone に関係なく accent。dangerに「選択中」の意味を持たせない
+// 選択中。ActionButton は選択中にホバーを持たないが、ここでは持たせる。3枚並ぶので
+// 選択中の1枚だけ無反応だと押せない要素に見えてしまうため。平常時が既に accent なので
+// 薄くする方向は使えず、accent-hover（明るい側）へ動かす。
+// 面は持ち上げない。既に上がっており、さらに明るい面のトークンがない。
 const RECOMMENDED_BUTTON_ACTIVE = 'border-accent bg-bg-surface-active hover:border-accent-hover'
+// 未選択。ホバーの accent/60 は ActionButton と同じ（components/ActionButton.tsx を参照）。
+// 平常時の accent が「選んである」ことを表すので、ホバーはそれより薄くして「選べる」に留める。
 const RECOMMENDED_BUTTON_IDLE =
   'border-border-default bg-bg-card hover:border-accent/60 hover:bg-bg-surface'
-const RECOMMENDED_BUTTON_IDLE_DANGER =
-  'border-danger/45 bg-bg-card hover:border-danger hover:bg-bg-surface'
 
 /**
  * 設定値を3つのチップに分ける。1本の文字列（`HP2 ／ ガード3ターン ／ CPUふつう`）だと
@@ -179,9 +184,18 @@ export function PresetSelect() {
               {RECOMMENDED_SETUPS.map((recommended) => {
                 const isActive = isSameSetup(setup, recommended.setup)
                 const isDanger = recommended.tone === 'danger'
-                const idleClass = isDanger
-                  ? RECOMMENDED_BUTTON_IDLE_DANGER
-                  : RECOMMENDED_BUTTON_IDLE
+                /*
+                 * 分岐するのは色だけ。danger のタイトルは選択中かどうかで変えない。
+                 * 他の2枚は secondary → primary と明るくなって選択中を補強するが、
+                 * ここでは性格を表し続けることを優先する（状態は枠線と面が表す）。
+                 * danger そのものではなく danger-light なのは、乗りうる3つの面すべてで
+                 * AAを満たすため（index.css の --color-danger-light の定義に3値とも記載）。
+                 */
+                const titleColorClass = isDanger
+                  ? 'text-danger-light'
+                  : isActive
+                    ? 'text-text-primary'
+                    : 'text-text-secondary'
                 return (
                   <button
                     key={recommended.key}
@@ -192,15 +206,9 @@ export function PresetSelect() {
                       setSetup({ ...recommended.setup })
                       setAppliedTitle(recommended.title)
                     }}
-                    className={`${RECOMMENDED_BUTTON_BASE} ${isActive ? RECOMMENDED_BUTTON_ACTIVE : idleClass}`}
+                    className={`${RECOMMENDED_BUTTON_BASE} ${isActive ? RECOMMENDED_BUTTON_ACTIVE : RECOMMENDED_BUTTON_IDLE}`}
                   >
-                    <span
-                      className={
-                        isActive
-                          ? 'font-sans text-sm font-bold text-text-primary'
-                          : 'font-sans text-sm font-bold text-text-secondary'
-                      }
-                    >
+                    <span className={`font-sans text-sm font-bold ${titleColorClass}`}>
                       {recommended.title}
                     </span>
                     <span className="font-sans text-xs text-text-tertiary">
