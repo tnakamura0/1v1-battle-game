@@ -63,6 +63,17 @@ describe('Home', () => {
     )
   })
 
+  // Issue #103：行動ボタンは三角形（上段中央=チャージ／下段左=攻撃／下段右=ガード）。
+  // 見た目の順序と読み上げ・タブ順が一致していることを、DOM順として固定する。
+  // 三角形かどうかはCSSなので jsdom では見えない。配置そのものはブラウザで実測している。
+  // 対になる検証が Battle.test.tsx にもある。
+  it('keeps the action buttons in charge/attack/guard order', () => {
+    renderHome()
+    const action = (name: RegExp) => screen.getByRole('button', { name })
+    expectRenderedBefore(action(/チャージ/), action(/攻撃/))
+    expectRenderedBefore(action(/攻撃/), action(/ガード/))
+  })
+
   // プレビューは飾りなので、中の行動ボタンを操作させない。
   // jsdom は inert をロール計算に反映しないため、ここでは「ボタンが inert の中にいる」
   // という構造だけを固定し、実際にフォーカスが到達しないことはブラウザで実測している。

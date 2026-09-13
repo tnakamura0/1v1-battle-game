@@ -1,17 +1,21 @@
 import type { ReactNode } from 'react'
 import { StatusPanel } from '@/components/StatusPanel'
 import type { PlayerState } from '@/game/types'
-import { ActionButton } from '@/components/ActionButton'
+import { ActionTriangle } from '@/components/ActionTriangle'
 
 /**
  * LPに置く対戦画面のプレビュー。
  *
  * 見た目を手で複製すると対戦画面の変更に追従できず、いずれ実物と食い違う。
- * そこで StatusPanel と ActionButton をそのまま描画している。ここに出ている
- * アイコン・行動色・HPバーは、対戦画面で実際に見えるものと同一。
+ * そこで StatusPanel と ActionTriangle をそのまま描画している。ここに出ている
+ * アイコン・行動色・HPバー・行動ボタンの三角配置は、対戦画面で実際に見えるものと同一。
  *
- * ただし実コンポーネントを使っても並び順までは揃わない。自分のステータスは必ず
- * 行動ボタンより上に置くこと（HandSelection と同じ並び）。ここが逆だったのが Issue #82。
+ * 行動ボタンは以前ここでグリッドごと手書きしていた。実コンポーネントを使っていても
+ * 「並べ方」は複製されたままだったので、配置を ActionTriangle に寄せて複製をなくした。
+ *
+ * ただし ActionTriangle を使っても、そのブロック同士の並び順までは揃わない。
+ * 自分のステータスは必ず行動ボタンより上に置くこと（HandSelection と同じ並び）。
+ * ここが逆だったのが Issue #82。
  *
  * ターンタイマーは描かない。参照デザインには秒数とプログレスバーがあるが、
  * それはリアルタイム対人戦を前提にした別仕様のもので、このゲームには存在しない。
@@ -34,11 +38,7 @@ export function BattlePreview() {
           行動を選択してください
         </div>
         <StatusPanel role="player" state={PLAYER} maxHp={PREVIEW_MAX_HP} />
-        <div className="grid grid-cols-3 gap-2.5">
-          <ActionButton action="charge" status="idle" onSelect={noop} />
-          <ActionButton action="attack" status="idle" onSelect={noop} />
-          <ActionButton action="guard" status="idle" onSelect={noop} />
-        </div>
+        <ActionTriangle onSelect={noop} />
       </div>
     </PreviewFrame>
   )

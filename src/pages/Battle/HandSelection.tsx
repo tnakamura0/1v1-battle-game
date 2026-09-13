@@ -1,5 +1,4 @@
-import { ActionButton, type ActionButtonStatus } from '@/components/ActionButton'
-import { ACTION_ORDER } from '@/components/actionStyle'
+import { ActionTriangle } from '@/components/ActionTriangle'
 import { StatusPanel } from '@/components/StatusPanel'
 import { getIllegalReason } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
@@ -94,23 +93,17 @@ export function HandSelection({
 
       <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">
         <StatusPanel role="player" state={player} maxHp={preset.initialHp} />
-        <div className="grid grid-cols-3 gap-2.5">
-          {ACTION_ORDER.map((action) => {
+        {/* 配置は ActionTriangle が持つ。LPのプレビューと同じものを使うことで乖離を防ぐ */}
+        <ActionTriangle
+          stateOf={(action) => {
             const reason = getIllegalReason(action, player, cpu)
-            const status: ActionButtonStatus = reason ? 'disabled' : 'idle'
-            return (
-              <ActionButton
-                key={action}
-                action={action}
-                status={status}
-                reasonLabel={
-                  reason ? reasonLabel(reason, player.guardCooldownRemaining) : undefined
-                }
-                onSelect={() => onSelectAction(action)}
-              />
-            )
-          })}
-        </div>
+            return {
+              status: reason ? 'disabled' : 'idle',
+              reasonLabel: reason ? reasonLabel(reason, player.guardCooldownRemaining) : undefined,
+            }
+          }}
+          onSelect={onSelectAction}
+        />
       </div>
     </div>
   )
