@@ -1,4 +1,5 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { RESULT_DELAY } from '@/components/motion'
 import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
@@ -20,11 +21,15 @@ export function BattleResult() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
-      <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-text-tertiary">
+      <span className="animate-fade-rise font-mono text-[11px] font-bold tracking-[0.18em] text-text-tertiary">
         GAME OVER
       </span>
 
-      <div className="flex flex-col gap-2">
+      {/*
+        見出しには、対戦画面の決着ターンと同じ final-pop を使う。同じ動きで出すことで、
+        直前に見た「決着」の見出しがそのままこの画面に引き継がれたように見える。
+      */}
+      <div className={`animate-final-pop ${RESULT_DELAY.headline} flex flex-col gap-2`}>
         <h1
           className={
             won
@@ -39,21 +44,30 @@ export function BattleResult() {
         </span>
       </div>
 
-      <div className="flex w-full flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
+      {/* 枠も1行目と同時に出す。枠だけ先に出ていると空の箱が置かれたままに見える */}
+      <div
+        className={`animate-fade-rise ${RESULT_DELAY.stats[0]} flex w-full flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track`}
+      >
         <StatRow
           label="最終HP（自分）"
           value={`${summary.player.hp}/${summary.preset.initialHp}`}
           role="player"
+          delayClass={RESULT_DELAY.stats[0]}
         />
         <StatRow
           label="最終HP（相手）"
           value={`${summary.cpu.hp}/${summary.preset.initialHp}`}
           role="opponent"
+          delayClass={RESULT_DELAY.stats[1]}
         />
-        <StatRow label="ターン数" value={`${summary.turnCount}ターン`} />
+        <StatRow
+          label="ターン数"
+          value={`${summary.turnCount}ターン`}
+          delayClass={RESULT_DELAY.stats[2]}
+        />
       </div>
 
-      <div className="flex w-full flex-col gap-3">
+      <div className={`animate-fade-rise ${RESULT_DELAY.actions} flex w-full flex-col gap-3`}>
         <button
           type="button"
           onClick={() =>
@@ -79,7 +93,7 @@ export function BattleResult() {
         href={buildShareUrl(summary)}
         target="_blank"
         rel="noopener noreferrer"
-        className="mt-2 inline-flex items-center font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+        className={`animate-fade-rise ${RESULT_DELAY.actions} mt-2 inline-flex items-center font-sans text-sm font-semibold text-accent transition-colors hover:text-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page`}
       >
         Xで結果をシェアする
       </a>
@@ -91,17 +105,20 @@ function StatRow({
   label,
   value,
   role,
+  delayClass,
 }: {
   label: string
   value: string
   /** 自分/相手の情報を表す行だけ指定する。持ち主のいない行（ターン数など）は省略する */
   role?: BattleRole
+  /** 上から順に出すための遅延。値は RESULT_DELAY.stats（components/motion.ts） */
+  delayClass: string
 }) {
   // 持ち主のいない行も同じ3pxを透明で確保して、テキストの左端を揃える
   const edgeClass = role ? ROLE_STYLE[role].edgeClass : 'border-l-transparent'
   return (
     <div
-      className={`flex items-center justify-between border-l-[3px] ${edgeClass} bg-bg-row px-4 py-3`}
+      className={`animate-row-in ${delayClass} flex items-center justify-between border-l-[3px] ${edgeClass} bg-bg-row px-4 py-3`}
     >
       <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
         {label}

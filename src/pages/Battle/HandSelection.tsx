@@ -65,8 +65,15 @@ export function HandSelection({
             TURN {turn}
           </span>
         </div>
+        {/*
+          動かすのはこのバナーと行動ボタンだけ。上下のステータスパネルと TURN n、
+          ターン履歴は動かさない。このコンポーネントは毎ターン作り直される
+          （Battle.tsx が HandSelection と TurnResult を入れ替えるため）ので、
+          ここに書いた動きは1試合で20回以上再生される。
+          変わらない枠は止めたままにして、「自分の番が来た」ことだけを動かす。
+        */}
         <div
-          className="flex-none rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light"
+          className="animate-fade-rise flex-none rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light"
           aria-live="polite"
         >
           行動を選択してください
@@ -93,17 +100,28 @@ export function HandSelection({
 
       <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">
         <StatusPanel role="player" state={player} maxHp={preset.initialHp} />
-        {/* 配置は ActionTriangle が持つ。LPのプレビューと同じものを使うことで乖離を防ぐ */}
-        <ActionTriangle
-          stateOf={(action) => {
-            const reason = getIllegalReason(action, player, cpu)
-            return {
-              status: reason ? 'disabled' : 'idle',
-              reasonLabel: reason ? reasonLabel(reason, player.guardCooldownRemaining) : undefined,
-            }
-          }}
-          onSelect={onSelectAction}
-        />
+        {/*
+          配置は ActionTriangle が持つ。LPのプレビューと同じものを使うことで乖離を防ぐ。
+
+          動きは ActionTriangle の中ではなく外側の器に付ける。中に入れると
+          LPのプレビュー（飾りとして置いてあるだけ）まで動いてしまう。
+          3つを順にずらして出さないのは、三角形という並び自体が情報だから。
+          バラバラに出ると、出そろうまで形が読めない。
+        */}
+        <div className="animate-fade-rise">
+          <ActionTriangle
+            stateOf={(action) => {
+              const reason = getIllegalReason(action, player, cpu)
+              return {
+                status: reason ? 'disabled' : 'idle',
+                reasonLabel: reason
+                  ? reasonLabel(reason, player.guardCooldownRemaining)
+                  : undefined,
+              }
+            }}
+            onSelect={onSelectAction}
+          />
+        </div>
       </div>
     </div>
   )

@@ -105,6 +105,152 @@
   --radius-chip: 6px;
 
   --shadow-card: 0 1px 0 0 rgba(255, 255, 255, 0.03) inset, 0 12px 24px -16px rgba(0, 0, 0, 0.65);
+
+  /*
+   * モーション。Tailwind v4 では --animate-<名前> がそのまま animate-<名前>
+   * ユーティリティになるので、独自CSSファイルを増やさずに済む。
+   *
+   * すべて fill-mode: both を付けている。これが「開始前は最初のフレームで待つ」を
+   * 意味し、animation-delay と組み合わせて段階表示を作る仕組みそのものになっている
+   * （詳しくは components/motion.ts）。both を外すと遅延中に中身が見えてしまい、
+   * 段取りが成立しない。
+   *
+   * 1つ1つは最長520ms。段取り全体でも、いちばん長い手の結果（変化行が5行あるとき）で
+   * 約1.24秒に収まる。結果フェーズは8秒（決着時5秒。game/presets.ts）なので、
+   * 演出が終わったあとに読む時間が十分残る。
+   */
+  --animate-fade-rise: fade-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-enter-left: enter-left 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-enter-right: enter-right 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-impact: impact 420ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-pop-in: pop-in 380ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-final-pop: final-pop 520ms cubic-bezier(0.34, 1.56, 0.64, 1) both;
+  --animate-row-in: row-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-tick: tick 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-damage-flash: damage-flash 460ms ease-out both;
+}
+
+/*
+ * 上の --animate-* トークンの実体。
+ *
+ * 動かすのは transform と opacity（と damage-flash の色）だけに限っている。
+ * 幅・高さ・余白を動かすとレイアウトが再計算され、隣の要素まで揺れるため。
+ * enter-left / enter-right が translateX なのも同じ理由で、position を動かさない。
+ */
+@keyframes fade-rise {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes enter-left {
+  from {
+    opacity: 0;
+    transform: translateX(-24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes enter-right {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+/* 行動カードがぶつかった瞬間。一度大きくなってから戻る */
+@keyframes impact {
+  from {
+    opacity: 0;
+    transform: scale(0.7);
+  }
+  60% {
+    opacity: 1;
+    transform: scale(1.15);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: scale(0.82);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* pop-in を強めたもの。決着ターンと最終結果画面の見出しだけに使う */
+@keyframes final-pop {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes row-in {
+  from {
+    opacity: 0;
+    transform: translateX(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes tick {
+  from {
+    opacity: 0;
+    transform: scale(1.35);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/*
+ * 今回失ったHPセル。枠線だけのセルが一瞬塗りつぶされて、元の枠線だけに戻る。
+ * 終了後の見た目は damage-flash を付ける前と同じ（枠線 damage・面は透明）。
+ */
+@keyframes damage-flash {
+  from {
+    opacity: 0;
+    background-color: var(--color-damage);
+    transform: scaleY(2.2);
+  }
+  45% {
+    opacity: 1;
+    background-color: var(--color-damage);
+    transform: scaleY(2.2);
+  }
+  to {
+    opacity: 1;
+    background-color: transparent;
+    transform: scaleY(1);
+  }
 }
 
 :root {
@@ -143,13 +289,28 @@ body {
   }
 }
 
+/*
+ * 動きを嫌う設定のとき、再生時間だけでなく「遅延」も必ず打ち消すこと。
+ *
+ * 対戦画面の段階表示は animation-delay + fill-mode: both で作っている
+ * （components/motion.ts）。つまり遅延中の要素は opacity: 0 で待っている。
+ * duration だけ潰して delay を残すと、いちばん遅い変化行が最大960ms間
+ * なにも見えないまま突然現れることになり、動きを消したい人にとって
+ * いちばん悪い状態になる。
+ *
+ * !important なのでインラインstyleにも勝つ。ここを外すと段階表示の全体が
+ * そのまま事故になる。動かすときは reduce を有効にして、対戦画面の各フェーズで
+ * 何も隠れていないことを必ず確かめること。
+ */
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,
   *::after {
     animation-duration: 0.001ms !important;
+    animation-delay: 0s !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    transition-delay: 0s !important;
     scroll-behavior: auto !important;
   }
 }
