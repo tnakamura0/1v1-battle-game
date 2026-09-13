@@ -57,6 +57,13 @@ export function ActionButton({
        * 下限になってしまい、それ以上縮まなかったため。
        * 背の高い画面はこれまでどおり（120px / p-3 / gap-2.5）で変えていない。
        * 幅ではなく高さの条件なのは、足りなくなるのが縦だから。
+       *
+       * 詰める理由は「三角形に並べたから」で本来は並べる側の都合だが、指定はここに置く。
+       * className は文字列の末尾に連結されるだけで、外から渡した min-h が
+       * ここの指定に勝つとは限らないため（tailwind-merge を使っていない）。
+       *
+       * 700px は HandSelection のアリーナの閾値と同じ値だが、根拠は別
+       * （あちらは円が切れない高さ、こちらは履歴を1行残せる高さ）。連動させないこと。
        */
       className={`relative flex min-h-[96px] flex-1 touch-manipulation flex-col items-center justify-center gap-1.5 rounded-action p-2.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page disabled:cursor-not-allowed [@media(min-height:700px)]:min-h-[120px] [@media(min-height:700px)]:gap-2.5 [@media(min-height:700px)]:p-3 ${stateClassName} ${className ?? ''}`}
     >

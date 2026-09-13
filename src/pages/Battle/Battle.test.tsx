@@ -93,9 +93,9 @@ describe('Battle', () => {
     })
 
     const battle = within(battleArea())
-    const button = (name: string) => battle.getByRole('button', { name: new RegExp(name) })
-    expectRenderedBefore(button('チャージ'), button('攻撃'))
-    expectRenderedBefore(button('攻撃'), button('ガード'))
+    const action = (name: RegExp) => battle.getByRole('button', { name })
+    expectRenderedBefore(action(/チャージ/), action(/攻撃/))
+    expectRenderedBefore(action(/攻撃/), action(/ガード/))
   })
 
   it('resolves a turn on submit and auto-advances to the next turn', () => {

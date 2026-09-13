@@ -69,9 +69,9 @@ describe('Home', () => {
   // 対になる検証が Battle.test.tsx にもある。
   it('keeps the action buttons in charge/attack/guard order', () => {
     renderHome()
-    const button = (name: string) => screen.getByRole('button', { name: new RegExp(name) })
-    expectRenderedBefore(button('チャージ'), button('攻撃'))
-    expectRenderedBefore(button('攻撃'), button('ガード'))
+    const action = (name: RegExp) => screen.getByRole('button', { name })
+    expectRenderedBefore(action(/チャージ/), action(/攻撃/))
+    expectRenderedBefore(action(/攻撃/), action(/ガード/))
   })
 
   // プレビューは飾りなので、中の行動ボタンを操作させない。
