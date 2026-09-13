@@ -82,6 +82,22 @@ describe('Battle', () => {
     )
   })
 
+  // Issue #103：行動ボタンは三角形（上段中央=チャージ／下段左=攻撃／下段右=ガード）。
+  // 見た目の順序と読み上げ・タブ順が一致していることを、DOM順として固定する。
+  // 三角形かどうかはCSSなので jsdom では見えない。配置そのものはブラウザで実測している。
+  // 対になる検証が Home.test.tsx にある。
+  it('keeps the action buttons in charge/attack/guard order', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+
+    const battle = within(battleArea())
+    const action = (name: RegExp) => battle.getByRole('button', { name })
+    expectRenderedBefore(action(/チャージ/), action(/攻撃/))
+    expectRenderedBefore(action(/攻撃/), action(/ガード/))
+  })
+
   it('resolves a turn on submit and auto-advances to the next turn', () => {
     renderBattle({ preset })
     act(() => {

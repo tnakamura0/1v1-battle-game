@@ -11,6 +11,12 @@ interface ActionButtonProps {
   /** status==='disabled' のときに表示する理由チップの文言（未指定時は既定キャプション） */
   reasonLabel?: string
   onSelect: () => void
+  /**
+   * 並べる側がグリッド上の位置を渡すために使う（例: 'col-start-2 col-span-2'）。
+   * 配置はボタン自身ではなく並べる側の関心なので、ここで受け取って外から決められるようにする。
+   * 実際の指定は components/ActionTriangle.tsx にある。
+   */
+  className?: string
 }
 
 const DEFAULT_CAPTION: Record<Action, string> = {
@@ -19,7 +25,13 @@ const DEFAULT_CAPTION: Record<Action, string> = {
   guard: 'READY',
 }
 
-export function ActionButton({ action, status, reasonLabel, onSelect }: ActionButtonProps) {
+export function ActionButton({
+  action,
+  status,
+  reasonLabel,
+  onSelect,
+  className,
+}: ActionButtonProps) {
   const isDisabled = status === 'disabled'
   const isSelected = status === 'selected'
   const caption = isDisabled ? (reasonLabel ?? DEFAULT_CAPTION[action]) : DEFAULT_CAPTION[action]
@@ -35,7 +47,25 @@ export function ActionButton({ action, status, reasonLabel, onSelect }: ActionBu
       type="button"
       disabled={isDisabled}
       onClick={onSelect}
-      className={`relative flex min-h-[120px] flex-1 touch-manipulation flex-col items-center justify-center gap-2.5 rounded-action p-3 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page disabled:cursor-not-allowed ${stateClassName}`}
+      /*
+       * 三角形に並ぶと2段になり、行動ボタンの占める高さが約130px増える（Issue #103）。
+       * 対戦画面ではその分がターン履歴の表示領域から引かれるので、背の低い画面だけ詰める。
+       * 375×667 で実測したところ、120pxのままだと履歴が56pxしか残らず、
+       * 履歴1行（89px）すら表示できなかった。
+       *
+       * 高さだけでなく余白と間隔も詰めているのは、min-h を下げても中身の高さが
+       * 下限になってしまい、それ以上縮まなかったため。
+       * 背の高い画面はこれまでどおり（120px / p-3 / gap-2.5）で変えていない。
+       * 幅ではなく高さの条件なのは、足りなくなるのが縦だから。
+       *
+       * 詰める理由は「三角形に並べたから」で本来は並べる側の都合だが、指定はここに置く。
+       * className は文字列の末尾に連結されるだけで、外から渡した min-h が
+       * ここの指定に勝つとは限らないため（tailwind-merge を使っていない）。
+       *
+       * 700px は HandSelection のアリーナの閾値と同じ値だが、根拠は別
+       * （あちらは円が切れない高さ、こちらは履歴を1行残せる高さ）。連動させないこと。
+       */
+      className={`relative flex min-h-[96px] flex-1 touch-manipulation flex-col items-center justify-center gap-1.5 rounded-action p-2.5 text-center transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page disabled:cursor-not-allowed [@media(min-height:700px)]:min-h-[120px] [@media(min-height:700px)]:gap-2.5 [@media(min-height:700px)]:p-3 ${stateClassName} ${className ?? ''}`}
     >
       {isSelected && (
         <span className="absolute right-2 top-2 rounded-chip bg-accent px-[5px] py-[2px] font-mono text-[8px] font-bold tracking-[0.08em] text-bg-page">
