@@ -136,6 +136,9 @@
  * 動かすのは transform と opacity（と damage-flash の色）だけに限っている。
  * 幅・高さ・余白を動かすとレイアウトが再計算され、隣の要素まで揺れるため。
  * enter-left / enter-right が translateX なのも同じ理由で、position を動かさない。
+ *
+ * ここにない @keyframes が1つだけある（countdown-bar）。トークンを持たない例外なので、
+ * このファイルの下のほう、.countdown-bar クラスの隣に置いてある。
  */
 @keyframes fade-rise {
   from {
@@ -290,6 +293,44 @@ body {
 }
 
 /*
+ * 結果画面の残り時間バー（pages/Battle/TurnResult.tsx）。
+ * 再生時間はカスタムプロパティ --countdown-duration で呼び出し側から受け取る。
+ *
+ * 上の --animate-* トークンにしていないのは2つの理由から。
+ * 1. トークンは再生時間まで含めて固定になる。このバーはフェーズによって長さが変わる
+ *    （通常8秒／決着時5秒。game/presets.ts）ので、値を呼び出し側から渡す必要がある。
+ *    任意値ユーティリティで書くことは一応できるが、animation ショートハンド全体を
+ *    アンダースコア区切りの1つの文字列に詰めることになり、まず読めない
+ * 2. 下の prefers-reduced-motion の例外を手で書く必要がある。!important を付けられるのは
+ *    このファイルに直接書いた規則だけで、ユーティリティ側からは指定できない
+ *
+ * 動かすのは width ではなく transform: scaleX。幅を動かすとレイアウトが
+ * 再計算されるので、上の @keyframes 群と同じ方針に揃えている。
+ *
+ * linear は必須。残り時間そのものを表す帯なので、緩急を付けると
+ * 「まだ余裕がある / もう終わる」を実際とずれて伝えてしまう。
+ *
+ * **このクラスは必ず --countdown-duration とセットで使うこと。** 変数が未定義だと
+ * animation ショートハンドごと無効になり、バーが満タンのまま固まる（0%で固まるより
+ * 気づきにくい壊れ方をする）。それを避けるためだけのフォールバックを置いているが、
+ * 実際の値は常に呼び出し側が presets.ts から渡すので、この 8000ms が使われることはない。
+ */
+.countdown-bar {
+  transform-origin: left;
+  animation: countdown-bar var(--countdown-duration, 8000ms) linear forwards;
+}
+
+/* トークンを持たない唯一の @keyframes。上のクラスとセットなのでここに置いている */
+@keyframes countdown-bar {
+  from {
+    transform: scaleX(1);
+  }
+  to {
+    transform: scaleX(0);
+  }
+}
+
+/*
  * 動きを嫌う設定のとき、再生時間だけでなく「遅延」も必ず打ち消すこと。
  *
  * 対戦画面の段階表示は animation-delay + fill-mode: both で作っている
@@ -312,5 +353,24 @@ body {
     transition-duration: 0.001ms !important;
     transition-delay: 0s !important;
     scroll-behavior: auto !important;
+  }
+
+  /*
+   * 残り時間バーだけは、動きを嫌う設定でも止めない。
+   *
+   * このバーは装飾ではなく「あと何秒か」という情報そのものを運んでいる。
+   * 上の `*` の規則をそのままかけると再生が一瞬で終わり、数字が8秒かけて
+   * 減っていく横で、バーは空のまま8秒間居座る。動きを消したいだけの人に
+   * 壊れた表示を見せることになるので、こちらのほうが有害。
+   *
+   * !important 同士の優先順位は詳細度で決まるので、.countdown-bar（0,1,0）が
+   * 上の *（0,0,0）に勝つ。--countdown-duration は呼び出し側のインラインstyleから来る。
+   *
+   * **ここを前例に「動きを止めたくないから」と例外を増やさないこと。**
+   * 例外にしてよいのは、止めると情報が欠けるか誤りになるものだけ。
+   * 演出（motion.ts の段階表示）はすべて止めてよい側で、実際に止めている。
+   */
+  .countdown-bar {
+    animation-duration: var(--countdown-duration) !important;
   }
 }
