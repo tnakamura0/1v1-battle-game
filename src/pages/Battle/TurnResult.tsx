@@ -1,3 +1,4 @@
+import type { CSSProperties } from 'react'
 import { StatusPanel } from '@/components/StatusPanel'
 import { ACTION_STYLE } from '@/components/actionStyle'
 import { ROLE_STYLE } from '@/components/roleStyle'
@@ -111,9 +112,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   const changeRows = buildChangeRows(lastTurn)
   const subline = outcomeSubline(lastTurn.outcome)
   const isHit = lastTurn.outcome === 'player-hit-cpu' || lastTurn.outcome === 'cpu-hit-player'
-  const totalSeconds = Math.ceil(
-    (isFinal ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS) / 1000,
-  )
+  const totalMs = isFinal ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS
 
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
@@ -273,12 +272,24 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             <span className="font-mono text-[11px] font-semibold text-text-tertiary">s</span>
           </span>
         </div>
+        {/*
+          バーはJSで幅を計算せず、CSSアニメーション1本に任せている（index.css の .countdown-bar）。
+          幅を secondsRemaining から出していたころは、この値が整数（Math.ceil）なので
+          8段階でしか変わらず、1段ごとに約1秒止まって見えていた。
+
+          数字とバーはどちらも残り時間を表しているが、粒度が違うので段では一致しない。
+          数字は秒単位（8s → 7s）、バーは連続的に減る。数字が「8s」でもバーは93%、
+          といった状態になるのが正しい。
+
+          再生時間は game/presets.ts のフェーズ長をそのまま渡す。motion.ts には置かない。
+          あちらは演出の段取りで、これはフェーズの長さという別のもの。
+          ここに値を写すと、presets.ts を変えたときにバーだけ黙ってずれる。
+        */}
         <div className="h-1 overflow-hidden rounded-[2px] bg-bg-track">
+          {/* 角丸は親の overflow-hidden がクリップするので、ここには要らない */}
           <div
-            className="h-full rounded-[2px] bg-[#566B80] transition-[width]"
-            style={{
-              width: `${Math.max(0, Math.min(100, (secondsRemaining / totalSeconds) * 100))}%`,
-            }}
+            className="countdown-bar h-full bg-[#566B80]"
+            style={{ '--countdown-duration': `${totalMs}ms` } as CSSProperties}
           />
         </div>
       </div>
