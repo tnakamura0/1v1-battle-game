@@ -9,6 +9,15 @@ interface StatusPanelProps {
   maxHp: number
   /** 直前のHP（結果画面での「今回失ったセル」の表示に使う） */
   hpBefore?: number
+  /**
+   * 「今回失ったセル」を光らせる遅延のクラス（例: '[animation-delay:440ms]'）。
+   *
+   * 遅延の値をここに直接書かないのは、それが対戦画面の演出の段取りであって
+   * ステータスパネルの都合ではないため。結果画面では見出しと同時に光らせたいので
+   * TurnResult が REVEAL_DELAY.headline を渡す。hpBefore と同じく、
+   * 「いつどう見せたいか」は呼び出し側が決める。
+   */
+  damageFlashDelayClass?: string
   dimmed?: boolean
 }
 
@@ -19,7 +28,14 @@ interface StatusPanelProps {
  * 行動色（チャージ・攻撃・ガード）とは別軸の情報なので、エネルギーの粒や
  * 行動アイコンの色には使わない。
  */
-export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: StatusPanelProps) {
+export function StatusPanel({
+  role,
+  state,
+  maxHp,
+  hpBefore,
+  damageFlashDelayClass = '',
+  dimmed = false,
+}: StatusPanelProps) {
   const { label, textClass, hpCellClass, surfaceClass } = ROLE_STYLE[role]
   const justDamagedIndex = hpBefore !== undefined && hpBefore > state.hp ? state.hp : null
 
@@ -45,10 +61,19 @@ export function StatusPanel({ role, state, maxHp, hpBefore, dimmed = false }: St
           {Array.from({ length: maxHp }, (_, index) => {
             const filled = index < state.hp
             const justDamaged = index === justDamagedIndex
+            /*
+              今回失ったセルは、いったん塗りつぶされてから枠線だけに戻る（damage-flash）。
+              アニメーションの終了状態は、これを入れる前の見た目とまったく同じ
+              （枠線 damage・面は透明）。いつ光らせるかは damageFlashDelayClass 任せで、
+              渡されなければ即座に光る。
+
+              この分岐に入るのは hpBefore が渡されたときだけで、渡しているのは
+              TurnResult のみ。つまり結果フェーズ限定であることは構造で保証されている。
+            */
             const cellClassName = filled
               ? `h-[7px] flex-1 rounded-[2px] ${hpCellClass}`
               : justDamaged
-                ? 'h-[7px] flex-1 rounded-[2px] border border-damage bg-transparent'
+                ? `h-[7px] flex-1 rounded-[2px] border border-damage bg-transparent animate-damage-flash ${damageFlashDelayClass}`
                 : 'h-[7px] flex-1 rounded-[2px] bg-bg-hp-empty'
             return <div key={index} className={cellClassName} />
           })}

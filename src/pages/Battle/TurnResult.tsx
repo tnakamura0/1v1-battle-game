@@ -2,6 +2,7 @@ import { StatusPanel } from '@/components/StatusPanel'
 import { ACTION_STYLE } from '@/components/actionStyle'
 import { ROLE_STYLE } from '@/components/roleStyle'
 import { ActionIcon } from '@/components/ActionIcon'
+import { CHANGE_ROW_DELAY, REVEAL_DELAY } from '@/components/motion'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
 import type { BattlePreset, TurnRecord } from '@/game/types'
@@ -117,12 +118,21 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-        <div className="flex flex-col gap-2">
+        {/*
+          まず場の状況と出した手が同時に入り、そこから
+          「ぶつかった → どうなった → 何が変わったか」と続く。
+          遅延の値は components/motion.ts にまとまっている。
+
+          要素を出し入れしているわけではないことに注意。すべて最初からDOMにあり、
+          animation-delay で見えていないだけなので、stateもタイマーも増えていない。
+        */}
+        <div className="animate-fade-rise flex flex-col gap-2">
           <StatusPanel
             role="opponent"
             state={lastTurn.cpuAfter}
             maxHp={preset.initialHp}
             hpBefore={lastTurn.cpuBefore.hp}
+            damageFlashDelayClass={REVEAL_DELAY.headline}
             dimmed
           />
           <StatusPanel
@@ -130,11 +140,12 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             state={lastTurn.playerAfter}
             maxHp={preset.initialHp}
             hpBefore={lastTurn.playerBefore.hp}
+            damageFlashDelayClass={REVEAL_DELAY.headline}
             dimmed
           />
         </div>
 
-        <div className="flex items-center justify-between">
+        <div className="animate-fade-rise flex items-center justify-between">
           <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
             TURN {turn}
           </span>
@@ -143,9 +154,14 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           </span>
         </div>
 
+        {/*
+          自分のカードは左から、相手のカードは右から入れる。並び（自分が左・相手が右）は
+          Versus と共通で、画面をまたいでどちら側が自分かが入れ替わらないようにしている。
+          動きの向きもその並びに従わせることで、「両端から出てきて中央でぶつかる」が成立する。
+        */}
         <div className="flex items-stretch gap-2.5">
           <div
-            className={`flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-left flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
           >
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.player.label}
@@ -157,11 +173,14 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
               {ACTION_LABEL[lastTurn.playerAction]}
             </span>
           </div>
-          <div className="flex w-8 flex-none items-center justify-center font-mono text-xs font-extrabold tracking-[0.06em] text-text-tertiary">
+          {/* 両側のカードが入り終わったところで弾ける。ぶつかった瞬間そのもの */}
+          <div
+            className={`animate-impact ${REVEAL_DELAY.impact} flex w-8 flex-none items-center justify-center font-mono text-xs font-extrabold tracking-[0.06em] text-text-tertiary`}
+          >
             VS
           </div>
           <div
-            className={`flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-right flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
           >
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.opponent.label}
@@ -175,12 +194,17 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           </div>
         </div>
 
+        {/*
+          ぶつかった直後に「で、どうなったか」が弾んで出る。決着したターンだけ
+          大きく弾ませて（final-pop）、いつものターンとの差を付ける。同じ動きを
+          最終結果画面の「勝利」「敗北」にも使っていて、次の画面への続きになる。
+        */}
         <div
-          className={
+          className={`${isFinal ? 'animate-final-pop' : 'animate-pop-in'} ${REVEAL_DELAY.headline} ${
             isHit
               ? 'flex flex-col items-center gap-2 rounded-card border border-damage/30 bg-damage/10 px-4 py-6'
               : 'flex flex-col items-center gap-2 rounded-card border border-border-default bg-bg-card px-4 py-6 shadow-card'
-          }
+          }`}
         >
           <span
             className={
@@ -197,11 +221,25 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         </div>
 
         {changeRows.length > 0 ? (
-          <div className="flex flex-none flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track">
-            {changeRows.map((row) => (
+          /*
+            行だけでなく、行を入れる枠（bg-bg-track の帯）も一緒に出すこと。
+            枠を出しっぱなしにすると、行が出てくるまでの間ずっと空の灰色の箱が
+            置かれたままになり、読み込み中のプレースホルダのように見える。
+            1行目と同じ遅延にして、枠と1行目が同時に現れるようにしている。
+          */
+          <div
+            className={`animate-fade-rise ${CHANGE_ROW_DELAY[0]} flex flex-none flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track`}
+          >
+            {changeRows.map((row, index) => (
               <div
                 key={row.label}
-                className={`flex items-center justify-between border-l-[3px] ${row.edgeClass} bg-bg-row px-4 py-3`}
+                /*
+                  上から順に出す。行数は buildChangeRows の分岐と同じ最大5なので
+                  CHANGE_ROW_DELAY を超えることはない。仮に超えても壊れはせず
+                  遅延のクラスが付かないだけだが、それだと1行だけ先に出て目立つので
+                  最後の値で頭打ちにしている。
+                */
+                className={`animate-row-in ${CHANGE_ROW_DELAY[index] ?? CHANGE_ROW_DELAY[CHANGE_ROW_DELAY.length - 1]} flex items-center justify-between border-l-[3px] ${row.edgeClass} bg-bg-row px-4 py-3`}
               >
                 <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
                   {row.label}
@@ -214,7 +252,9 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             ))}
           </div>
         ) : (
-          <p className="rounded-chip border border-border-default bg-bg-card px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary shadow-card">
+          <p
+            className={`animate-row-in ${CHANGE_ROW_DELAY[0]} rounded-chip border border-border-default bg-bg-card px-4 py-4 text-center font-sans text-sm font-semibold text-text-tertiary shadow-card`}
+          >
             ステータス変化なし
           </p>
         )}
