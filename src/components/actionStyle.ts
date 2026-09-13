@@ -47,5 +47,9 @@ export const ACTION_STYLE: Record<
  * 3つの行動を並べるときの順序。HandSelection の行動ボタン、Rules の行動カードと
  * 組み合わせ表の行・列、LPの ActionShowcase——すべてこの順で揃える。
  * 共有される定数なので、呼び出し側から並べ替えられないよう readonly にしている。
+ *
+ * 行動ボタンは横一列ではなく三角形に並ぶ（components/ActionTriangle.tsx）が、
+ * 変わったのは並べ方だけで順序はこのまま。三角形でも
+ * 上段中央 → 下段左 → 下段右 がこの順に対応する。
  */
 export const ACTION_ORDER: readonly Action[] = ['charge', 'attack', 'guard'] as const
