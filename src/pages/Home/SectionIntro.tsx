@@ -30,7 +30,7 @@ export function SectionIntro({ meta, title, description, align = 'center' }: Sec
     <div
       className={`flex flex-col items-center gap-2 text-center ${split ? 'sm:items-start sm:text-left' : ''}`}
     >
-      <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-accent">{meta}</span>
+      <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">{meta}</span>
       <h2 className="font-sans text-2xl font-extrabold leading-tight text-text-primary text-balance sm:text-3xl">
         {title}
       </h2>

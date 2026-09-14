@@ -29,10 +29,10 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
           className="flex flex-none flex-col gap-1.5 border-l-[3px] border-l-accent bg-bg-row px-3.5 py-3"
         >
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[10px] font-bold tracking-[0.1em] text-text-secondary">
+            <span className="font-mono text-meta font-bold tracking-[0.1em] text-text-secondary">
               TURN {latest.turn}
             </span>
-            <span className="rounded-[4px] bg-accent px-1.5 py-0.5 font-mono text-[8px] font-bold tracking-[0.1em] text-bg-page">
+            <span className="rounded-[4px] bg-accent px-1.5 py-0.5 font-mono text-chip font-bold tracking-[0.1em] text-bg-page">
               LATEST
             </span>
           </div>
@@ -40,12 +40,12 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
             <span className={ACTION_STYLE[latest.playerAction].textClass}>
               {ACTION_LABEL[latest.playerAction]}
             </span>
-            <span className="font-mono text-[9px] font-semibold text-text-tertiary">VS</span>
+            <span className="font-mono text-meta font-semibold text-text-tertiary">VS</span>
             <span className={ACTION_STYLE[latest.cpuAction].textClass}>
               {ACTION_LABEL[latest.cpuAction]}
             </span>
           </div>
-          <p className="font-mono text-[11px] font-medium text-text-secondary">
+          <p className="font-mono text-meta font-medium text-text-secondary">
             {outcomeHistoryLine(latest.outcome)}
           </p>
         </li>
@@ -55,7 +55,7 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
             key={record.turn}
             className="flex flex-none items-center gap-3 bg-bg-row px-3.5 py-2.5"
           >
-            <span className="w-[46px] flex-none font-mono text-[10px] font-semibold text-text-tertiary">
+            <span className="w-[46px] flex-none font-mono text-meta font-semibold text-text-tertiary">
               TURN {record.turn}
             </span>
             <span className="font-sans text-xs font-medium text-text-secondary">
@@ -72,7 +72,7 @@ export function TurnHistoryList({ history }: TurnHistoryListProps) {
 function HistoryHeader() {
   return (
     <div className="flex flex-none items-center gap-2 px-0.5">
-      <span className="font-mono text-[9px] font-bold tracking-[0.16em] text-text-tertiary">
+      <span className="font-mono text-meta font-bold tracking-[0.16em] text-text-tertiary">
         TURN HISTORY
       </span>
       <div className="h-px flex-1 bg-bg-track" />

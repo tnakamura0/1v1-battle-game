@@ -38,7 +38,7 @@ export function ActionShowcase() {
               {ACTION_LABEL[action]}
             </span>
             <span
-              className={`flex-none rounded-pill border px-2.5 py-1 font-mono text-[10px] font-semibold tracking-[0.04em] sm:px-3.5 sm:py-1.5 sm:text-[11px] ${badgeClass}`}
+              className={`flex-none rounded-pill border px-2.5 py-1 font-mono text-chip font-semibold tracking-[0.04em] sm:px-3.5 sm:py-1.5 sm:text-meta ${badgeClass}`}
             >
               {ACTION_EFFECT[action]}
             </span>

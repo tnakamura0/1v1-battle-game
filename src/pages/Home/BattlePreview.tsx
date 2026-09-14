@@ -1,21 +1,31 @@
 import type { ReactNode } from 'react'
+import { ActionPromptBand } from '@/components/ActionPromptBand'
+import { ActionTriangle } from '@/components/ActionTriangle'
+import { BattleFrame } from '@/components/BattleFrame'
 import { StatusPanel } from '@/components/StatusPanel'
 import type { PlayerState } from '@/game/types'
-import { ActionTriangle } from '@/components/ActionTriangle'
 
 /**
  * LPに置く対戦画面のプレビュー。
  *
  * 見た目を手で複製すると対戦画面の変更に追従できず、いずれ実物と食い違う。
- * そこで StatusPanel と ActionTriangle をそのまま描画している。ここに出ている
- * アイコン・行動色・HPバー・行動ボタンの三角配置は、対戦画面で実際に見えるものと同一。
+ * そこで**枠ごと BattleFrame をそのまま描画している**。ここに出ているアイコン・行動色・
+ * HPバー・行動ボタンの三角配置に加えて、**ブロックの並び順も対戦画面と同一**になる。
  *
- * 行動ボタンは以前ここでグリッドごと手書きしていた。実コンポーネントを使っていても
- * 「並べ方」は複製されたままだったので、配置を ActionTriangle に寄せて複製をなくした。
+ * ## なぜ枠ごと共有しているか
  *
- * ただし ActionTriangle を使っても、そのブロック同士の並び順までは揃わない。
- * 自分のステータスは必ず行動ボタンより上に置くこと（HandSelection と同じ並び）。
- * ここが逆だったのが Issue #82。
+ * この乖離は2回起きている。
+ * - Issue #82 … 行動ボタンをグリッドごと手書きしていて、自分のステータスとの上下が逆だった
+ *   → 配置を ActionTriangle に寄せて複製をなくした
+ * - Issue #117 … ActionTriangle を使っても「ブロック同士の並び順」は手書きのまま残っており、
+ *   対戦画面が TURN n → 帯 → 相手ステータス に変わった（Issue #115）のに
+ *   プレビューだけ 相手ステータス → TURN n → 帯 の旧い並びで取り残された
+ *   → 並び順そのものを持っている BattleFrame ごと共有して止めた
+ *
+ * **実コンポーネントを部品として使うだけでは、部品の「並べ方」は複製されたまま残る。**
+ * 2度とも同じ形で再発しているので、ここに手書きのレイアウトを足さないこと。
+ * 対戦画面に見えていて、ここに出したいものが増えたときは、
+ * BattleFrame のスロット（statusBand / actions / children）に載せる。
  *
  * ターンタイマーは描かない。参照デザインには秒数とプログレスバーがあるが、
  * それはリアルタイム対人戦を前提にした別仕様のもので、このゲームには存在しない。
@@ -25,21 +35,25 @@ const PLAYER: PlayerState = { hp: 3, energy: 2, guardCooldownRemaining: 0 }
 // 「相手を読む」の例なので、ガードが切れていて攻撃が通る局面を映す
 const OPPONENT_ON_COOLDOWN: PlayerState = { hp: 2, energy: 3, guardCooldownRemaining: 2 }
 const PREVIEW_MAX_HP = 3
+// 序盤でも終盤でもない、読み合いが続いている途中の局面に見せる
+const PREVIEW_TURN = 3
 
 export function BattlePreview() {
   return (
     <PreviewFrame>
-      <div className="flex flex-col gap-3 p-4">
-        <StatusPanel role="opponent" state={OPPONENT} maxHp={PREVIEW_MAX_HP} />
-        <span className="font-mono text-[13px] font-bold tracking-widest text-text-primary">
-          TURN 3
-        </span>
-        <div className="rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light">
-          行動を選択してください
-        </div>
-        <StatusPanel role="player" state={PLAYER} maxHp={PREVIEW_MAX_HP} />
-        <ActionTriangle onSelect={noop} />
-      </div>
+      {/*
+        中身（children）は渡さない。対戦画面ではここにターン履歴や対峙の円が入るが、
+        プレビューは1画面に収める飾りなので出さない。中央の領域は高さ0になり、
+        相手ステータスと自分ステータスが直に並ぶ。
+      */}
+      <BattleFrame
+        maxHp={PREVIEW_MAX_HP}
+        turn={PREVIEW_TURN}
+        opponent={{ state: OPPONENT }}
+        player={{ state: PLAYER }}
+        statusBand={<ActionPromptBand />}
+        actions={<ActionTriangle onSelect={noop} />}
+      />
     </PreviewFrame>
   )
 }

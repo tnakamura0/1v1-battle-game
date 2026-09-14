@@ -87,7 +87,7 @@ export function Rules() {
       </Link>
 
       <div className="flex flex-col gap-2">
-        <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-accent">
+        <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">
           HOW TO PLAY
         </span>
         <h1 className="font-sans text-3xl font-extrabold text-text-primary sm:text-4xl">
@@ -105,7 +105,7 @@ export function Rules() {
         <ol className="flex flex-col gap-2">
           {TURN_STEPS.map((step, index) => (
             <li key={step} className="flex items-baseline gap-3">
-              <span className="font-mono text-[11px] font-bold text-accent">STEP{index + 1}</span>
+              <span className="font-mono text-meta font-bold text-accent">STEP{index + 1}</span>
               <span className="font-sans text-sm text-text-secondary">{step}</span>
             </li>
           ))}
@@ -157,7 +157,7 @@ export function Rules() {
           横スクロールなしに4列が収まり、表を1つに統合できている。
         */}
         <table className="w-full table-fixed border-separate border-spacing-0 rounded-card border border-border-default text-center font-sans">
-          <caption className="mb-2 text-left font-mono text-[11px] text-text-tertiary">
+          <caption className="mb-2 text-left font-mono text-meta text-text-tertiary">
             行＝自分の行動 / 列＝相手の行動
           </caption>
           <thead>
@@ -204,7 +204,7 @@ export function Rules() {
           </tbody>
         </table>
 
-        <p className="max-w-2xl font-mono text-[11px] text-text-tertiary">
+        <p className="max-w-2xl font-mono text-meta text-text-tertiary">
           — ＝ ダメージなし（数字は減るHPの量）
         </p>
       </Section>
@@ -239,7 +239,7 @@ function ActionHeading({ action }: { action: Action }) {
   return (
     <span className={`flex flex-col items-center gap-1 ${ACTION_STYLE[action].textClass}`}>
       <ActionIcon action={action} size={20} />
-      <span className="font-sans text-[11px] font-bold sm:text-sm">{ACTION_LABEL[action]}</span>
+      <span className="font-sans text-meta font-bold sm:text-sm">{ACTION_LABEL[action]}</span>
     </span>
   )
 }
@@ -253,16 +253,14 @@ function MatchupOutcome({ cell }: { cell: MatchupCell }) {
         aria-hidden
         className={
           damaged
-            ? 'text-[11px] font-bold text-damage sm:text-sm'
-            : 'text-[11px] text-text-tertiary sm:text-sm'
+            ? 'text-meta font-bold text-damage sm:text-sm'
+            : 'text-meta text-text-tertiary sm:text-sm'
         }
       >
         {text}
       </span>
       <span className="sr-only">{readAs}</span>
-      {cell.note && (
-        <span className="text-[10px] text-text-tertiary sm:text-[11px]">{cell.note}</span>
-      )}
+      {cell.note && <span className="text-chip text-text-tertiary sm:text-meta">{cell.note}</span>}
     </span>
   )
 }

@@ -82,6 +82,47 @@ describe('Battle', () => {
     )
   })
 
+  // Issue #113 / #115：対戦画面の枠（BattleFrame）は両フェーズで共通で、
+  // TURN n → 状態の帯 → 相手ステータス → 自分ステータス の並びは変わらない
+  // （メタ情報を上にまとめ、その下を 相手 → 中身 → 自分 の盤面にしている）。
+  //
+  // もとは上下のレイアウトが HandSelection と TurnResult に別々に書かれており、
+  // 共有しているはずの要素が100〜240px も位置を変えていた。
+  // 片側だけ固定しても乖離は防げない（Issue #82 の教訓）ので、両フェーズで同じ検証をする。
+  // 実際に同じY座標に来ているかはCSSなのでブラウザで実測している。
+  it.each([
+    ['選択フェーズ', '行動を選択してください', false],
+    ['結果フェーズ', 'NEXT TURN IN', true],
+  ])('keeps the same frame order in the %s', (_name, bandText, submitAction) => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+    if (submitAction) {
+      act(() => {
+        screen.getByRole('button', { name: /チャージ/ }).click()
+      })
+    }
+
+    const battle = within(battleArea())
+    /*
+      ステータスパネルは HPバー（role="img"）で引く。PLAYER / OPPONENT のラベルでは引けない。
+      結果フェーズは行動カードのキャプションが同じ文字列を使っているため複数マッチし、
+      「DOM順で最初／最後のもの」で選ぶと並びの検証が自己成就してしまう
+      （自分ステータスが帯より前に移動しても、後ろのカードを拾って通ってしまう）。
+      HPバーは StatusPanel にしかないので、常に 相手 → 自分 の2件に確定する。
+    */
+    const [opponentStatus, playerStatus] = battle.getAllByRole('img', { name: /^HP / })
+    // 選択フェーズはターン履歴にも「TURN n」が出る（lg:hidden は jsdom では効かない）。
+    // 枠側は必ず先頭に来る
+    const turnLabel = battle.getAllByText(/^TURN \d+$/)[0]
+    const band = battle.getByText(bandText)
+
+    expectRenderedBefore(turnLabel, band)
+    expectRenderedBefore(band, opponentStatus)
+    expectRenderedBefore(opponentStatus, playerStatus)
+  })
+
   // Issue #103：行動ボタンは三角形（上段中央=チャージ／下段左=攻撃／下段右=ガード）。
   // 見た目の順序と読み上げ・タブ順が一致していることを、DOM順として固定する。
   // 三角形かどうかはCSSなので jsdom では見えない。配置そのものはブラウザで実測している。
@@ -118,6 +159,26 @@ describe('Battle', () => {
 
     expect(within(battleArea()).getByText('TURN 2')).toBeInTheDocument()
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
+  })
+
+  // Issue #111：カウントダウンは「今この画面で何が起きているか」を伝える帯で、
+  // 選択フェーズの「行動を選択してください」と同じ役割。以前は画面のいちばん下にあり、
+  // フェーズが入れ替わるたびに目が上下を往復していた。
+  //
+  // ここで固定するのは「結果の見出しより前にある」ことだけ。画面上部に固定されていて
+  // スクロールしても消えないことはCSSなので、ブラウザでの実測に任せている
+  // （375x667 で中身を最下部まで送ってもY座標が65pxのまま動かないことを確認済み）。
+  it('shows the countdown above the turn result content', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    const battle = within(battleArea())
+    expectRenderedBefore(battle.getByText('NEXT TURN IN'), battle.getByText('変化なし'))
   })
 
   // Issue #87：lg以上で履歴が右へ移ったあとの空きに置く対峙の表現。
