@@ -1,7 +1,8 @@
+import { ActionPromptBand } from '@/components/ActionPromptBand'
 import { ActionTriangle } from '@/components/ActionTriangle'
+import { BattleFrame } from '@/components/BattleFrame'
 import { getIllegalReason } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
-import { BattleFrame } from '@/pages/Battle/BattleFrame'
 import { TurnHistoryList } from '@/pages/Battle/TurnHistoryList'
 import { Versus } from '@/pages/Battle/Versus'
 
@@ -65,23 +66,17 @@ export function HandSelection({
       clipOnDesktop
       statusBand={
         /*
-          動かすのはこのバナーと行動ボタンだけ。枠（上下のステータスパネルと TURN n）と
+          動かすのはこの帯と行動ボタンだけ。枠（上下のステータスパネルと TURN n）と
           ターン履歴は動かさない。このコンポーネントは毎ターン作り直される
           （Battle.tsx が HandSelection と TurnResult を入れ替えるため）ので、
           ここに書いた動きは1試合で20回以上再生される。
           変わらない枠は止めたままにして、「自分の番が来た」ことだけを動かす。
 
-          **この帯の高さ 54px（py-4 の32px ＋ text-sm 1行の20px ＋ border 2px）が、
-          BattleFrame のスロットの min-h-[54px] の根拠になっている。** 余白や文字サイズを
-          変えるとスロットからはみ出し、その分だけ下の相手ステータスがずれて
-          結果フェーズと食い違う。変えるときは両フェーズの高さを実測すること。
+          帯そのものは ActionPromptBand（LPのプレビューと共有）。動きだけをここで足す。
+          高さ54px が BattleFrame の min-h-[54px] の根拠になっている経緯は、
+          ActionPromptBand のコメントを参照。
         */
-        <div
-          className="animate-fade-rise flex-none rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light"
-          aria-live="polite"
-        >
-          行動を選択してください
-        </div>
+        <ActionPromptBand className="animate-fade-rise" />
       }
       actions={
         /*

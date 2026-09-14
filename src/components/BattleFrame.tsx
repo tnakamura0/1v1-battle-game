@@ -21,8 +21,12 @@ interface BattleFrameProps {
   damageFlashDelayClass?: string
   /** 自分のステータスの下に置くもの（選択フェーズの行動ボタン） */
   actions?: ReactNode
-  /** スクロールする中身 */
-  children: ReactNode
+  /**
+   * スクロールする中身。
+   * LPのプレビュー（BattlePreview）だけは省略する。あちらは飾りで、履歴も対峙の円も
+   * 出さないため中身がない。省略すると中央の領域は高さ0になり、上下のブロックが直に並ぶ。
+   */
+  children?: ReactNode
   /**
    * lg以上でスクロールさせない。
    * 選択フェーズは lg 以上で履歴が右カラム（Battle.tsx の aside）へ移り、ここに
@@ -33,10 +37,22 @@ interface BattleFrameProps {
 }
 
 /**
- * 対戦画面の枠。選択フェーズ（HandSelection）と結果フェーズ（TurnResult）が共有する。
+ * 対戦画面の枠。次の3箇所が共有する。
+ * - 選択フェーズ（pages/Battle/HandSelection）
+ * - 結果フェーズ（pages/Battle/TurnResult）
+ * - LPの対戦UIプレビュー（pages/Home/BattlePreview）
+ *
+ * **pages/Battle ではなく components に置いてあるのは、LPからも使うため**
+ * （コーディング規約の「2箇所以上から使うようになった時点で components へ切り出す」）。
+ * プレビューが並びを手書きしていて実物と食い違ったのが Issue #117 で、
+ * 枠ごと共有することで構造的に揃わなくなることを防いでいる。
+ * ここを pages/Battle に戻しても `@/` エイリアスでLPから import すること自体はできる
+ * （そういうlintルールは無い）。戻してはいけないのは規約に反するからで、
+ * 「Battle専用のもの」に見える場所に置くと、次にLPを触る人が複製で済ませてしまう。
  *
  * 並びは TURN n → 状態の帯 → 相手ステータス →（スクロールする中身）→ 自分ステータス → actions。
  * つまり「メタ情報 → 相手 → 中身 → 自分」で、相手は常に上、自分は常に下。
+ * この並びは Battle.test.tsx と Home.test.tsx の対になるテストで固定してある。
  *
  * ## なぜ TURN n と帯が相手ステータスより上なのか
  *
@@ -147,7 +163,7 @@ export function BattleFrame({
             そのまま下の盤面に伝わり、フェーズが変わるたびに相手ステータスが10px動く。
             枠の役目は盤面の位置を固定することなので、ここで吸収する。
 
-            54px は選択フェーズの帯（HandSelection の「行動を選択してください」）の実寸で、
+            54px は選択フェーズの帯（components/ActionPromptBand）の実寸で、
             py-4 の32px ＋ text-sm 1行の20px ＋ 上下のborder 2px。min-h なので
             これより高い帯を入れると伸びて、また盤面が動く。帯の中身を変えるときは
             両フェーズの高さを実測して、ここに収まっているか確かめること
