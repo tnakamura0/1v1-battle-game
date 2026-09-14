@@ -1,5 +1,4 @@
 import type { CSSProperties } from 'react'
-import { StatusPanel } from '@/components/StatusPanel'
 import { ACTION_STYLE } from '@/components/actionStyle'
 import { ROLE_STYLE } from '@/components/roleStyle'
 import { ActionIcon } from '@/components/ActionIcon'
@@ -7,6 +6,7 @@ import { CHANGE_ROW_DELAY, REVEAL_DELAY } from '@/components/motion'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
 import type { BattlePreset, TurnRecord } from '@/game/types'
+import { BattleFrame } from '@/pages/Battle/BattleFrame'
 
 interface TurnResultProps {
   lastTurn: TurnRecord
@@ -115,46 +115,27 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
   const totalMs = isFinal ? RESULT_DURATION_ON_VICTORY_MS : RESULT_DURATION_MS
 
   return (
-    <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
-      {/*
-        固定ヘッダ。TURN n とカウントダウンを置く。
+    <BattleFrame
+      maxHp={preset.initialHp}
+      turn={turn}
+      phaseBadge="RESULT"
+      opponent={{ state: lastTurn.cpuAfter, hpBefore: lastTurn.cpuBefore.hp }}
+      player={{ state: lastTurn.playerAfter, hpBefore: lastTurn.playerBefore.hp }}
+      damageFlashDelayClass={REVEAL_DELAY.headline}
+      statusBand={
+        /*
+          選択フェーズの「行動を選択してください」と同じ位置に来る、状態の帯。
+          どちらも「今この画面で何が起きているか」を伝える aria-live の1行で、
+          枠が共通になったことで位置も揃っている（Issue #111 / #113）。
 
-        揃えているのは「TURN n の直下に状態の帯が来る」という対応だけで、
-        選択フェーズ（HandSelection）と並び全体が同じわけではない。あちらは
-        ステータスが TURN n の上にあるが、こちらはステータスをスクロール領域の
-        先頭に置いている（結果画面では2枚を対にして見せるため、分割したくない）。
-
-        カウントダウンをここに置く理由は2つ。
-        1. 選択フェーズの「行動を選択してください」と同じ役割（今この画面で何が起きているかを
-           伝える aria-live の1行）なのに、以前は画面の反対側にあった。1試合で5〜10回
-           フェーズが入れ替わるので、そのたびに目が上下を往復していた（Issue #111）
-        2. 「この画面は自動で進む」ことを、結果を読み始める前に知れる
-
-        スクロール領域の中に入れないこと。背の低い端末では下の中身があふれるので、
-        中に入れるとタイマーが画面外へスクロールしうる。
-
-        ここは「動かない枠」なので登場アニメーションは付けない（下の中身だけが動く）。
-        バーの countdown-bar は登場演出ではなくタイマーそのものなので別。
-
-        HandSelection の帯（「行動を選択してください」）には animate-fade-rise が付いていて
-        ここの帯には付いていないが、これは揃え忘れではない。あちらは動くものが何もないので
-        「新しいターンが来た」ことを登場演出で伝える必要があるが、こちらはバーが常に
-        動いているのでその役割が済んでいる。揃えようとして向こうを消さないこと。
-      */}
-      <div className="flex flex-none flex-col gap-2 border-b border-bg-track pb-4">
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
-            TURN {turn}
-          </span>
-          <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
-            RESULT
-          </span>
-        </div>
-
-        {/*
           aria-live はこのブロックにだけ付ける。上の TURN n / RESULT まで含めると、
           毎秒変わる数字のせいでターン番号まで読み上げ直されてしまう。
-        */}
+
+          HandSelection の帯には animate-fade-rise が付いていてここには付いていないが、
+          これは揃え忘れではない。あちらは動くものが何もないので「新しいターンが来た」ことを
+          登場演出で伝える必要があるが、こちらはバーが常に動いているのでその役割が済んでいる。
+          揃えようとして向こうを消さないこと。
+        */
         <div className="flex flex-col gap-2" aria-live="polite">
           <div className="flex items-baseline justify-between">
             <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-text-secondary">
@@ -186,36 +167,17 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             />
           </div>
         </div>
-      </div>
+      }
+    >
+      {/*
+        出した手のカードが両側から入り、そこから
+        「ぶつかった → どうなった → 何が変わったか」と続く。
+        遅延の値は components/motion.ts にまとまっている。
 
-      <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
-        {/*
-          まず場の状況と出した手が同時に入り、そこから
-          「ぶつかった → どうなった → 何が変わったか」と続く。
-          遅延の値は components/motion.ts にまとまっている。
-
-          要素を出し入れしているわけではないことに注意。すべて最初からDOMにあり、
-          animation-delay で見えていないだけなので、stateもタイマーも増えていない。
-        */}
-        <div className="animate-fade-rise flex flex-col gap-2">
-          <StatusPanel
-            role="opponent"
-            state={lastTurn.cpuAfter}
-            maxHp={preset.initialHp}
-            hpBefore={lastTurn.cpuBefore.hp}
-            damageFlashDelayClass={REVEAL_DELAY.headline}
-            dimmed
-          />
-          <StatusPanel
-            role="player"
-            state={lastTurn.playerAfter}
-            maxHp={preset.initialHp}
-            hpBefore={lastTurn.playerBefore.hp}
-            damageFlashDelayClass={REVEAL_DELAY.headline}
-            dimmed
-          />
-        </div>
-
+        要素を出し入れしているわけではないことに注意。すべて最初からDOMにあり、
+        animation-delay で見えていないだけなので、stateもタイマーも増えていない。
+      */}
+      <div className="flex flex-col gap-4">
         {/*
           自分のカードは左から、相手のカードは右から入れる。並び（自分が左・相手が右）は
           Versus と共通で、画面をまたいでどちら側が自分かが入れ替わらないようにしている。
@@ -321,6 +283,6 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           </p>
         )}
       </div>
-    </div>
+    </BattleFrame>
   )
 }

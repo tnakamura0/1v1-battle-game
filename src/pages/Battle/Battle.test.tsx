@@ -82,6 +82,46 @@ describe('Battle', () => {
     )
   })
 
+  // Issue #113：対戦画面の枠（BattleFrame）は両フェーズで共通で、
+  // 相手ステータス → TURN n → 状態の帯 → 自分ステータス の並びは変わらない。
+  //
+  // もとは上下のレイアウトが HandSelection と TurnResult に別々に書かれており、
+  // 共有しているはずの要素が100〜240px も位置を変えていた。
+  // 片側だけ固定しても乖離は防げない（Issue #82 の教訓）ので、両フェーズで同じ検証をする。
+  // 実際に同じY座標に来ているかはCSSなのでブラウザで実測している。
+  it.each([
+    ['選択フェーズ', '行動を選択してください', false],
+    ['結果フェーズ', 'NEXT TURN IN', true],
+  ])('keeps the same frame order in the %s', (_name, bandText, submitAction) => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+    if (submitAction) {
+      act(() => {
+        screen.getByRole('button', { name: /チャージ/ }).click()
+      })
+    }
+
+    const battle = within(battleArea())
+    /*
+      ステータスパネルは HPバー（role="img"）で引く。PLAYER / OPPONENT のラベルでは引けない。
+      結果フェーズは行動カードのキャプションが同じ文字列を使っているため複数マッチし、
+      「DOM順で最初／最後のもの」で選ぶと並びの検証が自己成就してしまう
+      （自分ステータスが帯より前に移動しても、後ろのカードを拾って通ってしまう）。
+      HPバーは StatusPanel にしかないので、常に 相手 → 自分 の2件に確定する。
+    */
+    const [opponentStatus, playerStatus] = battle.getAllByRole('img', { name: /^HP / })
+    // 選択フェーズはターン履歴にも「TURN n」が出る（lg:hidden は jsdom では効かない）。
+    // 枠側は必ず先頭に来る
+    const turnLabel = battle.getAllByText(/^TURN \d+$/)[0]
+    const band = battle.getByText(bandText)
+
+    expectRenderedBefore(opponentStatus, turnLabel)
+    expectRenderedBefore(turnLabel, band)
+    expectRenderedBefore(band, playerStatus)
+  })
+
   // Issue #103：行動ボタンは三角形（上段中央=チャージ／下段左=攻撃／下段右=ガード）。
   // 見た目の順序と読み上げ・タブ順が一致していることを、DOM順として固定する。
   // 三角形かどうかはCSSなので jsdom では見えない。配置そのものはブラウザで実測している。
