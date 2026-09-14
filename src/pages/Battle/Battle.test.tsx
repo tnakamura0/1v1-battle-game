@@ -82,8 +82,9 @@ describe('Battle', () => {
     )
   })
 
-  // Issue #113：対戦画面の枠（BattleFrame）は両フェーズで共通で、
-  // 相手ステータス → TURN n → 状態の帯 → 自分ステータス の並びは変わらない。
+  // Issue #113 / #115：対戦画面の枠（BattleFrame）は両フェーズで共通で、
+  // TURN n → 状態の帯 → 相手ステータス → 自分ステータス の並びは変わらない
+  // （メタ情報を上にまとめ、その下を 相手 → 中身 → 自分 の盤面にしている）。
   //
   // もとは上下のレイアウトが HandSelection と TurnResult に別々に書かれており、
   // 共有しているはずの要素が100〜240px も位置を変えていた。
@@ -117,9 +118,9 @@ describe('Battle', () => {
     const turnLabel = battle.getAllByText(/^TURN \d+$/)[0]
     const band = battle.getByText(bandText)
 
-    expectRenderedBefore(opponentStatus, turnLabel)
     expectRenderedBefore(turnLabel, band)
-    expectRenderedBefore(band, playerStatus)
+    expectRenderedBefore(band, opponentStatus)
+    expectRenderedBefore(opponentStatus, playerStatus)
   })
 
   // Issue #103：行動ボタンは三角形（上段中央=チャージ／下段左=攻撃／下段右=ガード）。

@@ -131,6 +131,10 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           aria-live はこのブロックにだけ付ける。上の TURN n / RESULT まで含めると、
           毎秒変わる数字のせいでターン番号まで読み上げ直されてしまう。
 
+          この帯は44pxで、BattleFrame の54pxのスロットに中央寄せされる（上下に5pxずつ空く）。
+          54px を超えるとスロットが伸び、その分だけ下の相手ステータスがずれて
+          選択フェーズと食い違う。中身を足すときは高さを実測すること。
+
           HandSelection の帯には animate-fade-rise が付いていてここには付いていないが、
           これは揃え忘れではない。あちらは動くものが何もないので「新しいターンが来た」ことを
           登場演出で伝える必要があるが、こちらはバーが常に動いているのでその役割が済んでいる。
