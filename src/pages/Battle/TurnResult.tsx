@@ -116,6 +116,78 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
 
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col gap-4 p-4">
+      {/*
+        固定ヘッダ。TURN n とカウントダウンを置く。
+
+        揃えているのは「TURN n の直下に状態の帯が来る」という対応だけで、
+        選択フェーズ（HandSelection）と並び全体が同じわけではない。あちらは
+        ステータスが TURN n の上にあるが、こちらはステータスをスクロール領域の
+        先頭に置いている（結果画面では2枚を対にして見せるため、分割したくない）。
+
+        カウントダウンをここに置く理由は2つ。
+        1. 選択フェーズの「行動を選択してください」と同じ役割（今この画面で何が起きているかを
+           伝える aria-live の1行）なのに、以前は画面の反対側にあった。1試合で5〜10回
+           フェーズが入れ替わるので、そのたびに目が上下を往復していた（Issue #111）
+        2. 「この画面は自動で進む」ことを、結果を読み始める前に知れる
+
+        スクロール領域の中に入れないこと。背の低い端末では下の中身があふれるので、
+        中に入れるとタイマーが画面外へスクロールしうる。
+
+        ここは「動かない枠」なので登場アニメーションは付けない（下の中身だけが動く）。
+        バーの countdown-bar は登場演出ではなくタイマーそのものなので別。
+
+        HandSelection の帯（「行動を選択してください」）には animate-fade-rise が付いていて
+        ここの帯には付いていないが、これは揃え忘れではない。あちらは動くものが何もないので
+        「新しいターンが来た」ことを登場演出で伝える必要があるが、こちらはバーが常に
+        動いているのでその役割が済んでいる。揃えようとして向こうを消さないこと。
+      */}
+      <div className="flex flex-none flex-col gap-2 border-b border-bg-track pb-4">
+        <div className="flex items-center justify-between">
+          <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
+            TURN {turn}
+          </span>
+          <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
+            RESULT
+          </span>
+        </div>
+
+        {/*
+          aria-live はこのブロックにだけ付ける。上の TURN n / RESULT まで含めると、
+          毎秒変わる数字のせいでターン番号まで読み上げ直されてしまう。
+        */}
+        <div className="flex flex-col gap-2" aria-live="polite">
+          <div className="flex items-baseline justify-between">
+            <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-text-secondary">
+              {isFinal ? '対戦結果へ' : 'NEXT TURN IN'}
+            </span>
+            <span className="font-sans text-2xl font-bold tabular-nums text-text-primary">
+              {secondsRemaining}
+              <span className="font-mono text-[11px] font-semibold text-text-tertiary">s</span>
+            </span>
+          </div>
+          {/*
+            バーはJSで幅を計算せず、CSSアニメーション1本に任せている（index.css の .countdown-bar）。
+            幅を secondsRemaining から出していたころは、この値が整数（Math.ceil）なので
+            8段階でしか変わらず、1段ごとに約1秒止まって見えていた。
+
+            数字とバーはどちらも残り時間を表しているが、粒度が違うので段では一致しない。
+            数字は秒単位（8s → 7s）、バーは連続的に減る。数字が「8s」でもバーは93%、
+            といった状態になるのが正しい。
+
+            再生時間は game/presets.ts のフェーズ長をそのまま渡す。motion.ts には置かない。
+            あちらは演出の段取りで、これはフェーズの長さという別のもの。
+            ここに値を写すと、presets.ts を変えたときにバーだけ黙ってずれる。
+          */}
+          <div className="h-1 overflow-hidden rounded-[2px] bg-bg-track">
+            {/* 角丸は親の overflow-hidden がクリップするので、ここには要らない */}
+            <div
+              className="countdown-bar h-full bg-[#566B80]"
+              style={{ '--countdown-duration': `${totalMs}ms` } as CSSProperties}
+            />
+          </div>
+        </div>
+      </div>
+
       <div className="flex min-h-0 flex-1 flex-col gap-4 overflow-y-auto">
         {/*
           まず場の状況と出した手が同時に入り、そこから
@@ -142,15 +214,6 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             damageFlashDelayClass={REVEAL_DELAY.headline}
             dimmed
           />
-        </div>
-
-        <div className="animate-fade-rise flex items-center justify-between">
-          <span className="font-mono text-[13px] font-bold tracking-[0.1em] text-text-primary">
-            TURN {turn}
-          </span>
-          <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
-            RESULT
-          </span>
         </div>
 
         {/*
@@ -257,41 +320,6 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             ステータス変化なし
           </p>
         )}
-      </div>
-
-      <div
-        className="flex flex-none flex-col gap-2 border-t border-bg-track pt-4"
-        aria-live="polite"
-      >
-        <div className="flex items-baseline justify-between">
-          <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-text-secondary">
-            {isFinal ? '対戦結果へ' : 'NEXT TURN IN'}
-          </span>
-          <span className="font-sans text-2xl font-bold tabular-nums text-text-primary">
-            {secondsRemaining}
-            <span className="font-mono text-[11px] font-semibold text-text-tertiary">s</span>
-          </span>
-        </div>
-        {/*
-          バーはJSで幅を計算せず、CSSアニメーション1本に任せている（index.css の .countdown-bar）。
-          幅を secondsRemaining から出していたころは、この値が整数（Math.ceil）なので
-          8段階でしか変わらず、1段ごとに約1秒止まって見えていた。
-
-          数字とバーはどちらも残り時間を表しているが、粒度が違うので段では一致しない。
-          数字は秒単位（8s → 7s）、バーは連続的に減る。数字が「8s」でもバーは93%、
-          といった状態になるのが正しい。
-
-          再生時間は game/presets.ts のフェーズ長をそのまま渡す。motion.ts には置かない。
-          あちらは演出の段取りで、これはフェーズの長さという別のもの。
-          ここに値を写すと、presets.ts を変えたときにバーだけ黙ってずれる。
-        */}
-        <div className="h-1 overflow-hidden rounded-[2px] bg-bg-track">
-          {/* 角丸は親の overflow-hidden がクリップするので、ここには要らない */}
-          <div
-            className="countdown-bar h-full bg-[#566B80]"
-            style={{ '--countdown-duration': `${totalMs}ms` } as CSSProperties}
-          />
-        </div>
       </div>
     </div>
   )
