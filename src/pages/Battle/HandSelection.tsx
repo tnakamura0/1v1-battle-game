@@ -1,7 +1,7 @@
 import { ActionTriangle } from '@/components/ActionTriangle'
-import { StatusPanel } from '@/components/StatusPanel'
 import { getIllegalReason } from '@/game/rules'
 import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
+import { BattleFrame } from '@/pages/Battle/BattleFrame'
 import { TurnHistoryList } from '@/pages/Battle/TurnHistoryList'
 import { Versus } from '@/pages/Battle/Versus'
 
@@ -57,57 +57,36 @@ export function HandSelection({
   onSelectAction,
 }: HandSelectionProps) {
   return (
-    <div className="mx-auto flex h-full w-full max-w-md flex-col overflow-hidden">
-      <div className="flex flex-none flex-col gap-3 p-4 pb-3">
-        <StatusPanel role="opponent" state={cpu} maxHp={preset.initialHp} />
-        <div className="flex items-center justify-between">
-          <span className="font-mono text-[13px] font-bold tracking-widest text-text-primary">
-            TURN {turn}
-          </span>
-        </div>
-        {/*
-          動かすのはこのバナーと行動ボタンだけ。上下のステータスパネルと TURN n、
+    <BattleFrame
+      maxHp={preset.initialHp}
+      turn={turn}
+      opponent={{ state: cpu }}
+      player={{ state: player }}
+      clipOnDesktop
+      statusBand={
+        /*
+          動かすのはこのバナーと行動ボタンだけ。枠（上下のステータスパネルと TURN n）と
           ターン履歴は動かさない。このコンポーネントは毎ターン作り直される
           （Battle.tsx が HandSelection と TurnResult を入れ替えるため）ので、
           ここに書いた動きは1試合で20回以上再生される。
           変わらない枠は止めたままにして、「自分の番が来た」ことだけを動かす。
-        */}
+        */
         <div
           className="animate-fade-rise flex-none rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light"
           aria-live="polite"
         >
           行動を選択してください
         </div>
-      </div>
-
-      {/*
-        lg未満は履歴、lg以上は対峙の表現。ちょうど裏返しの関係で入れ替わる。
-        外側の flex-1 は残すこと。これを消すと上下のブロックがくっつき、
-        自分のステータスと行動ボタンが画面下端から離れてしまう。
-
-        lg:overflow-hidden なのは、lg以上でスクロールする中身がなくなるため。
-        h-full のアリーナが余分なスクロールを作らないようにしている。
-        lg以上でもここに履歴を出したくなったら、この修飾子を外すこと。
-        付けたままだと、あふれた履歴が無言で切り取られる。
-      */}
-      <div className="min-h-0 flex-1 overflow-y-auto px-4 lg:overflow-hidden">
-        {/* lg以上では履歴は右カラム（Battle.tsx の aside）に出るので、ここは隠す */}
-        <div className="lg:hidden">
-          <TurnHistoryList history={history} />
-        </div>
-        <BattleArena />
-      </div>
-
-      <div className="flex flex-none flex-col gap-3 border-t border-border-default p-4 pt-3">
-        <StatusPanel role="player" state={player} maxHp={preset.initialHp} />
-        {/*
+      }
+      actions={
+        /*
           配置は ActionTriangle が持つ。LPのプレビューと同じものを使うことで乖離を防ぐ。
 
           動きは ActionTriangle の中ではなく外側の器に付ける。中に入れると
           LPのプレビュー（飾りとして置いてあるだけ）まで動いてしまう。
           3つを順にずらして出さないのは、三角形という並び自体が情報だから。
           バラバラに出ると、出そろうまで形が読めない。
-        */}
+        */
         <div className="animate-fade-rise">
           <ActionTriangle
             stateOf={(action) => {
@@ -122,7 +101,14 @@ export function HandSelection({
             onSelect={onSelectAction}
           />
         </div>
+      }
+    >
+      {/* lg未満は履歴、lg以上は対峙の表現。ちょうど裏返しの関係で入れ替わる */}
+      {/* lg以上では履歴は右カラム（Battle.tsx の aside）に出るので、ここは隠す */}
+      <div className="lg:hidden">
+        <TurnHistoryList history={history} />
       </div>
-    </div>
+      <BattleArena />
+    </BattleFrame>
   )
 }
