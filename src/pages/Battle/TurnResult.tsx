@@ -180,16 +180,45 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
 
         要素を出し入れしているわけではないことに注意。すべて最初からDOMにあり、
         animation-delay で見えていないだけなので、stateもタイマーも増えていない。
+
+        min-h-full でスクロール領域いっぱいに広がる。これがないと中身が上詰めのままで、
+        背の高い画面では下端と自分ステータスの間に空きが残る（Issue #118）。
+        min-h なので、あふれる画面では中身の高さが優先され、切り取られない。
       */}
-      <div className="flex flex-col gap-4">
+      <div className="flex min-h-full flex-col gap-4">
         {/*
           自分のカードは左から、相手のカードは右から入れる。並び（自分が左・相手が右）は
           Versus と共通で、画面をまたいでどちら側が自分かが入れ替わらないようにしている。
           動きの向きもその並びに従わせることで、「両端から出てきて中央でぶつかる」が成立する。
+
+          余った高さはこの行が吸収する（grow）。選択フェーズが同じ空きを対峙の円
+          （HandSelection の BattleArena）で埋めているのと同じ役どころで、
+          結果フェーズでは「公開された対峙」がそれにあたる。
+
+          flex-1 ではなく grow を使っているが、**ここでは両者の結果は同じ**。
+          5サイズで差し替えて実測したところ、カードの高さも空きも1pxも変わらなかった。
+          flex-basis: 0 でもカードが潰れないのは、flexアイテムの min-height が既定で auto で
+          min-content 未満に縮まないうえ、親の高さが min-h（definite でない）なので
+          あふれる画面では余白が0になり、どちらも同じ計算に落ちるため。
+          grow にしているのは「自然な高さ ＋ 余った分」という意図がそのまま読めるからで、
+          flex-1 だと壊れるからではない。
+
+          max-h は伸びすぎの歯止め。タブレット・PC幅ではカードの幅が約182px
+          （max-w-md 448px から px-4・VSの w-8・gap を引いて半分）で、上限なしだと
+          768×1024（縦長のタブレット）で397pxまで伸び、40pxのアイコンと短い文字に対して
+          中身がスカスカの縦長の箱になる。280pxだと約1:1.55に収まって見栄えがする。
+          280px という値は、PCサイズ（1280×900 / 1440×900）で自然に伸びる273pxより
+          わずかに大きく取ったもの。**PCでは上限に当たらない**ので、そちらの見た目は
+          純粋に「空きを埋めた結果」になる。
+          代わりに 768×1024 では130pxの空きが残る（上限なしなら0、変更前は258px）。
+          カードが縦長の空箱になるよりはましだという判断。
+
+          なお中身が280pxを超えると overflow: visible のまま下の見出しに重なる。
+          今の中身は約152pxなので余裕があるが、上限値を触るときはここも一緒に見ること。
         */}
-        <div className="flex items-stretch gap-2.5">
+        <div className="flex max-h-[280px] grow items-stretch gap-2.5">
           <div
-            className={`animate-enter-left flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-left flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
           >
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.player.label}
@@ -208,7 +237,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             VS
           </div>
           <div
-            className={`animate-enter-right flex flex-1 flex-col items-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-right flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
           >
             <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.opponent.label}
