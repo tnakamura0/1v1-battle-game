@@ -120,6 +120,26 @@ describe('Battle', () => {
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
   })
 
+  // Issue #111：カウントダウンは「今この画面で何が起きているか」を伝える帯で、
+  // 選択フェーズの「行動を選択してください」と同じ役割。以前は画面のいちばん下にあり、
+  // フェーズが入れ替わるたびに目が上下を往復していた。
+  //
+  // ここで固定するのは「結果の見出しより前にある」ことだけ。画面上部に固定されていて
+  // スクロールしても消えないことはCSSなので、ブラウザでの実測に任せている
+  // （375x667 で中身を最下部まで送ってもY座標が65pxのまま動かないことを確認済み）。
+  it('shows the countdown above the turn result content', () => {
+    renderBattle({ preset })
+    act(() => {
+      vi.advanceTimersByTime(INTRO_DURATION_MS)
+    })
+    act(() => {
+      screen.getByRole('button', { name: /チャージ/ }).click()
+    })
+
+    const battle = within(battleArea())
+    expectRenderedBefore(battle.getByText('NEXT TURN IN'), battle.getByText('変化なし'))
+  })
+
   // Issue #87：lg以上で履歴が右へ移ったあとの空きに置く対峙の表現。
   // 表示・非表示はCSS（幅と高さ）で決めておりjsdomでは判定できないので、
   // 「どのフェーズのDOMに置かれるか」だけを固定する。
