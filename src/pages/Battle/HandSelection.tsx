@@ -70,6 +70,11 @@ export function HandSelection({
           （Battle.tsx が HandSelection と TurnResult を入れ替えるため）ので、
           ここに書いた動きは1試合で20回以上再生される。
           変わらない枠は止めたままにして、「自分の番が来た」ことだけを動かす。
+
+          **この帯の高さ 54px（py-4 の32px ＋ text-sm 1行の20px ＋ border 2px）が、
+          BattleFrame のスロットの min-h-[54px] の根拠になっている。** 余白や文字サイズを
+          変えるとスロットからはみ出し、その分だけ下の相手ステータスがずれて
+          結果フェーズと食い違う。変えるときは両フェーズの高さを実測すること。
         */
         <div
           className="animate-fade-rise flex-none rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light"
