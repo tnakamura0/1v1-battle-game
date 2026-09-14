@@ -43,7 +43,7 @@ function BattleArena() {
       className="hidden h-full flex-col items-center justify-center gap-4 lg:[@media(min-height:700px)]:flex"
     >
       <Versus />
-      <p className="font-mono text-[11px] text-text-tertiary">両者の行動は同時に公開されます</p>
+      <p className="font-mono text-meta text-text-tertiary">両者の行動は同時に公開されます</p>
     </div>
   )
 }

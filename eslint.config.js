@@ -48,6 +48,27 @@ export default tseslint.config(
           message:
             '行動色は ACTION_STYLE（components/actionStyle.ts）から使うこと。ダメージなら text-damage / border-damage、エネルギー量なら bg-energy を使う。',
         },
+        /*
+         * フォントサイズの任意値を止める（Issue #120）。
+         *
+         * 以前は text-[8px] 〜 text-[13px] の5種が散らばり、同じ役割のラベルが
+         * 画面によって1px違うところまでいっていた。基準がどこにも書かれておらず、
+         * 新しい要素を足すたびに近くの値をコピーするしかなかったのが原因。
+         * はしごは index.css の @theme に定義してある。
+         *
+         * 色の直書き（上の2つ）と同じ形で止めているのは、どちらも
+         * 「見た目が少し違うだけなので、取り違えても誰も気づけない」種類の間違いだから。
+         */
+        {
+          selector: 'Literal[value=/text-\\[[\\d.]/]',
+          message:
+            'フォントサイズは index.css のはしごに従うこと。10px は text-chip、11px は text-meta、12px以上は Tailwind 既定のユーティリティ（text-xs / text-sm / text-base / …）を使う。段の間が必要なら、まず index.css のはしごに段を足して名前を付けること。',
+        },
+        {
+          selector: 'TemplateElement[value.raw=/text-\\[[\\d.]/]',
+          message:
+            'フォントサイズは index.css のはしごに従うこと。10px は text-chip、11px は text-meta、12px以上は Tailwind 既定のユーティリティ（text-xs / text-sm / text-base / …）を使う。段の間が必要なら、まず index.css のはしごに段を足して名前を付けること。',
+        },
       ],
     },
   },

@@ -52,10 +52,13 @@ interface BattleFrameProps {
  * ## 何が揃っていて、何が揃っていないか
  *
  * 上ブロックは画面上端アンカーで、**かつ帯のスロットを固定高にしている**ので、
- * 両フェーズでY座標が一致する。実測（390×844）:
- * - TURN n … 26px / 26px
- * - 帯のスロット … top 44px・高さ54px（両フェーズとも同じ）
- * - 相手ステータス … 138px / 138px
+ * 両フェーズでY座標が一致する。実測（390×844。**すべて要素の上端**）:
+ * - TURN n の行 … top 16px・高さ24px（p-4 の16px から始まる）
+ * - 帯のスロット … top 48px・高さ54px（16 + 24 + gap-2 の8）
+ * - 相手ステータスのカード … top 114px（48 + 54 + gap-3 の12）
+ *
+ * どれも両フェーズで同じ値になる。クラスから積み上げた値と一致するので、
+ * 崩れたときはどの段で差が出たかを引き算で追える。
  *
  * 上端アンカーだけでは揃わない。帯の中身は高さがフェーズで違う（選択54px / 結果44px）ため、
  * 素で並べると差がそのまま下の盤面に伝わる。スロットの min-h がそれを吸収している
@@ -63,16 +66,16 @@ interface BattleFrameProps {
  *
  * その代わり、結果フェーズでは44pxの帯が54pxのスロットに中央寄せされる。
  * 帯そのものの上端は5px下がり、見た目の間隔は 8px/12px ではなく 13px/17px になる
- * （帯の中心は両フェーズとも71pxで一致する）。カードの位置を揃えることを優先した結果で、
+ * （帯の中心は両フェーズとも75pxで一致する）。カードの位置を揃えることを優先した結果で、
  * 承知のうえ。間隔を揃えにいくと今度は盤面が動く。
  *
  * **下ブロックは画面下端アンカーなので、自分ステータスのYは `actions` の高さだけ上にずれる。**
- * 選択フェーズには ActionTriangle が入るぶん、結果フェーズより約214px 上に来る（375×667の実測）。
+ * 選択フェーズには ActionTriangle が入るぶん、結果フェーズより約199px 上に来る（375×667の実測）。
  * 揃っているのは順序（自分ステータスは常に下ブロックの先頭で、常に actions の上）だけ。
  *
  * これを承知で揃えていない。潰した案は2つある。
  * - 結果フェーズにも同じ高さの空き枠を確保する → 375×667 でスクロール領域が
- *   328px から114px まで縮み、結果が読めなくなる
+ *   314px から115px まで縮み、結果が読めなくなる
  * - 自分ステータスを actions の下に置いて画面下端に揃える → 「自分のステータスは
  *   必ず行動ボタンより上」は Issue #82 の不変条件で、Battle.test.tsx / Home.test.tsx の
  *   対になるテストで固定されている
@@ -122,11 +125,18 @@ export function BattleFrame({
         */}
         <div className="flex flex-col gap-2">
           <div className="flex items-center justify-between">
-            <span className="font-mono text-[13px] font-bold tracking-widest text-text-primary">
+            {/*
+              画面の「今どこにいるか」を示すいちばんの手がかりなので、ラベル類の中では
+              ここだけ本文サイズ（16px）まで上げている（Issue #120）。
+              HPの数字（18px）・結果フェーズの残り秒数（24px）・決着の見出し（30px）は
+              いずれもこれより大きいままなので、画面内の序列は崩れない。
+              残り秒数のほうが大きいのは、そちらが毎秒変わって急かす役だから。
+            */}
+            <span className="font-mono text-base font-bold tracking-widest text-text-primary">
               TURN {turn}
             </span>
             {phaseBadge && (
-              <span className="font-mono text-[10px] font-semibold tracking-[0.14em] text-text-secondary">
+              <span className="font-mono text-meta font-semibold tracking-[0.14em] text-text-secondary">
                 {phaseBadge}
               </span>
             )}

@@ -17,6 +17,7 @@ src/
 
 - Tailwind CSSのユーティリティクラスを基本とする。独自CSSファイルは追加しない。
 - 条件分岐が多くクラス名が読みにくくなる場合のみ、コンポーネント内でクラス名を変数に分けて整理する。
+- **フォントサイズは `src/index.css` に定義した「はしご」に従う。** 10px は `text-chip`、11px は `text-meta`、12px以上はTailwind既定のユーティリティ（`text-xs` / `text-sm` / `text-base` / …）。`text-[9px]` のような任意値はESLint（`no-restricted-syntax`）で止めている。段の間が必要なら、まず `index.css` のはしごに段を足して名前を付けること。
 - **全要素に一律で効かせたい見た目は、個々のコンポーネントではなく `src/index.css` に書く。** 個別に書くと新しい要素を足すたびに付け忘れ、画面ごとに挙動がばらつく。
   - 例：`button` の `cursor: pointer`。Tailwind v4 の preflight はこれを当てないので `index.css` の `@layer base` で一度だけ当てている。**個々のボタンに `cursor-pointer` を書かないこと。**
   - 一括では当てられない例外（`button` ではない操作要素など）は、なぜ例外なのかをコメントに残す。
