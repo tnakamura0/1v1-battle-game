@@ -6,7 +6,7 @@ import { CHANGE_ROW_DELAY, REVEAL_DELAY } from '@/components/motion'
 import { ACTION_LABEL, outcomeHeadline } from '@/game/copy'
 import { RESULT_DURATION_MS, RESULT_DURATION_ON_VICTORY_MS } from '@/game/presets'
 import type { BattlePreset, TurnRecord } from '@/game/types'
-import { BattleFrame } from '@/pages/Battle/BattleFrame'
+import { BattleFrame } from '@/components/BattleFrame'
 
 interface TurnResultProps {
   lastTurn: TurnRecord
