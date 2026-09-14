@@ -62,7 +62,13 @@ export function Home() {
               key={step}
               className="flex items-center gap-3.5 rounded-r-chip border-l-2 border-accent bg-bg-page px-4 py-3.5 sm:flex-col sm:items-start sm:gap-2 sm:rounded-b-chip sm:rounded-l-none sm:border-l-0 sm:border-t-2 sm:px-4 sm:py-5"
             >
-              <span className="w-12 flex-none font-mono text-[10px] font-bold tracking-widest text-text-tertiary">
+              {/*
+                ルール画面の STEP は text-meta（11px）だが、ここは w-12 の欄に収める
+                添え字なので text-chip（10px）。同じ文言でサイズが違うのは意図したもので、
+                あちらは本文と並ぶ見出し、こちらは本文の左に沿える番号という別の役。
+                index.css のはしごを参照。
+              */}
+              <span className="w-12 flex-none font-mono text-chip font-bold tracking-widest text-text-tertiary">
                 STEP{index + 1}
               </span>
               <span className="font-sans text-sm font-semibold leading-snug text-text-primary">
@@ -122,7 +128,7 @@ function Hero() {
 
       <div className="relative mx-auto flex w-full max-w-5xl flex-col gap-10 px-6 py-16 sm:flex-row sm:items-center sm:gap-8 sm:py-20">
         <div className="flex flex-1 flex-col items-start gap-5">
-          <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-accent">
+          <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">
             VS CPU
           </span>
           <h1 className="font-sans text-4xl font-extrabold leading-tight text-text-primary text-balance">

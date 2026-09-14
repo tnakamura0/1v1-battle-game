@@ -31,7 +31,13 @@ export function BattlePreview() {
     <PreviewFrame>
       <div className="flex flex-col gap-3 p-4">
         <StatusPanel role="opponent" state={OPPONENT} maxHp={PREVIEW_MAX_HP} />
-        <span className="font-mono text-[13px] font-bold tracking-widest text-text-primary">
+        {/*
+          この TURN n と下の帯は BattleFrame の手書きの複製で、実物と自動では揃わない。
+          サイズは BattleFrame.tsx の TURN n に合わせてある（text-base）。
+          あちらを変えるときはここも一緒に変えること。
+          並び順はまだ実物と食い違っている（Issue #117）。
+        */}
+        <span className="font-mono text-base font-bold tracking-widest text-text-primary">
           TURN 3
         </span>
         <div className="rounded-chip border border-accent/25 bg-accent/10 px-3 py-4 text-center font-sans text-sm font-semibold text-accent-light">

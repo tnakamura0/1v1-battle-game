@@ -21,7 +21,7 @@ export function BattleResult() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
-      <span className="animate-fade-rise font-mono text-[11px] font-bold tracking-[0.18em] text-text-tertiary">
+      <span className="animate-fade-rise font-mono text-meta font-bold tracking-[0.18em] text-text-tertiary">
         GAME OVER
       </span>
 
@@ -120,7 +120,7 @@ function StatRow({
     <div
       className={`animate-row-in ${delayClass} flex items-center justify-between border-l-[3px] ${edgeClass} bg-bg-row px-4 py-3`}
     >
-      <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+      <span className="font-mono text-meta font-semibold tracking-[0.06em] text-text-secondary">
         {label}
       </span>
       <span className="font-sans text-sm font-bold tabular-nums text-text-primary">{value}</span>

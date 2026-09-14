@@ -142,12 +142,12 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
         */
         <div className="flex flex-col gap-2" aria-live="polite">
           <div className="flex items-baseline justify-between">
-            <span className="font-mono text-[11px] font-semibold tracking-[0.08em] text-text-secondary">
+            <span className="font-mono text-meta font-semibold tracking-[0.08em] text-text-secondary">
               {isFinal ? '対戦結果へ' : 'NEXT TURN IN'}
             </span>
             <span className="font-sans text-2xl font-bold tabular-nums text-text-primary">
               {secondsRemaining}
-              <span className="font-mono text-[11px] font-semibold text-text-tertiary">s</span>
+              <span className="font-mono text-meta font-semibold text-text-tertiary">s</span>
             </span>
           </div>
           {/*
@@ -205,22 +205,26 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
 
           max-h は伸びすぎの歯止め。タブレット・PC幅ではカードの幅が約182px
           （max-w-md 448px から px-4・VSの w-8・gap を引いて半分）で、上限なしだと
-          768×1024（縦長のタブレット）で397pxまで伸び、40pxのアイコンと短い文字に対して
+          768×1024（縦長のタブレット）で約400pxまで伸び、40pxのアイコンと短い文字に対して
           中身がスカスカの縦長の箱になる。280pxだと約1:1.55に収まって見栄えがする。
-          280px という値は、PCサイズ（1280×900 / 1440×900）で自然に伸びる273pxより
+          280px という値は、PCサイズ（1280×900 / 1440×900）で自然に伸びる265pxより
           わずかに大きく取ったもの。**PCでは上限に当たらない**ので、そちらの見た目は
           純粋に「空きを埋めた結果」になる。
-          代わりに 768×1024 では130pxの空きが残る（上限なしなら0、変更前は258px）。
+          代わりに 768×1024 では122pxの空きが残る（上限なしなら0、Issue #118 の前は258px）。
           カードが縦長の空箱になるよりはましだという判断。
 
+          文字を大きくすると（Issue #120）中身の自然高が増え、上ブロックが伸びて
+          スクロール領域も減るので、カードに配られる余りはその分小さくなる
+          （PCサイズで273px → 265px）。上限を下げる必要はなかったのでそのままにしている。
+
           なお中身が280pxを超えると overflow: visible のまま下の見出しに重なる。
-          今の中身は約152pxなので余裕があるが、上限値を触るときはここも一緒に見ること。
+          今の中身は約155pxなので余裕があるが、上限値を触るときはここも一緒に見ること。
         */}
         <div className="flex max-h-[280px] grow items-stretch gap-2.5">
           <div
             className={`animate-enter-left flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
           >
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
+            <span className="font-mono text-meta font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.player.label}
             </span>
             <span className={ACTION_STYLE[lastTurn.playerAction].textClass}>
@@ -239,7 +243,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
           <div
             className={`animate-enter-right flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
           >
-            <span className="font-mono text-[9px] font-bold tracking-[0.14em] text-text-secondary">
+            <span className="font-mono text-meta font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.opponent.label}
             </span>
             <span className={ACTION_STYLE[lastTurn.cpuAction].textClass}>
@@ -298,7 +302,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
                 */
                 className={`animate-row-in ${CHANGE_ROW_DELAY[index] ?? CHANGE_ROW_DELAY[CHANGE_ROW_DELAY.length - 1]} flex items-center justify-between border-l-[3px] ${row.edgeClass} bg-bg-row px-4 py-3`}
               >
-                <span className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+                <span className="font-mono text-meta font-semibold tracking-[0.06em] text-text-secondary">
                   {row.label}
                 </span>
                 <span className="font-sans text-sm font-bold tabular-nums text-text-primary">

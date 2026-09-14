@@ -41,7 +41,7 @@ export function StatusPanel({
     // 背景のティントと枠線で持ち主を示す（Tier 1のカードに識別色を重ねた派生形）
     <div className={`flex flex-col gap-3 rounded-card border ${surfaceClass} p-4 shadow-card`}>
       <div className="flex items-center justify-between">
-        <span className={`font-mono text-[10px] font-bold tracking-[0.14em] ${textClass}`}>
+        <span className={`font-mono text-meta font-bold tracking-[0.14em] ${textClass}`}>
           {label}
         </span>
         <GuardBadge guardCooldownRemaining={state.guardCooldownRemaining} />
@@ -78,7 +78,7 @@ export function StatusPanel({
         <div className="h-3.5 w-px shrink-0 bg-border-default" />
 
         <div className="flex items-center gap-1.5">
-          <span className="font-mono text-[9px] font-bold tracking-[0.1em] text-text-tertiary">
+          <span className="font-mono text-meta font-bold tracking-[0.1em] text-text-tertiary">
             EN
           </span>
           <div

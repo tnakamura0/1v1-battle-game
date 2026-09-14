@@ -153,7 +153,7 @@ export function PresetSelect() {
               それはセクション見出し（選べるカードのすぐ上に出る）についての話。
               操作要素から離れたページ最上部のラベルは取り違えようがないので例外とする。
             */}
-            <span className="font-mono text-[11px] font-bold tracking-[0.18em] text-accent">
+            <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">
               BATTLE SETUP
             </span>
             <h1 className="font-sans text-2xl font-extrabold text-text-primary">
@@ -224,7 +224,7 @@ export function PresetSelect() {
                       {setupChips(recommended.setup).map((chip) => (
                         <span
                           key={chip}
-                          className={`rounded-chip border px-1.5 py-0.5 font-mono text-[10px] font-semibold ${
+                          className={`rounded-chip border px-1.5 py-0.5 font-mono text-chip font-semibold ${
                             isDanger
                               ? 'border-danger/45 text-danger-light'
                               : 'border-border-emphasis text-text-secondary'
@@ -343,7 +343,7 @@ function SectionTitle({ badge, children }: { badge?: string; children: ReactNode
         配色に accent を使わないのは、この画面では accent が「選択中」を表すため。
       */}
       {badge && (
-        <span className="rounded-chip border border-border-emphasis px-1.5 py-0.5 font-mono text-[10px] font-semibold text-text-secondary">
+        <span className="rounded-chip border border-border-emphasis px-1.5 py-0.5 font-mono text-chip font-semibold text-text-secondary">
           {badge}
         </span>
       )}
@@ -373,7 +373,7 @@ function SettingGroup({
     <fieldset
       className={`flex flex-col gap-3 rounded-card border border-border-default bg-bg-card p-4 shadow-card ${wide ? 'lg:col-span-2' : ''}`}
     >
-      <legend className="font-mono text-[11px] font-semibold tracking-[0.06em] text-text-secondary">
+      <legend className="font-mono text-meta font-semibold tracking-[0.06em] text-text-secondary">
         {legend}
       </legend>
       <div className="flex gap-2.5">{children}</div>

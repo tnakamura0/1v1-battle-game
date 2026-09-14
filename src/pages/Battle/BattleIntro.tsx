@@ -17,7 +17,7 @@ interface BattleIntroProps {
 export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
-      <span className="animate-fade-rise font-mono text-[11px] font-bold tracking-[0.18em] text-text-tertiary">
+      <span className="animate-fade-rise font-mono text-meta font-bold tracking-[0.18em] text-text-tertiary">
         まもなく対戦開始
       </span>
 
@@ -26,7 +26,7 @@ export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
       </div>
 
       <div
-        className={`animate-fade-rise ${INTRO_DELAY.preset} flex w-full max-w-xs flex-col gap-2 rounded-chip border border-dashed border-border-default px-4 py-3 font-mono text-[11px] text-text-secondary`}
+        className={`animate-fade-rise ${INTRO_DELAY.preset} flex w-full max-w-xs flex-col gap-2 rounded-chip border border-dashed border-border-default px-4 py-3 font-mono text-meta text-text-secondary`}
       >
         <div className="flex items-center justify-between">
           <span>初期HP</span>
@@ -41,7 +41,7 @@ export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
       <div
         className={`animate-fade-rise ${INTRO_DELAY.countdown} flex flex-col items-center gap-1`}
       >
-        <span className="font-mono text-[11px] font-semibold tracking-[0.14em] text-text-secondary">
+        <span className="font-mono text-meta font-semibold tracking-[0.14em] text-text-secondary">
           対戦開始まで
         </span>
         {/*
