@@ -187,42 +187,71 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
       */}
       <div className="flex min-h-full flex-col gap-4">
         {/*
-          自分のカードは左から、相手のカードは右から入れる。並び（自分が左・相手が右）は
+          自分の手は左から、相手の手は右から入れる。並び（自分が左・相手が右）は
           Versus と共通で、画面をまたいでどちら側が自分かが入れ替わらないようにしている。
           動きの向きもその並びに従わせることで、「両端から出てきて中央でぶつかる」が成立する。
 
-          余った高さはこの行が吸収する（grow）。選択フェーズが同じ空きを対峙の円
-          （HandSelection の BattleArena）で埋めているのと同じ役どころで、
-          結果フェーズでは「公開された対峙」がそれにあたる。
+          ## なぜ円なのか
 
-          flex-1 ではなく grow を使っているが、**ここでは両者の結果は同じ**。
-          5サイズで差し替えて実測したところ、カードの高さも空きも1pxも変わらなかった。
-          flex-basis: 0 でもカードが潰れないのは、flexアイテムの min-height が既定で auto で
-          min-content 未満に縮まないうえ、親の高さが min-h（definite でない）なので
-          あふれる画面では余白が0になり、どちらも同じ計算に落ちるため。
-          grow にしているのは「自然な高さ ＋ 余った分」という意図がそのまま読めるからで、
-          flex-1 だと壊れるからではない。
+          対戦開始前（BattleIntro）と、lg以上で右カラムに空きができる選択フェーズ
+          （HandSelection の BattleArena）は、対峙を Versus の ◯ VS ◯ で表している。
+          結果フェーズのこれは「公開された対峙」にあたるので、同じ円にすることで
+          向かい合っていた ◯ VS ◯ がそのまま公開される、という筋になる。
+          配色も Versus と同じ ROLE_STYLE[role].surfaceClass を使っている。
+          （BattleArena は lg かつ高さ700px以上でしか出ないので、
+          モバイルで直接見比べられるのは intro の対峙のほう）
 
-          max-h は伸びすぎの歯止め。タブレット・PC幅ではカードの幅が約182px
-          （max-w-md 448px から px-4・VSの w-8・gap を引いて半分）で、上限なしだと
-          768×1024（縦長のタブレット）で約400pxまで伸び、40pxのアイコンと短い文字に対して
-          中身がスカスカの縦長の箱になる。280pxだと約1:1.55に収まって見栄えがする。
-          280px という値は、PCサイズ（1280×900 / 1440×900）で自然に伸びる265pxより
-          わずかに大きく取ったもの。**PCでは上限に当たらない**ので、そちらの見た目は
-          純粋に「空きを埋めた結果」になる。
-          代わりに 768×1024 では122pxの空きが残る（上限なしなら0、Issue #118 の前は258px）。
-          カードが縦長の空箱になるよりはましだという判断。
+          形としての理由もある。ここは余った高さを吸収する場所（grow）だが、
+          **四角は伸びた分がそのまま枠線に囲まれた空白の長方形になる**。
+          もとは角丸カードで、PCサイズで 182×265px に伸びたのに対し中身は約104.5px しかなく、
+          上下に80.3pxずつの空白が枠の中に見えていた（768×1024 では87.8pxずつ）。
+          円は aspect-square なので伸びず、**余りは円の外側に散る**（Issue #126）。
 
-          文字を大きくすると（Issue #120）中身の自然高が増え、上ブロックが伸びて
-          スクロール領域も減るので、カードに配られる余りはその分小さくなる
-          （PCサイズで273px → 265px）。上限を下げる必要はなかったのでそのままにしている。
+          余白そのものが消えるわけではないことに注意。余りは円の上下に半分ずつ配られ、
+          PCサイズなら上下に38.8pxずつ残る。変わったのは「枠線に囲まれているかどうか」で、
+          囲まれていない空きは空箱ではなく間合いに見える。
 
-          なお中身が280pxを超えると overflow: visible のまま下の見出しに重なる。
-          今の中身は約155pxなので余裕があるが、上限値を触るときはここも一緒に見ること。
+          ## items-center が肝
+
+          items-stretch のままだと円が行の高さいっぱいに引き伸ばされ、楕円になる。
+          items-center にして、円は直径のまま余った高さの中で縦中央に置く。
+
+          直径はカラム幅で決まる。max-w-md 448px から px-4・VSの w-8・gap を引いて半分なので
+          タブレット・PC幅で182px、375×667 で145.5px。中身は約104.5px。
+
+          中身を大きくするときに見るところが2つある。**どちらも 375×667 が最も厳しい。**
+
+          1. 横（円弧に当たらないか）… 行動名は円の下寄りに来るぶん使える幅が狭い。
+             いまの3語で、文字の角から円弧までの余裕は
+             チャージ(64px幅)が11.5px、ガード(48px)が15.3px、攻撃(32px)が18.1px。
+             **px-4 は折り返しの保険にすぎず、実際の限界は円弧のほう。**
+             パディングの内側（左右56.75pxまで）に収まっていても、
+             行動名の高さでは円の半弦が約50.6pxしかないので、そこまで伸ばすと弧から出る。
+          2. 縦（円からあふれないか）… aspect-square はクロス軸の最小高さを保証しない
+             （items-center なので自動最小サイズが効かない）。中身が直径を超えると
+             **円は伸びず、中身が円の外へ出て下の見出しに重なる**。
+             375×667 では直径145.5pxに対し中身104.5pxで、上下に20.5pxずつしか余っていない。
+
+          行動名を長くする・文字サイズを上げる・gap-3 を広げる・アイコンを大きくするときは、
+          375×667 で「折り返していないか」と「中身が直径を超えていないか」の両方を実測すること。
+
+          max-h の上限は外した。あれは「伸びすぎて中身がスカスカの縦長の箱になる」のを
+          止めるためのもので、伸びるものが無くなった以上、役目がない。
+          外したことで 768×1024 の空き（自分ステータスとの間）は122px → 13px になった。
+
+          grow は残すこと。これを外すと余った高さが行から出て、
+          中身の下端と自分ステータスの間に戻ってしまう（Issue #118 の再発）。
+
+          ## Versus と共有しないこと
+
+          Versus は「サイズや配色を差し替えるpropは持たせない」と決めてあるコンポーネントで、
+          中身も役割名（プレイヤー / CPU）で固定されている。こちらの円は中身が出した手で、
+          直径もカラム幅に追従する。別物なので、Versus に prop を足して兼ねさせない。
+          共有しているのは配色トークン（ROLE_STYLE）だけで、それで十分。
         */}
-        <div className="flex max-h-[280px] grow items-stretch gap-2.5">
+        <div className="flex grow items-center gap-2.5">
           <div
-            className={`animate-enter-left flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.player.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-left flex aspect-square flex-1 flex-col items-center justify-center gap-3 rounded-full border ${ROLE_STYLE.player.surfaceClass} px-4 shadow-card`}
           >
             <span className="font-mono text-meta font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.player.label}
@@ -241,7 +270,7 @@ export function TurnResult({ lastTurn, preset, turn, secondsRemaining, isFinal }
             VS
           </div>
           <div
-            className={`animate-enter-right flex flex-1 flex-col items-center justify-center gap-3 rounded-card border ${ROLE_STYLE.opponent.surfaceClass} py-6 shadow-card`}
+            className={`animate-enter-right flex aspect-square flex-1 flex-col items-center justify-center gap-3 rounded-full border ${ROLE_STYLE.opponent.surfaceClass} px-4 shadow-card`}
           >
             <span className="font-mono text-meta font-bold tracking-[0.14em] text-text-secondary">
               {ROLE_STYLE.opponent.label}

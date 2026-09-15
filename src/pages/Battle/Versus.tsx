@@ -8,8 +8,10 @@ import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
  * サイズや配色を差し替えるpropは持たせない。出し分けが要るように見えたときは、
  * それが本当に「同じ対峙」なのかをまず疑うこと。
  *
- * 並びは自分が左・相手が右。TurnResult の行動カードも同じ並びで、
+ * 並びは自分が左・相手が右。TurnResult の「公開された手」も同じ並びで、
  * 画面をまたいでどちら側が自分かが入れ替わらないようにしている。
+ * あちらも Issue #126 から同じ円（ROLE_STYLE の surfaceClass を使った rounded-full）だが、
+ * 中身が出した手で直径もカラム幅に追従するため、このコンポーネントは共有していない。
  *
  * 文言は ROLE_STYLE.label（PLAYER / OPPONENT）ではなく「プレイヤー」「CPU」。ここを
  * ROLE_STYLE.label に揃えると、行動選択中の画面に PLAYER が2つ出ることになる
