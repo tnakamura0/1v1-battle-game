@@ -60,11 +60,15 @@ export const CHANGE_ROW_DELAY = [
   '[animation-delay:960ms]',
 ] as const
 
-/** 対戦開始（pages/Battle/BattleIntro.tsx）の段取り */
+/**
+ * 対戦開始（pages/Battle/BattleIntro.tsx）の段取り。
+ *
+ * 先頭はカウントダウン（対戦中の「状態の帯」と同じく画面内の一番上に置く。Issue #124）で、
+ * 遅延0なのでここには定数を持たない。そのあと 対峙（versus）→ 設定（preset）と続く。
+ */
 export const INTRO_DELAY = {
   versus: '[animation-delay:80ms]',
   preset: '[animation-delay:220ms]',
-  countdown: '[animation-delay:340ms]',
 } as const
 
 /**

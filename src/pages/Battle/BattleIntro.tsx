@@ -8,7 +8,26 @@ interface BattleIntroProps {
 }
 
 /**
- * 対戦開始前の3秒。上から順に「まもなく対戦開始 → 対峙 → 設定 → 残り秒数」と出す。
+ * 対戦開始前の3秒。上から順に「残り秒数 → 対峙 → 設定」と出す。
+ *
+ * ## なぜカウントダウンが先頭なのか
+ *
+ * 対戦中は画面内の一番上に「状態の帯」（残り時間・行動を選択してください等）を固定している
+ * （Issue #111 / #112 / #113）。intro だけカウントダウンが末尾にあると、intro から
+ * 選択フェーズへ進むときに「いま何秒か」を見る位置が画面の下から上へ飛んでしまう。
+ * ここを先頭にすることで、対戦中と目の行き先を揃えている（Issue #124）。
+ *
+ * 以前は先頭に「まもなく対戦開始」という見出しがあったが、カウントダウンを先頭に
+ * 動かすと直後に来る「対戦開始まで」と同じことを二度言う形になるため削除した。
+ * 残り時間という情報を持っているカウントダウン側を残している。
+ *
+ * ## なぜ画面上端に固定しないのか
+ *
+ * BattleFrame の状態の帯は画面上端アンカーの中の先頭スロットとして固定表示されるが、
+ * intro にはそのような上下のアンカーがない。この画面は `justify-center` で
+ * 中身をまとめて縦中央に置く構成で、対峙・設定と合わせて1つの塊として動くことに
+ * 意味がある（対戦開始を待つ、という単発の画面なので）。カウントダウンだけを
+ * 画面上端に固定すると、その塊から浮いて見える。
  *
  * 動きは Versus 自身ではなく、それを包む器に持たせている。Versus は
  * 行動選択中の画面（HandSelection の BattleArena）とも共有しているので、
@@ -17,30 +36,7 @@ interface BattleIntroProps {
 export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
   return (
     <div className="mx-auto flex h-full w-full max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
-      <span className="animate-fade-rise font-mono text-meta font-bold tracking-[0.18em] text-text-tertiary">
-        まもなく対戦開始
-      </span>
-
-      <div className={`animate-pop-in ${INTRO_DELAY.versus}`}>
-        <Versus />
-      </div>
-
-      <div
-        className={`animate-fade-rise ${INTRO_DELAY.preset} flex w-full max-w-xs flex-col gap-2 rounded-chip border border-dashed border-border-default px-4 py-3 font-mono text-meta text-text-secondary`}
-      >
-        <div className="flex items-center justify-between">
-          <span>初期HP</span>
-          <span className="text-text-primary">{preset.initialHp}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span>ガードクールダウン</span>
-          <span className="text-text-primary">{preset.guardCooldownTurns}ターン</span>
-        </div>
-      </div>
-
-      <div
-        className={`animate-fade-rise ${INTRO_DELAY.countdown} flex flex-col items-center gap-1`}
-      >
+      <div className="animate-fade-rise flex flex-col items-center gap-1">
         <span className="font-mono text-meta font-semibold tracking-[0.14em] text-text-secondary">
           対戦開始まで
         </span>
@@ -62,6 +58,23 @@ export function BattleIntro({ preset, secondsRemaining }: BattleIntroProps) {
             {secondsRemaining}
           </span>
         </span>
+      </div>
+
+      <div className={`animate-pop-in ${INTRO_DELAY.versus}`}>
+        <Versus />
+      </div>
+
+      <div
+        className={`animate-fade-rise ${INTRO_DELAY.preset} flex w-full max-w-xs flex-col gap-2 rounded-chip border border-dashed border-border-default px-4 py-3 font-mono text-meta text-text-secondary`}
+      >
+        <div className="flex items-center justify-between">
+          <span>初期HP</span>
+          <span className="text-text-primary">{preset.initialHp}</span>
+        </div>
+        <div className="flex items-center justify-between">
+          <span>ガードクールダウン</span>
+          <span className="text-text-primary">{preset.guardCooldownTurns}ターン</span>
+        </div>
       </div>
     </div>
   )

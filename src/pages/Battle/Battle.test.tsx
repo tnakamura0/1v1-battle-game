@@ -67,6 +67,20 @@ describe('Battle', () => {
     expect(screen.getByText('行動を選択してください')).toBeInTheDocument()
   })
 
+  // Issue #124 の再発防止：カウントダウンは対戦中の「状態の帯」と目の行き先を揃えるため、
+  // intro の要素の並びの先頭に置いている。以前はいちばん下にあった。
+  // CSSではなくDOM順の話なので、実際に並びを元に戻すとここが落ちることを確認済み。
+  it('shows the countdown before the versus arena and the preset summary', () => {
+    renderBattle({ preset })
+
+    const countdown = screen.getByLabelText('残り3秒')
+    const versus = screen.getByText('プレイヤー')
+    const presetSummary = screen.getByText('初期HP')
+
+    expectRenderedBefore(countdown, versus)
+    expectRenderedBefore(versus, presetSummary)
+  })
+
   // Issue #82 の再発防止：LPのプレビューがこの並びを再現している。
   // 片側だけ固定しても乖離は防げないので、実物側の並びもここで固定する。
   // 対になる検証が Home.test.tsx にある。
