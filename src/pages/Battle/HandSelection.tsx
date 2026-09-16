@@ -2,7 +2,7 @@ import { ActionPromptBand } from '@/components/ActionPromptBand'
 import { ActionTriangle } from '@/components/ActionTriangle'
 import { BattleFrame } from '@/components/BattleFrame'
 import { getIllegalReason } from '@/game/rules'
-import type { Action, BattlePreset, PlayerState, TurnRecord } from '@/game/types'
+import type { Action, BattlePreset, IllegalReason, PlayerState, TurnRecord } from '@/game/types'
 import { TurnHistoryList } from '@/pages/Battle/TurnHistoryList'
 import { Versus } from '@/pages/Battle/Versus'
 
@@ -15,13 +15,25 @@ interface HandSelectionProps {
   onSelectAction: (action: Action) => void
 }
 
-function reasonLabel(
-  reason: 'own-energy-zero' | 'opponent-energy-zero' | 'guard-cooldown',
-  guardCooldownRemaining: number,
-): string {
-  if (reason === 'own-energy-zero') return 'ENERGY 0'
-  if (reason === 'opponent-energy-zero') return '相手EN 0'
-  return `あと${guardCooldownRemaining}T`
+/**
+ * 押せない理由を、ボタンに乗る短いチップの文言にする。
+ *
+ * **網羅的な switch にしてあるので、`default` を足さないこと。** かつては最後が
+ * `` return `あと${n}T` `` のフォールバックで、理由を1つ増やしたときに
+ * 無言でクールダウンの文言を借りてしまう形だった。理由を足したら
+ * ここが型エラーになって気づけるようにしてある。
+ */
+function reasonLabel(reason: IllegalReason, guardCooldownRemaining: number): string {
+  switch (reason) {
+    case 'own-energy-zero':
+      return 'ENERGY 0'
+    case 'own-energy-max':
+      return 'ENERGY MAX'
+    case 'opponent-energy-zero':
+      return '相手EN 0'
+    case 'guard-cooldown':
+      return `あと${guardCooldownRemaining}T`
+  }
 }
 
 /**

@@ -60,13 +60,30 @@ function bestAction(scores: Map<Action, number>): Action {
 
 type Strategy = (own: PlayerState, opponent: PlayerState, rng: () => number) => Action
 
-/** ユーザーから報告された攻略法：溜めておき、相手がガードできないターンに撃つ */
+/**
+ * ユーザーから報告された攻略法：溜めておき、相手がガードできないターンに撃つ。
+ *
+ * **Issue #134（上限でのチャージの非合法化）で、この相手は大幅に強くなった。**
+ * それ以前は上限に達しても（増えないのに）溜め続けられたため、hp2/cd3 の実測で
+ * **全ターンの74.8%をチャージに費やしていた**。チャージは攻撃に対して負ける側なので、
+ * CPUはそこを撃つだけで一方的に得点できていた（与ダメ365対被弾70）。
+ * 非合法化で溜め続けられなくなり、攻撃が9.8%→39.4%、与ダメ267対被弾268とほぼ互角になった。
+ *
+ * **下の勝率のしきい値がこの相手に対して緩いのはそのため。** 数字を動かすときは、
+ * 「CPUが弱くなった」のか「この相手が強い」のかを必ず切り分けること。
+ */
 const exploitStrategy: Strategy = (own, opponent) => {
   const legal = getLegalActions(own, opponent)
   if (own.hp <= 1 && legal.includes('guard')) return 'guard'
   if (opponent.guardCooldownRemaining > 0 && legal.includes('attack')) return 'attack'
   if (opponent.hp <= 1 && legal.includes('attack')) return 'attack'
-  return 'charge'
+  /*
+   * 最後は「溜める」。ただしエネルギーが上限だとチャージは非合法なので（Issue #134）、
+   * legal から外れる。ここを `return 'charge'` の無条件フォールバックにすると、
+   * resolveTurn も battleReducer も合法性を検証しないため、この攻略役だけが
+   * 非合法なパスを指せる**非対称な相手**になり、CPUの勝率が不当に下がる。
+   */
+  return legal.includes('charge') ? 'charge' : 'attack'
 }
 
 const randomStrategy: Strategy = (own, opponent, rng) => {
@@ -129,10 +146,11 @@ function simulate(
   battlePreset: BattlePreset,
   difficulty: CpuDifficulty,
   strategy: Strategy,
+  battleCount: number = BATTLE_COUNT,
 ): { wins: number; losses: number } {
   let wins = 0
   let losses = 0
-  for (let seed = 1; seed <= BATTLE_COUNT; seed += 1) {
+  for (let seed = 1; seed <= battleCount; seed += 1) {
     const { winner } = playBattle(battlePreset, difficulty, strategy, seededRng(seed))
     if (winner === 'cpu') wins += 1
     else if (winner === 'player') losses += 1
@@ -161,6 +179,21 @@ describe('decideCpuAction', () => {
     for (let i = 0; i <= 20; i += 1) {
       const rng = () => i / 20
       expect(decideCpuAction(cpu, human, preset, rng)).toBe('charge')
+    }
+  })
+
+  /*
+   * Issue #134：エネルギーが上限のときはチャージを選ばない。両難易度で、
+   * かつ rng の全域で確かめる（ふつうは重み抽選、つよいは softmax なので、
+   * どちらも「確率が低い」ではなく「候補から外れている」ことを固定する必要がある）。
+   */
+  it.each(['normal', 'strong'] as const)('never charges at max energy (%s)', (difficulty) => {
+    const cpu = state({ energy: MAX_ENERGY })
+    const human = state({ energy: 3 })
+
+    for (let i = 0; i <= 20; i += 1) {
+      const rng = () => i / 20
+      expect(decideCpuAction(cpu, human, preset, rng, { difficulty })).not.toBe('charge')
     }
   })
 
@@ -310,15 +343,60 @@ describe('decideCpuAction', () => {
       expect(scoreOf(finishable, 'attack')).toBeGreaterThan(scoreOf(healthy, 'attack'))
     })
 
-    it('scores charge lowest once energy is capped', () => {
-      const scores = scoreStrongActions(
+    /*
+     * Issue #135：自分を動けない状態に追い込む手を避けられること。
+     *
+     * この2つの局面は**解決前**の条件がすべて同じ（自分の合法手・相手の合法手・
+     * ダメージ・エネルギー増減・guardTempo）で、違うのは解決後の選択肢の数だけ。
+     * エネルギー1で撃つと0になり、ガードもクールダウン中なのでチャージ一択になる。
+     *
+     * ただし**解決後は相手の選択肢の数も変わる**。ガードの合法性は相手のエネルギーを
+     * 見るので、自分が0になると相手もガードを失うため。相手がチャージ/攻撃を選ぶ枝では
+     * 両者が1つずつ減って差が打ち消され、**差が残るのは相手がガードを選ぶ枝だけ**。
+     * それでも合計では差が付く（実測 -1.000 対 -0.556）。
+     *
+     * mobility を外すと両者は完全に同点になり、このテストは落ちる。
+     */
+    it('penalises spending the last energy while its own guard is on cooldown', () => {
+      const human = state({ energy: 2 })
+      const lastEnergy = scoreStrongActions(
+        state({ energy: 1, guardCooldownRemaining: 2 }),
+        human,
+        preset,
+        [],
+      )
+      const withSpare = scoreStrongActions(
+        state({ energy: 2, guardCooldownRemaining: 2 }),
+        human,
+        preset,
+        [],
+      )
+      expect(scoreOf(lastEnergy, 'attack')).toBeLessThan(scoreOf(withSpare, 'attack'))
+    })
+
+    /*
+     * Issue #134：上限でのチャージは非合法になったので、そもそも評価対象に入らない。
+     * かつては「評価対象に入るが点数が最下位」を固定していたテスト。
+     * 上限未満では従来どおり候補に残ることも併せて見て、
+     * 「常に外れている」退行と区別できるようにする。
+     */
+    it('leaves charge out of the candidates once energy is capped', () => {
+      const capped = scoreStrongActions(
         state({ energy: MAX_ENERGY }),
         state({ energy: 1 }),
         preset,
         [],
       )
-      expect(bestAction(scores)).not.toBe('charge')
-      expect(scoreOf(scores, 'charge')).toBeLessThan(scoreOf(scores, 'attack'))
+      expect(Array.from(capped.keys())).not.toContain('charge')
+      expect(capped.size).toBeGreaterThan(0)
+
+      const belowCap = scoreStrongActions(
+        state({ energy: MAX_ENERGY - 1 }),
+        state({ energy: 1 }),
+        preset,
+        [],
+      )
+      expect(Array.from(belowCap.keys())).toContain('charge')
     })
   })
 
@@ -370,10 +448,21 @@ describe('decideCpuAction', () => {
       })
 
       it(`${label}: 合法手からランダムに選ぶ相手にも勝ち越す`, () => {
-        const normal = simulate(battlePreset, 'normal', randomStrategy)
         const strong = simulate(battlePreset, 'strong', randomStrategy)
         expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(strongMinVsRandom)
-        expect(strong.wins).toBeGreaterThan(normal.wins)
+
+        /*
+         * 「つよい − ふつう」の差だけは標本を3倍にする。
+         *
+         * 勝率そのものと違い、**差は両者の揺れが重なるので200戦では符号が揺れる**。
+         * hp1/cd3 をシード帯ごとに200戦ずつ測ると -1 / +15 / +5 / +14 / +14 で、
+         * 平均は +9 とつよいが明確に優位なのに、シード1-200 だけを見ると -1 になる。
+         * ここで定数を追い込むと、回帰ではなくノイズに合わせて調整することになる
+         * （thresholdsFor の同趣旨のコメントも参照）。
+         */
+        const wideStrong = simulate(battlePreset, 'strong', randomStrategy, BATTLE_COUNT * 3)
+        const wideNormal = simulate(battlePreset, 'normal', randomStrategy, BATTLE_COUNT * 3)
+        expect(wideStrong.wins).toBeGreaterThan(wideNormal.wins)
       })
     }
 
