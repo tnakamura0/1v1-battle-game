@@ -10,6 +10,18 @@ const DAMAGE_VALUE = 10
 const LETHAL_MULTIPLIER = 1.5
 const ENERGY_VALUE = 2.5
 const GUARD_TEMPO_PER_TURN = 1.5
+/**
+ * 解決後に自分が選べる手が1つ多いことの価値（Issue #135）。
+ *
+ * 実測で 0 / 1 / 1.5 / 2 / 2.5 を試し、2 が最も良かった。2.5 まで上げると
+ * ガードを切らなくなりすぎて、ランダムな相手への勝率が落ちる。
+ *
+ * **GUARD_TEMPO_PER_TURN を下げて相殺しないこと。** この項はガードを
+ * 「次ターンの選択肢を1つ失う行為」として罰するので guardTempo と重なって見えるが、
+ * guardTempo はクールダウンの長さに比例し、こちらは長さによらない定数で、別のものを
+ * 測っている。実測でも 1.5 → 1.0 → 0.5 と下げるほど全プリセットで悪化した。
+ */
+const MOBILITY_VALUE = 2
 // 相手の行動頻度を予測にどれだけ強く反映するか（一様な事前分布に対する倍率）
 const PATTERN_BIAS = 3
 // 相手の行動履歴を1ターン遡るごとに掛ける減衰率。直近の手ほど重く見る
@@ -72,6 +84,11 @@ export function decideCpuAction(
  *
  * 盤面の評価は実際のルール（resolveTurn）を回した結果の差分から求めるため、
  * ガード成功時の+1エネルギーやエネルギー上限といった仕様が自動的に反映される。
+ *
+ * 見るのは1手先だけだが、**解決後に選べる手の数**（scorePair の mobility）を
+ * 項に持つことで、「その手を指すと次に動けなくなる」ことだけは1手先の評価に入る。
+ * それ以上の読みが要るように見えたときは、まず2手先読みではなく、
+ * 盤面から読み取れる情報を項として足せないかを疑うこと。
  */
 export function scoreStrongActions(
   cpu: PlayerState,
@@ -187,7 +204,37 @@ function scorePair(
     preset.guardCooldownTurns *
     GUARD_TEMPO_PER_TURN
 
-  return damageDealt - damageTaken + energyDelta * ENERGY_VALUE + guardTempo
+  /*
+   * 解決後に「自分が選べる手 − 相手が選べる手」。Issue #135。
+   *
+   * これがないと、**自分を動けない状態に追い込む手を避けられない**。実測では、
+   * CPUが受けたダメージの62.6%が「合法手が1つしかない局面」で起きていた。
+   * 典型は、ガードのクールダウン中にエネルギーを使い切ってチャージ一択になった状態で、
+   * 相手から見れば的でしかない。
+   *
+   * 効くのは2箇所。どちらも専用の分岐を書かずに同じ式から出てくる。
+   * - **ガードを切る判断**：ガードは次ターンの選択肢を1つ減らすので罰が増える
+   *   （実測でガード選択率 23.4% → 13.8%、自分のCD中に過ごす割合 35.9% → 18.4%）
+   * - **最後の1エネルギーを使う判断**：0にすると攻撃を失う。予備があるときの攻撃と
+   *   区別が付くようになる（この項がないと両者は完全に同点になる）
+   *
+   * 相手側を引いているのは、相手の選択肢を奪う手も同じ尺度で評価するため。
+   * ただし **この減算は自分側の罰をかなり打ち消す**。ガードの合法性は「相手の
+   * エネルギーが0でないこと」なので（rules.ts）、自分がエネルギーを使い切ると
+   * 相手のガードも非合法になり、両者の選択肢が同時に1つ減る枝が生まれるため。
+   * 減算をやめて自分側だけにすると溜めすぎない相手への勝率は上がる（実測 74.3% → 81.8%）が、
+   * ランダムな相手で「つよい」が「ふつう」を下回るプリセットが出たので採っていない。
+   *
+   * 決着した盤面では数えない。倒れた側の選択肢の数に意味はなく、
+   * 決定打の評価にノイズを足すだけになる。
+   */
+  const isSettled = nextCpu.hp <= 0 || nextHuman.hp <= 0
+  const mobility = isSettled
+    ? 0
+    : (getLegalActions(nextCpu, nextHuman).length - getLegalActions(nextHuman, nextCpu).length) *
+      MOBILITY_VALUE
+
+  return damageDealt - damageTaken + energyDelta * ENERGY_VALUE + guardTempo + mobility
 }
 
 /**
