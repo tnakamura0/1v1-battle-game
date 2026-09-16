@@ -240,8 +240,13 @@ function scorePair(
 /**
  * 期待値を抽選用の重みに変換する。最大値を引いてから指数化してオーバーフローを避ける。
  *
- * getLegalActions は必ずチャージを含むため scores が空になることはない。
+ * **scores が空になることはない。** かつての根拠は「getLegalActions は必ずチャージを含む」
+ * だったが、上限でのチャージが非合法になった（Issue #134）のでそれは成り立たない。
+ * いまの根拠は、チャージが外れるのはエネルギーが上限のときだけで、
+ * そのとき攻撃が必ず合法（`energy > 0`）だから。getLegalActions 側にも同じことを書いてある。
+ *
  * 空だと best が -Infinity になり、続く pickWeighted も候補なしで破綻する。
+ * 同じ前提に predictHumanDistribution も乗っている（合計0で割ることになる）。
  */
 function toSoftmaxWeights(scores: Map<Action, number>): Map<Action, number> {
   const best = Math.max(...scores.values())

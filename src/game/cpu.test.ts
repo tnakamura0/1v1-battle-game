@@ -66,7 +66,13 @@ const exploitStrategy: Strategy = (own, opponent) => {
   if (own.hp <= 1 && legal.includes('guard')) return 'guard'
   if (opponent.guardCooldownRemaining > 0 && legal.includes('attack')) return 'attack'
   if (opponent.hp <= 1 && legal.includes('attack')) return 'attack'
-  return 'charge'
+  /*
+   * 最後は「溜める」。ただしエネルギーが上限だとチャージは非合法なので（Issue #134）、
+   * legal から外れる。ここを `return 'charge'` の無条件フォールバックにすると、
+   * resolveTurn も battleReducer も合法性を検証しないため、この攻略役だけが
+   * 非合法なパスを指せる**非対称な相手**になり、CPUの勝率が不当に下がる。
+   */
+  return legal.includes('charge') ? 'charge' : legal[0]
 }
 
 /**
@@ -182,6 +188,24 @@ describe('decideCpuAction', () => {
       expect(decideCpuAction(cpu, human, preset, rng)).toBe('charge')
     }
   })
+
+  /*
+   * Issue #134：エネルギーが上限のときはチャージを選ばない。両難易度で、
+   * かつ rng の全域で確かめる（ふつうは重み抽選、つよいは softmax なので、
+   * どちらも「確率が低い」ではなく「候補から外れている」ことを固定する必要がある）。
+   */
+  it.each(['normal', 'strong'] as const)(
+    'never charges at max energy (%s)',
+    (difficulty) => {
+      const cpu = state({ energy: MAX_ENERGY })
+      const human = state({ energy: 3 })
+
+      for (let i = 0; i <= 20; i += 1) {
+        const rng = () => i / 20
+        expect(decideCpuAction(cpu, human, preset, rng, { difficulty })).not.toBe('charge')
+      }
+    },
+  )
 
   it('only picks between charge and guard when attack is illegal', () => {
     const cpu = state({ energy: 0 })
@@ -360,15 +384,29 @@ describe('decideCpuAction', () => {
       expect(scoreOf(lastEnergy, 'attack')).toBeLessThan(scoreOf(withSpare, 'attack'))
     })
 
-    it('scores charge lowest once energy is capped', () => {
-      const scores = scoreStrongActions(
+    /*
+     * Issue #134：上限でのチャージは非合法になったので、そもそも評価対象に入らない。
+     * かつては「評価対象に入るが点数が最下位」を固定していたテスト。
+     * 上限未満では従来どおり候補に残ることも併せて見て、
+     * 「常に外れている」退行と区別できるようにする。
+     */
+    it('leaves charge out of the candidates once energy is capped', () => {
+      const capped = scoreStrongActions(
         state({ energy: MAX_ENERGY }),
         state({ energy: 1 }),
         preset,
         [],
       )
-      expect(bestAction(scores)).not.toBe('charge')
-      expect(scoreOf(scores, 'charge')).toBeLessThan(scoreOf(scores, 'attack'))
+      expect(Array.from(capped.keys())).not.toContain('charge')
+      expect(capped.size).toBeGreaterThan(0)
+
+      const belowCap = scoreStrongActions(
+        state({ energy: MAX_ENERGY - 1 }),
+        state({ energy: 1 }),
+        preset,
+        [],
+      )
+      expect(Array.from(belowCap.keys())).toContain('charge')
     })
   })
 

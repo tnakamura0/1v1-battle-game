@@ -17,10 +17,32 @@ function player(overrides: Partial<PlayerState> = {}): PlayerState {
 }
 
 describe('getLegalActions / getIllegalReason', () => {
-  it('always allows charge', () => {
+  it('allows charge while below the energy cap', () => {
     const own = player({ energy: 0 })
     const opponent = player({ energy: 0 })
     expect(getLegalActions(own, opponent)).toEqual(['charge'])
+    expect(getIllegalReason('charge', player({ energy: MAX_ENERGY - 1 }), opponent)).toBeNull()
+  })
+
+  // Issue #134：上限では増えないうえ、攻撃に対しては負ける側になるだけのターンになる
+  it('disallows charge once own energy is at the cap', () => {
+    const own = player({ energy: MAX_ENERGY })
+    const opponent = player({ energy: 0 })
+    expect(isActionLegal('charge', own, opponent)).toBe(false)
+    expect(getIllegalReason('charge', own, opponent)).toBe('own-energy-max')
+    expect(getLegalActions(own, opponent)).not.toContain('charge')
+  })
+
+  /*
+   * getLegalActions が空を返さないことは、CPUの抽選（game/cpu.ts の toSoftmaxWeights と
+   * predictHumanDistribution）が依存している前提。チャージが外れるのは上限のときだけで、
+   * そのとき攻撃は必ず合法（energy > 0）なので成り立つ。
+   * 相手のエネルギーが0でガードも非合法という、いちばん選択肢が少ない盤面で固定する。
+   */
+  it('never returns an empty list, even at the cap with guard unavailable', () => {
+    const own = player({ energy: MAX_ENERGY, guardCooldownRemaining: 0 })
+    const opponent = player({ energy: 0 })
+    expect(getLegalActions(own, opponent)).toEqual(['attack'])
   })
 
   it('disallows attack when own energy is 0', () => {
@@ -161,6 +183,12 @@ describe('resolveTurn — full 3x3 outcome matrix', () => {
     },
   )
 
+  /*
+   * Issue #134 以降、上限でのチャージは非合法になったので、この状況は正規の操作では
+   * 起きない。それでも固定しているのは、resolveTurn も battleReducer も行動の
+   * 合法性を検証しておらず（押させないのはUIだけ）、ここが最後の砦になるため。
+   * 下の「ガード成功での上限」は今も正規の経路で効く。
+   */
   it('caps energy gain from charge at MAX_ENERGY', () => {
     const result = resolveTurn(
       player({ energy: 5 }),

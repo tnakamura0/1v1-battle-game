@@ -14,7 +14,7 @@ const TURN_STEPS = [
 
 /** この画面でだけ出す行動の説明。名前は ACTION_LABEL、色は ACTION_STYLE を使う */
 const ACTION_DESCRIPTION: Record<Action, string> = {
-  charge: '自分のエネルギーを+1する（最大5）。',
+  charge: '自分のエネルギーを+1する。自分のエネルギーが最大（5）のときは選択できない。',
   attack: 'エネルギーを1消費して相手を攻撃する。自分のエネルギーが0のときは選択できない。',
   guard:
     '相手の攻撃を防ぐ。相手のエネルギーが0のときは選択できない。ガードに成功すると自分のエネルギーが1増える。使用後は設定したターン数の間、再使用できない。',
@@ -138,7 +138,7 @@ export function Rules() {
 
       <Section title="エネルギー">
         <p className="font-sans text-sm leading-relaxed text-text-secondary">
-          初期値は0、最大値は5です。チャージで+1、攻撃で-1、ガードに成功すると+1されます。
+          初期値は0、最大値は5です。チャージで+1、攻撃で-1、ガードに成功すると+1されます。最大値に達している間はチャージを選べません。
         </p>
       </Section>
 

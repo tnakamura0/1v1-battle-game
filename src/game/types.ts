@@ -55,4 +55,8 @@ export interface BattleSummary {
   turnCount: number
 }
 
-export type IllegalReason = 'own-energy-zero' | 'opponent-energy-zero' | 'guard-cooldown'
+export type IllegalReason =
+  | 'own-energy-zero'
+  | 'opponent-energy-zero'
+  | 'guard-cooldown'
+  | 'own-energy-max'
