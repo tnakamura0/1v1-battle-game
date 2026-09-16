@@ -73,14 +73,24 @@ export const INTRO_DELAY = {
 
 /**
  * 最終結果画面（pages/BattleResult/BattleResult.tsx）の段取り。
- * 成績行は70ms刻みで、行は3つで固定。
+ * 成績行は50ms刻みで、行は4つ（ルール・最終HP自分・最終HP相手・ターン数）で固定。
  *
- * actions を480msより後ろにしないこと。この画面の主目的は
+ * **actions を480msより後ろにしないこと。** この画面の主目的は
  * 「もう一度対戦する」ボタンで、それが見えるまでの時間を伸ばすことになる。
- * 成績行の最後（420ms）より後ろに置いて、上から順に出るようにしている。
+ * 成績行の最後より後ろに置いて、上から順に出るようにしている。
+ *
+ * Issue #131 で「ルール」の行を足して3行→4行になった。刻みを70ms→50msに詰めて、
+ * 最後の行を430msに収めている。元の70ms刻みのまま1行足すと490msとなり、
+ * actions の480msを追い越して上記の制約を破る。さらに行を増やすなら、
+ * 後ろに足すのではなく刻みをもう一段詰めること。
  */
 export const RESULT_DELAY = {
   headline: '[animation-delay:120ms]',
-  stats: ['[animation-delay:280ms]', '[animation-delay:350ms]', '[animation-delay:420ms]'],
+  stats: [
+    '[animation-delay:280ms]',
+    '[animation-delay:330ms]',
+    '[animation-delay:380ms]',
+    '[animation-delay:430ms]',
+  ],
   actions: '[animation-delay:480ms]',
 } as const

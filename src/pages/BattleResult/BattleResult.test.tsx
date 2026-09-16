@@ -6,7 +6,8 @@ import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
 const summary: BattleSummary = {
-  preset: { initialHp: 3, guardCooldownTurns: 2 },
+  // 「真剣勝負」の設定そのもの（Issue #131 の「ルール」行がルール名を出す側）
+  preset: { initialHp: 3, guardCooldownTurns: 2, cpuDifficulty: 'strong' },
   winner: 'player',
   player: { hp: 2, energy: 1, guardCooldownRemaining: 0 },
   cpu: { hp: 0, energy: 0, guardCooldownRemaining: 0 },
@@ -34,6 +35,29 @@ describe('BattleResult', () => {
     renderPage({ summary })
     expect(screen.getByRole('heading', { name: '勝利' })).toBeInTheDocument()
     expect(screen.getByText('7ターン')).toBeInTheDocument()
+  })
+
+  /*
+   * Issue #131：数字（最終HP・ターン数）をどう読めばいいかの前提になるので、
+   * 成績表の先頭にルールを出す。共有テキストと同じ ruleLabel を使うため、
+   * 共有文で初めて見る名前にはならない。
+   */
+  describe('ルールの行', () => {
+    it('names the recommendation the battle was played with', () => {
+      renderPage({ summary })
+      expect(screen.getByText('ルール')).toBeInTheDocument()
+      expect(screen.getByText('真剣勝負')).toBeInTheDocument()
+    })
+
+    it('lists the actual settings when the setup matches no recommendation', () => {
+      renderPage({
+        summary: {
+          ...summary,
+          preset: { initialHp: 2, guardCooldownTurns: 2, cpuDifficulty: 'strong' },
+        },
+      })
+      expect(screen.getByText('HP2・ガード2ターン・CPUつよい')).toBeInTheDocument()
+    })
   })
 
   it('shows a lose headline when the cpu wins', () => {
