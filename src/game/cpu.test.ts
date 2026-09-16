@@ -60,7 +60,18 @@ function bestAction(scores: Map<Action, number>): Action {
 
 type Strategy = (own: PlayerState, opponent: PlayerState, rng: () => number) => Action
 
-/** ユーザーから報告された攻略法：溜めておき、相手がガードできないターンに撃つ */
+/**
+ * ユーザーから報告された攻略法：溜めておき、相手がガードできないターンに撃つ。
+ *
+ * **Issue #134（上限でのチャージの非合法化）で、この相手は大幅に強くなった。**
+ * それ以前は上限に達しても（増えないのに）溜め続けられたため、hp2/cd3 の実測で
+ * **全ターンの74.8%をチャージに費やしていた**。チャージは攻撃に対して負ける側なので、
+ * CPUはそこを撃つだけで一方的に得点できていた（与ダメ365対被弾70）。
+ * 非合法化で溜め続けられなくなり、攻撃が9.8%→39.4%、与ダメ267対被弾268とほぼ互角になった。
+ *
+ * **下の勝率のしきい値がこの相手に対して緩いのはそのため。** 数字を動かすときは、
+ * 「CPUが弱くなった」のか「この相手が強い」のかを必ず切り分けること。
+ */
 const exploitStrategy: Strategy = (own, opponent) => {
   const legal = getLegalActions(own, opponent)
   if (own.hp <= 1 && legal.includes('guard')) return 'guard'
@@ -73,25 +84,6 @@ const exploitStrategy: Strategy = (own, opponent) => {
    * 非合法なパスを指せる**非対称な相手**になり、CPUの勝率が不当に下がる。
    */
   return legal.includes('charge') ? 'charge' : legal[0]
-}
-
-/**
- * 溜めすぎない相手。上限に達したら溜めずに撃つ点**だけ**が exploitStrategy と違う。
- *
- * exploitStrategy は上限に達しても（増えないのに）溜め続けるため、
- * **全ターンの74.8%をチャージに費やす**（hp2/cd3・200戦の実測）。チャージは攻撃に
- * 対して負ける側なので、CPUはそこを撃つだけで一方的に得点できてしまい、
- * **資源管理の弱さが表に出ない**。上限で撃ち返してくる相手を別に用意することで、
- * 「自分を動けない状態に追い込んでいないか」（Issue #135）が勝率に現れるようになる。
- *
- * 分岐を複製せず exploitStrategy に委譲しているのは、「違いは1点だけ」という
- * この説明を、コードの形そのもので保つため。
- */
-const cappedExploitStrategy: Strategy = (own, opponent, rng) => {
-  const chosen = exploitStrategy(own, opponent, rng)
-  if (chosen !== 'charge' || own.energy < MAX_ENERGY) return chosen
-  // 上限に達している＝エネルギーは0でないので、攻撃は必ず合法
-  return 'attack'
 }
 
 const randomStrategy: Strategy = (own, opponent, rng) => {
@@ -154,10 +146,11 @@ function simulate(
   battlePreset: BattlePreset,
   difficulty: CpuDifficulty,
   strategy: Strategy,
+  battleCount: number = BATTLE_COUNT,
 ): { wins: number; losses: number } {
   let wins = 0
   let losses = 0
-  for (let seed = 1; seed <= BATTLE_COUNT; seed += 1) {
+  for (let seed = 1; seed <= battleCount; seed += 1) {
     const { winner } = playBattle(battlePreset, difficulty, strategy, seededRng(seed))
     if (winner === 'cpu') wins += 1
     else if (winner === 'player') losses += 1
@@ -194,18 +187,15 @@ describe('decideCpuAction', () => {
    * かつ rng の全域で確かめる（ふつうは重み抽選、つよいは softmax なので、
    * どちらも「確率が低い」ではなく「候補から外れている」ことを固定する必要がある）。
    */
-  it.each(['normal', 'strong'] as const)(
-    'never charges at max energy (%s)',
-    (difficulty) => {
-      const cpu = state({ energy: MAX_ENERGY })
-      const human = state({ energy: 3 })
+  it.each(['normal', 'strong'] as const)('never charges at max energy (%s)', (difficulty) => {
+    const cpu = state({ energy: MAX_ENERGY })
+    const human = state({ energy: 3 })
 
-      for (let i = 0; i <= 20; i += 1) {
-        const rng = () => i / 20
-        expect(decideCpuAction(cpu, human, preset, rng, { difficulty })).not.toBe('charge')
-      }
-    },
-  )
+    for (let i = 0; i <= 20; i += 1) {
+      const rng = () => i / 20
+      expect(decideCpuAction(cpu, human, preset, rng, { difficulty })).not.toBe('charge')
+    }
+  })
 
   it('only picks between charge and guard when attack is illegal', () => {
     const cpu = state({ energy: 0 })
@@ -458,34 +448,21 @@ describe('decideCpuAction', () => {
       })
 
       it(`${label}: 合法手からランダムに選ぶ相手にも勝ち越す`, () => {
-        const normal = simulate(battlePreset, 'normal', randomStrategy)
         const strong = simulate(battlePreset, 'strong', randomStrategy)
         expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(strongMinVsRandom)
-        expect(strong.wins).toBeGreaterThan(normal.wins)
-      })
 
-      /*
-       * Issue #135：溜めすぎない相手に対する下限。
-       *
-       * 0.25 という低い値なのは、この相手が exploitStrategy よりはるかに強いため
-       * （あちらは74.8%のターンをチャージに費やす）。上限ではなく**下限**として
-       * 置いており、狙いは「自分を動けない状態に追い込む」退行を検知すること。
-       *
-       * 実効的に効いているのは hp2/cd2 と hp2/cd3 の2つだけで、残りは余裕がある。
-       * 導入時の実測（cd1 / cd2 / cd3）:
-       *   hp1: 0.925 / 0.895 / 0.740
-       *   hp2: 0.865 / 0.305 / 0.310  ← ここが下限に近い
-       *   hp3: 0.955 / 0.880 / 0.925
-       * mobility を外すと hp2/cd2 が 0.185、hp2/cd3 が 0.190 まで落ちてここが落ちる。
-       *
-       * **hp2 系の余裕は200戦中11〜12戦しかない。** CPUの定数を触って落ちたときは、
-       * しきい値を下げる前に「動けない局面を増やしていないか」をまず疑うこと。
-       */
-      it(`${label}: 溜めすぎない相手にも大きくは負け越さない`, () => {
-        const normal = simulate(battlePreset, 'normal', cappedExploitStrategy)
-        const strong = simulate(battlePreset, 'strong', cappedExploitStrategy)
-        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.25)
-        expect(strong.wins).toBeGreaterThan(normal.wins)
+        /*
+         * 「つよい − ふつう」の差だけは標本を3倍にする。
+         *
+         * 勝率そのものと違い、**差は両者の揺れが重なるので200戦では符号が揺れる**。
+         * hp1/cd3 をシード帯ごとに200戦ずつ測ると -1 / +15 / +5 / +14 / +14 で、
+         * 平均は +9 とつよいが明確に優位なのに、シード1-200 だけを見ると -1 になる。
+         * ここで定数を追い込むと、回帰ではなくノイズに合わせて調整することになる
+         * （thresholdsFor の同趣旨のコメントも参照）。
+         */
+        const wideStrong = simulate(battlePreset, 'strong', randomStrategy, BATTLE_COUNT * 3)
+        const wideNormal = simulate(battlePreset, 'normal', randomStrategy, BATTLE_COUNT * 3)
+        expect(wideStrong.wins).toBeGreaterThan(wideNormal.wins)
       })
     }
 

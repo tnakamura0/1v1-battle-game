@@ -56,7 +56,4 @@ export interface BattleSummary {
 }
 
 export type IllegalReason =
-  | 'own-energy-zero'
-  | 'opponent-energy-zero'
-  | 'guard-cooldown'
-  | 'own-energy-max'
+  'own-energy-zero' | 'opponent-energy-zero' | 'guard-cooldown' | 'own-energy-max'
