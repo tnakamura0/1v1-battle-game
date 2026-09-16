@@ -324,12 +324,15 @@ body {
  * （テキスト入力の label ならカーソルは I ビームであるべき）。
  * ラジオを包む label の中の span だけは SegmentedOption 側で個別に指定している。
  *
- * セレクタが button だけで足りるのは、今のところ操作要素が button と a しかないため
- * （a はブラウザ既定でポインタになる）。[role="button"] や summary、select を
- * 使い始めたらここを見直すこと。
+ * summary は Issue #129（対戦ルール選択画面の個別設定の折りたたみ）でここに加えた。
+ * button と同じく、それ自体が押して開閉する操作要素なので、無効状態の概念もない。
+ *
+ * a はブラウザ既定でポインタになるのでここには要らない。[role="button"] や select を
+ * 使い始めたらまたここを見直すこと。**個々の要素に cursor-pointer を書かないこと。**
  */
 @layer base {
-  button:not(:disabled) {
+  button:not(:disabled),
+  summary {
     cursor: pointer;
   }
 }

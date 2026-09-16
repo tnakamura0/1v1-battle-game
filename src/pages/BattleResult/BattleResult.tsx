@@ -1,6 +1,7 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
 import { RESULT_DELAY } from '@/components/motion'
 import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
+import { ruleLabel } from '@/game/copy'
 import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
@@ -48,22 +49,32 @@ export function BattleResult() {
       <div
         className={`animate-fade-rise ${RESULT_DELAY.stats[0]} flex w-full flex-col gap-px overflow-hidden rounded-chip border border-border-default bg-bg-track`}
       >
+        {/*
+          ルールを先頭に置く。下に続く数字（最終HP・ターン数）をどう読めばいいかの
+          前提になる情報なので（HP1のサドンデスとHP3の真剣勝負では意味が違う）。
+          共有テキストも同じ ruleLabel を使うので、共有文で初めて見る名前にならない。
+        */}
+        <StatRow
+          label="ルール"
+          value={ruleLabel(summary.preset)}
+          delayClass={RESULT_DELAY.stats[0]}
+        />
         <StatRow
           label="最終HP（自分）"
           value={`${summary.player.hp}/${summary.preset.initialHp}`}
           role="player"
-          delayClass={RESULT_DELAY.stats[0]}
+          delayClass={RESULT_DELAY.stats[1]}
         />
         <StatRow
           label="最終HP（相手）"
           value={`${summary.cpu.hp}/${summary.preset.initialHp}`}
           role="opponent"
-          delayClass={RESULT_DELAY.stats[1]}
+          delayClass={RESULT_DELAY.stats[2]}
         />
         <StatRow
           label="ターン数"
           value={`${summary.turnCount}ターン`}
-          delayClass={RESULT_DELAY.stats[2]}
+          delayClass={RESULT_DELAY.stats[3]}
         />
       </div>
 

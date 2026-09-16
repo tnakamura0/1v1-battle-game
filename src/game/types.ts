@@ -18,6 +18,15 @@ export interface BattlePreset {
   cpuDifficulty?: CpuDifficulty
 }
 
+/**
+ * 3項目すべてが確定した対戦設定。
+ *
+ * BattlePreset の cpuDifficulty は optional なので、「どのおすすめと一致するか」を
+ * 判定する側は必ず既定値で埋めてから比べる必要がある（presets.ts の toSetup）。
+ * 埋めたあとの形をこの型で表す。
+ */
+export type BattleSetup = Required<BattlePreset>
+
 export interface PlayerState {
   hp: number
   energy: number
