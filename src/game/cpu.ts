@@ -233,8 +233,13 @@ function scorePair(
    * 0にすると「相手を倒す手」だけが減点される**。とどめを刺すのをためらう
    * CPUになるので、ゲートを置かないこと（cpu.test.ts の
    * `values a finishing blow above an ordinary hit` がこれを固定している）。
+   *
    * 自分が倒れる枝で選択肢を数えてしまうのは無意味だが、そちらは damageTaken
-   * （致命傷は -15）が桁違いに大きいので結果に影響しない。
+   * （致命傷は -15）に負ける。mobility は最大でも 3手 × 2 = 6 で、枝の間の**差**は
+   * 高々4なので、-15 を覆せない。**MOBILITY_VALUE を大きくするとこの前提が崩れる**
+   * ので、上げるときはここも見直すこと。
+   * なお「自分が倒れる枝だけ0にする」中間案も試したが、そちらは
+   * `決着が長引きすぎない` が落ちる。ゲートなしの素直な形が実測上いちばん良い。
    */
   const mobility = getLegalActions(nextCpu, nextHuman).length * MOBILITY_VALUE
 

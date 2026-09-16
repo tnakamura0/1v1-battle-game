@@ -83,7 +83,7 @@ const exploitStrategy: Strategy = (own, opponent) => {
    * resolveTurn も battleReducer も合法性を検証しないため、この攻略役だけが
    * 非合法なパスを指せる**非対称な相手**になり、CPUの勝率が不当に下がる。
    */
-  return legal.includes('charge') ? 'charge' : legal[0]
+  return legal.includes('charge') ? 'charge' : 'attack'
 }
 
 const randomStrategy: Strategy = (own, opponent, rng) => {

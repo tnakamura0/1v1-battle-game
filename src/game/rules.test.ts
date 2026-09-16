@@ -45,6 +45,23 @@ describe('getLegalActions / getIllegalReason', () => {
     expect(getLegalActions(own, opponent)).toEqual(['attack'])
   })
 
+  /*
+   * 上のスポットチェックだけだと、将来 attack 側に非合法の条件が増えたときに
+   * すり抜ける。CPUの2箇所（cpu.ts の toSoftmaxWeights と predictHumanDistribution）が
+   * この不変条件に依存しているので、到達しうる状態を総当たりして機械的に固定する。
+   */
+  it('never returns an empty list for any reachable state', () => {
+    for (let ownEnergy = 0; ownEnergy <= MAX_ENERGY; ownEnergy += 1) {
+      for (let cooldown = 0; cooldown <= 3; cooldown += 1) {
+        for (let opponentEnergy = 0; opponentEnergy <= MAX_ENERGY; opponentEnergy += 1) {
+          const own = player({ energy: ownEnergy, guardCooldownRemaining: cooldown })
+          const opponent = player({ energy: opponentEnergy })
+          expect(getLegalActions(own, opponent).length).toBeGreaterThan(0)
+        }
+      }
+    }
+  })
+
   it('disallows attack when own energy is 0', () => {
     const own = player({ energy: 0 })
     const opponent = player({ energy: 3 })
