@@ -93,6 +93,54 @@ describe('PresetSelect', () => {
     expect(screen.queryByText(/プリセット/)).not.toBeInTheDocument()
   })
 
+  /*
+   * Issue #129：個別設定は初期状態で閉じておく。
+   *
+   * jsdom は details が閉じていても子をアクセシビリティツリーから外さないので、
+   * このファイルの他のテストが getByRole('radio') を閉じたまま引けてしまう。
+   * 折りたたみ自体はここで open 属性を直接見て固定する。
+   */
+  describe('個別設定の折りたたみ', () => {
+    const individualSettings = () =>
+      screen.getByRole('heading', { level: 2, name: /個別に調整する/ }).closest('details')!
+
+    it('starts collapsed', () => {
+      renderPage()
+      expect(individualSettings().open).toBe(false)
+    })
+
+    it('expands when the summary is clicked', async () => {
+      const user = userEvent.setup()
+      renderPage()
+
+      await user.click(screen.getByText('個別に調整する'))
+
+      expect(individualSettings().open).toBe(true)
+    })
+
+    /*
+     * 閉じた状態で現在の設定を示すのは summary のチップだけ。個別に変更すると
+     * おすすめ3枚はすべて aria-pressed=false になるので、ここが消えると
+     * 今どの設定で始まるのかが画面から分からなくなる。
+     */
+    it('keeps showing the current setup in the summary when it matches no recommendation', async () => {
+      const user = userEvent.setup()
+      renderPage()
+
+      await user.click(seriousButton())
+      await user.click(screen.getByRole('radio', { name: '2' }))
+
+      expect(casualButton()).toHaveAttribute('aria-pressed', 'false')
+      expect(seriousButton()).toHaveAttribute('aria-pressed', 'false')
+      expect(suddenDeathButton()).toHaveAttribute('aria-pressed', 'false')
+
+      const summary = individualSettings().querySelector('summary')!
+      for (const chip of ['HP2', 'ガード2ターン', 'CPUつよい']) {
+        expect(within(summary).getByText(chip)).toBeInTheDocument()
+      }
+    })
+  })
+
   // Issue #95：個別の調整は必須の手順ではないので、任意であることを見出しで示す
   it('marks the individual settings as optional', () => {
     renderPage()
