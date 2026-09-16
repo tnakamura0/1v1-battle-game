@@ -69,6 +69,24 @@ const exploitStrategy: Strategy = (own, opponent) => {
   return 'charge'
 }
 
+/**
+ * 溜めすぎない相手。上限に達したら溜めずに撃つ点だけが exploitStrategy と違う。
+ *
+ * exploitStrategy は**全ターンの74.8%をチャージに費やす**（上限を超えても溜め続ける）。
+ * チャージは攻撃に対して負ける側なので、CPUはそこを撃つだけで一方的に得点できてしまい、
+ * **資源管理の弱さが表に出ない**。上限で撃ち返してくる相手を別に用意することで、
+ * 「自分を動けない状態に追い込んでいないか」（Issue #135）が勝率に現れるようになる。
+ */
+const cappedExploitStrategy: Strategy = (own, opponent) => {
+  const legal = getLegalActions(own, opponent)
+  if (own.hp <= 1 && legal.includes('guard')) return 'guard'
+  if (opponent.guardCooldownRemaining > 0 && legal.includes('attack')) return 'attack'
+  if (opponent.hp <= 1 && legal.includes('attack')) return 'attack'
+  if (own.energy < MAX_ENERGY && legal.includes('charge')) return 'charge'
+  if (legal.includes('attack')) return 'attack'
+  return legal[0]
+}
+
 const randomStrategy: Strategy = (own, opponent, rng) => {
   const legal = getLegalActions(own, opponent)
   return legal[Math.floor(rng() * legal.length)]
@@ -310,6 +328,34 @@ describe('decideCpuAction', () => {
       expect(scoreOf(finishable, 'attack')).toBeGreaterThan(scoreOf(healthy, 'attack'))
     })
 
+    /*
+     * Issue #135：自分を動けない状態に追い込む手を避けられること。
+     *
+     * この2つの局面は、**自分の合法手・相手の合法手・ダメージ・エネルギー増減・
+     * guardTempo がすべて同じ**で、違うのは「攻撃した後に自分が選べる手の数」だけ。
+     * エネルギー1で撃つと0になり、ガードもクールダウン中なのでチャージ一択になる。
+     * エネルギー2なら撃っても攻撃が残る。
+     *
+     * つまりこのアサーションは mobility の効果だけを見ている。
+     * mobility を外すと両者は完全に同点になり、このテストは落ちる。
+     */
+    it('penalises spending the last energy while its own guard is on cooldown', () => {
+      const human = state({ energy: 2 })
+      const lastEnergy = scoreStrongActions(
+        state({ energy: 1, guardCooldownRemaining: 2 }),
+        human,
+        preset,
+        [],
+      )
+      const withSpare = scoreStrongActions(
+        state({ energy: 2, guardCooldownRemaining: 2 }),
+        human,
+        preset,
+        [],
+      )
+      expect(scoreOf(lastEnergy, 'attack')).toBeLessThan(scoreOf(withSpare, 'attack'))
+    })
+
     it('scores charge lowest once energy is capped', () => {
       const scores = scoreStrongActions(
         state({ energy: MAX_ENERGY }),
@@ -373,6 +419,21 @@ describe('decideCpuAction', () => {
         const normal = simulate(battlePreset, 'normal', randomStrategy)
         const strong = simulate(battlePreset, 'strong', randomStrategy)
         expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(strongMinVsRandom)
+        expect(strong.wins).toBeGreaterThan(normal.wins)
+      })
+
+      /*
+       * Issue #135：溜めすぎない相手に対する下限。
+       *
+       * 0.25 という低い値なのは、この相手が exploitStrategy よりはるかに強いため
+       * （あちらは74.8%のターンをチャージに費やす）。上限ではなく**下限**として
+       * 置いており、狙いは「自分を動けない状態に追い込む」退行を検知すること。
+       * mobility を外すと、いちばん厳しい hp2/cd3 が 18.5% まで落ちてここが落ちる。
+       */
+      it(`${label}: 溜めすぎない相手にも一方的にはやられない`, () => {
+        const strong = simulate(battlePreset, 'strong', cappedExploitStrategy)
+        const normal = simulate(battlePreset, 'normal', cappedExploitStrategy)
+        expect(strong.wins / BATTLE_COUNT).toBeGreaterThan(0.25)
         expect(strong.wins).toBeGreaterThan(normal.wins)
       })
     }
