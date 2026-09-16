@@ -1,71 +1,16 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { CPU_DIFFICULTY_LABEL, setupChips } from '@/game/copy'
 import {
   CPU_DIFFICULTY_OPTIONS,
-  DEFAULT_PRESET,
+  DEFAULT_SETUP,
   GUARD_COOLDOWN_OPTIONS,
   INITIAL_HP_OPTIONS,
+  matchRecommendedSetup,
+  RECOMMENDED_SETUPS,
 } from '@/game/presets'
-import type { BattlePreset } from '@/game/types'
+import type { BattleSetup } from '@/game/types'
 import { SegmentedOption } from '@/pages/PresetSelect/SegmentedOption'
-
-/** 3項目すべてが確定した対戦設定 */
-type BattleSetup = Required<BattlePreset>
-
-const CPU_DIFFICULTY_LABEL: Record<(typeof CPU_DIFFICULTY_OPTIONS)[number], string> = {
-  normal: 'ふつう',
-  strong: 'つよい',
-}
-
-const DEFAULT_SETUP: BattleSetup = {
-  initialHp: DEFAULT_PRESET.initialHp,
-  guardCooldownTurns: DEFAULT_PRESET.guardCooldownTurns,
-  cpuDifficulty: DEFAULT_PRESET.cpuDifficulty ?? 'normal',
-}
-
-// 「サクッと遊ぶ」は既定値そのものにする。初期表示でこのおすすめが選択中に
-// 見えるのはこの一致によるものなので、DEFAULT_PRESETから導出して同期を保つ。
-const RECOMMENDED_SETUPS: ReadonlyArray<{
-  key: string
-  title: string
-  description: string
-  setup: BattleSetup
-  /**
-   * danger は「一撃で決まる特殊なモード」を色でも伝えるためのもの。
-   * 乗せるのは**タイトルの文字とチップだけ**で、カードの枠線と面には乗せない。
-   *
-   * 枠線に乗せないのは、枠線が「選択中」を表すチャンネルだから。かつては未選択時だけ
-   * 枠線を danger にしていたが、選択すると accent に変わるため、1本の枠線が
-   * 「モードの性格」と「選択されている状態」のあいだで意味を乗り換えていた。
-   * 選んだ瞬間にいちばん強い手がかりが消えるうえ、1つのチャンネルに2つの意味を
-   * 同じ場所で載せないという既定方針（index.css 冒頭を参照）にも反する。
-   * 文字とチップは状態で変化しないので、選んでも性格が消えない。
-   *
-   * 面を塗らないのは、3枚のうち1枚だけ光ると accent が表す「選択中」と
-   * 紛らわしくなるため。
-   */
-  tone?: 'danger'
-}> = [
-  {
-    key: 'casual',
-    title: 'サクッと遊ぶ',
-    description: '短期決戦でテンポよく',
-    setup: DEFAULT_SETUP,
-  },
-  {
-    key: 'serious',
-    title: '真剣勝負',
-    description: '読み合いをじっくり',
-    setup: { initialHp: 3, guardCooldownTurns: 2, cpuDifficulty: 'strong' },
-  },
-  {
-    key: 'sudden-death',
-    title: 'サドンデス',
-    description: '一撃で決着',
-    setup: { initialHp: 1, guardCooldownTurns: 1, cpuDifficulty: 'strong' },
-    tone: 'danger',
-  },
-]
 
 const RECOMMENDED_BUTTON_BASE =
   'flex flex-1 touch-manipulation flex-col gap-2 rounded-card border p-3.5 text-left transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
@@ -92,31 +37,6 @@ const CHIP_BASE = 'rounded-chip border px-1.5 py-0.5 font-mono text-chip font-se
 const CHIP_NEUTRAL = 'border-border-emphasis text-text-secondary'
 const CHIP_DANGER = 'border-danger/45 text-danger-light'
 
-/**
- * 設定値を3つのチップに分ける。1本の文字列（`HP2 ／ ガード3ターン ／ CPUふつう`）だと
- * カードが3枚並んだときに幅が足りず、区切り文字の途中で折り返して読みにくくなる。
- * チップ単位なら折り返しても意味の切れ目で折れる。
- *
- * 「ターン」を「T」に略さず、「つよい」に CPU を付けたままにしているのは、
- * チップがボタンのアクセシブルネームの一部として読み上げられるため。
- * 「サドンデス 一撃で決着 HP1 ガード1T つよい」では何がつよいのか分からない。
- */
-function setupChips(setup: BattleSetup): string[] {
-  return [
-    `HP${setup.initialHp}`,
-    `ガード${setup.guardCooldownTurns}ターン`,
-    `CPU${CPU_DIFFICULTY_LABEL[setup.cpuDifficulty]}`,
-  ]
-}
-
-function isSameSetup(a: BattleSetup, b: BattleSetup): boolean {
-  return (
-    a.initialHp === b.initialHp &&
-    a.guardCooldownTurns === b.guardCooldownTurns &&
-    a.cpuDifficulty === b.cpuDifficulty
-  )
-}
-
 export function PresetSelect() {
   const navigate = useNavigate()
   const [setup, setSetup] = useState<BattleSetup>(DEFAULT_SETUP)
@@ -128,6 +48,10 @@ export function PresetSelect() {
     setSetup((current) => ({ ...current, ...changes }))
     setAppliedTitle(null)
   }
+
+  // 一致するおすすめは高々1枚なので、カードごとに判定せず一度だけ引く。
+  // どれとも一致しなければ undefined で、3枚とも未選択になる。
+  const activeKey = matchRecommendedSetup(setup)?.key
 
   return (
     <main className="mx-auto flex h-dvh w-full max-w-md flex-col overflow-hidden lg:max-w-3xl">
@@ -190,7 +114,7 @@ export function PresetSelect() {
             */}
             <div className="flex flex-col gap-2.5 lg:grid lg:grid-cols-3 lg:gap-3">
               {RECOMMENDED_SETUPS.map((recommended) => {
-                const isActive = isSameSetup(setup, recommended.setup)
+                const isActive = activeKey === recommended.key
                 const isDanger = recommended.tone === 'danger'
                 /*
                  * 分岐するのは色だけ。danger のタイトルは選択中かどうかで変えない。
