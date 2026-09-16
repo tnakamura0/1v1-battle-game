@@ -84,6 +84,14 @@ const RECOMMENDED_BUTTON_ACTIVE = 'border-accent bg-bg-surface-active hover:bord
 const RECOMMENDED_BUTTON_IDLE =
   'border-border-default bg-bg-card hover:border-accent/60 hover:bg-bg-surface'
 
+/*
+ * 設定値のチップ。おすすめカードと、折りたたんだ個別設定の summary の両方で使う。
+ * 2箇所で同じ見た目になっていることを、定数の共有そのもので担保する。
+ */
+const CHIP_BASE = 'rounded-chip border px-1.5 py-0.5 font-mono text-chip font-semibold'
+const CHIP_NEUTRAL = 'border-border-emphasis text-text-secondary'
+const CHIP_DANGER = 'border-danger/45 text-danger-light'
+
 /**
  * 設定値を3つのチップに分ける。1本の文字列（`HP2 ／ ガード3ターン ／ CPUふつう`）だと
  * カードが3枚並んだときに幅が足りず、区切り文字の途中で折り返して読みにくくなる。
@@ -224,11 +232,7 @@ export function PresetSelect() {
                       {setupChips(recommended.setup).map((chip) => (
                         <span
                           key={chip}
-                          className={`rounded-chip border px-1.5 py-0.5 font-mono text-chip font-semibold ${
-                            isDanger
-                              ? 'border-danger/45 text-danger-light'
-                              : 'border-border-emphasis text-text-secondary'
-                          }`}
+                          className={`${CHIP_BASE} ${isDanger ? CHIP_DANGER : CHIP_NEUTRAL}`}
                         >
                           {chip}
                         </span>
@@ -244,17 +248,62 @@ export function PresetSelect() {
           </section>
 
           {/*
-            セクション内の間隔を、親が子の間に空ける間隔より詰めることで、3つの設定が
-            1つのまとまりとして読めるようにしている。同じ間隔だと、上のおすすめ設定と
-            並列に並んだ4つ目・5つ目の項目に見えてしまう。
+            個別設定は初期状態で閉じる（Issue #129）。「任意」バッジと
+            「おすすめのままでも始められます。」で言葉の上では任意だと伝えていたが、
+            展開したままだと画面の半分以上を占め、初見では「設定しないと始められない画面」に
+            見えていた。閉じることで初見の画面が「見出し＋おすすめ3枚＋対戦を始める」になる。
+
+            コントロールドな button + aria-expanded ではなくネイティブの details を使う。
+            この画面は SegmentedOption が素のradio、設定のまとまりが fieldset/legend と、
+            一貫してプラットフォームに任せている。キーボード操作（Enter/Space）と
+            支援技術への開閉状態の露出が無償で手に入る。
+
+            なお details は jsdom では閉じていても子がアクセシビリティツリーから消えない。
+            テスト側で getByRole('radio') が閉じたまま引けるのはそのためで、
+            折りたたみ自体は open 属性を見るテストで別に固定している。
           */}
-          <section className="flex flex-col gap-5 border-t border-border-default pt-5">
-            <div className="flex flex-col gap-1">
-              <SectionTitle badge="任意">個別に調整する</SectionTitle>
-              <p className="font-sans text-xs text-text-tertiary">
+          <details className="group border-t border-border-default pt-5">
+            {/*
+              cursor-pointer はここには書かない。index.css の @layer base が
+              summary にも一律で当てている（同ファイルのコメントが「summary を使い始めたら
+              ここを見直すこと」と名指ししていた箇所で、この Issue で足した）。
+            */}
+            <summary className="flex list-none flex-col gap-1 rounded-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page [&::-webkit-details-marker]:hidden">
+              <SectionTitle badge="任意" trailing={<Chevron />}>
+                個別に調整する
+              </SectionTitle>
+              {/*
+                閉じているときだけ出す2つ。開けば設定そのものが下に見えるので、
+                「おすすめのままでも始められます」も現在値のチップも用が済む。
+                出しっぱなしにすると、開いた状態で同じ値が二重に並んで再び密になる。
+
+                p ではなく span なのは、summary の内容モデルが phrasing content と
+                heading content に限られるため（div や p は置けない）。
+              */}
+              <span className="block font-sans text-xs text-text-tertiary group-open:hidden">
                 おすすめのままでも始められます。
-              </p>
-            </div>
+              </span>
+              {/*
+                閉じた状態で現在値を示す唯一の手がかり。個別に変更するとおすすめ3枚は
+                すべて aria-pressed=false になるので、これがないと今の設定が画面から消える。
+                読み上げでは summary の名前の一部になるため、何の値なのかを sr-only で添える。
+
+                その結果、閉じている間だけ summary の名前が
+                「個別に調整する 任意 おすすめのままでも始められます。 現在の設定: HP2 …」と長くなる。
+                開けば group-open:hidden で「個別に調整する 任意」まで縮むので、
+                長い名前が出るのは中身が見えていないときだけ、という対応になっている。
+                （Chromium の AXツリーで実測。h2 は summary の中でも heading ノードとして
+                残るので、見出しナビゲーションからも従来どおり辿れる）
+              */}
+              <span className="flex flex-wrap items-center gap-1.5 pt-0.5 group-open:hidden">
+                <span className="sr-only">現在の設定:</span>
+                {setupChips(setup).map((chip) => (
+                  <span key={chip} className={`${CHIP_BASE} ${CHIP_NEUTRAL}`}>
+                    {chip}
+                  </span>
+                ))}
+              </span>
+            </summary>
 
             {/*
               lg以上は3つの設定を横並びにする。選択肢が2〜3個しかないので、コンテナを
@@ -264,8 +313,12 @@ export function PresetSelect() {
               均等な3列ではなく4列にして、ガードだけ2列分を取る。必要な幅は選択肢の
               文字数で大きく違い（HPは1文字、ガードは「1ターン」で4文字）、均等だと
               HPには余ってガードには足りないため。合計幅は変えず配分だけ中身に合わせる。
+
+              summary との間の mt-5 は、親が子の間に空ける間隔（gap-8）より詰めてある。
+              3つの設定が「個別に調整する」配下の1つのまとまりとして読めるようにするため。
+              同じ間隔だと、上のおすすめ設定と並列に並んだ項目に見えてしまう。
             */}
-            <div className="flex flex-col gap-5 lg:grid lg:grid-cols-4 lg:gap-6">
+            <div className="mt-5 flex flex-col gap-5 lg:grid lg:grid-cols-4 lg:gap-6">
               <SettingGroup legend="初期HP">
                 {INITIAL_HP_OPTIONS.map((option) => (
                   <SegmentedOption
@@ -305,7 +358,7 @@ export function PresetSelect() {
                 ))}
               </SettingGroup>
             </div>
-          </section>
+          </details>
         </div>
       </div>
 
@@ -332,8 +385,20 @@ export function PresetSelect() {
  * かつては「01」「02」の序数を添えていたが、順番に進まなければならない操作に見えた。
  * 実際にはおすすめを選んだだけで始める人が多く、個別の調整は必須の次の手順ではない。
  * 序数をやめ、任意であることは badge で直接伝える。
+ *
+ * trailing は行の右端に寄せる装飾のスロット。個別設定の開閉シェブロンだけが使う。
+ * シェブロンを summary の直下に置けないのでここで受けている（summary の内容モデルは
+ * phrasing content と heading content だけで、左右に分ける div を挟めない）。
  */
-function SectionTitle({ badge, children }: { badge?: string; children: ReactNode }) {
+function SectionTitle({
+  badge,
+  trailing,
+  children,
+}: {
+  badge?: string
+  trailing?: ReactNode
+  children: ReactNode
+}) {
   return (
     <h2 className="flex items-baseline gap-2.5 font-sans text-base font-bold text-text-primary">
       {children}
@@ -347,7 +412,35 @@ function SectionTitle({ badge, children }: { badge?: string; children: ReactNode
           {badge}
         </span>
       )}
+      {trailing && <span className="ml-auto self-center">{trailing}</span>}
     </h2>
+  )
+}
+
+/**
+ * 個別設定の開閉を示すシェブロン。閉じているとき下向き、開くと反転して上を向く。
+ *
+ * aria-hidden にしているのは、開閉状態を支援技術に伝えるのは details 自身の役目で、
+ * ここで重ねて言うと同じことを二度読み上げることになるため。
+ * 既定の三角マーカーは summary 側で消している（list-none と ::-webkit-details-marker）。
+ * シェブロンだけが当たり判定に見えないよう、summary 全体をクリック領域にしている。
+ */
+function Chevron() {
+  return (
+    <svg
+      width={18}
+      height={18}
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth={2}
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      aria-hidden
+      className="text-text-tertiary transition-transform group-open:rotate-180"
+    >
+      <path d="m6 9 6 6 6-6" />
+    </svg>
   )
 }
 
