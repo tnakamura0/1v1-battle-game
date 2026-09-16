@@ -1,9 +1,22 @@
+## [0.22.1] - 2026-09-16
+
+### 📚 Documentation
+
+- READMEを公開用に書き直す (#142)
+
+### ⚙️ Miscellaneous Tasks
+
+- 公開前の下準備としてLICENSEと設定ファイルを整える (#140)
 ## [0.22.0] - 2026-09-16
 
 ### 🚀 Features
 
 - つよいCPUの評価に次ターンの選択肢の数を加える (#136)
 - エネルギー最大時のチャージを非合法にする (#137)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.22.0
 ## [0.21.0] - 2026-09-16
 
 ### 🚀 Features
