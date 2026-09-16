@@ -218,12 +218,21 @@ function scorePair(
    * - **最後の1エネルギーを使う判断**：0にすると攻撃を失う。予備があるときの攻撃と
    *   区別が付くようになる（この項がないと両者は完全に同点になる）
    *
-   * 相手側を引いているのは、相手の選択肢を奪う手（エネルギーを使い切らせる等）も
-   * 同じ尺度で評価するため。
+   * 相手側を引いているのは、相手の選択肢を奪う手も同じ尺度で評価するため。
+   * ただし **この減算は自分側の罰をかなり打ち消す**。ガードの合法性は「相手の
+   * エネルギーが0でないこと」なので（rules.ts）、自分がエネルギーを使い切ると
+   * 相手のガードも非合法になり、両者の選択肢が同時に1つ減る枝が生まれるため。
+   * 減算をやめて自分側だけにすると溜めすぎない相手への勝率は上がる（実測 74.3% → 81.8%）が、
+   * ランダムな相手で「つよい」が「ふつう」を下回るプリセットが出たので採っていない。
+   *
+   * 決着した盤面では数えない。倒れた側の選択肢の数に意味はなく、
+   * 決定打の評価にノイズを足すだけになる。
    */
-  const mobility =
-    (getLegalActions(nextCpu, nextHuman).length - getLegalActions(nextHuman, nextCpu).length) *
-    MOBILITY_VALUE
+  const isSettled = nextCpu.hp <= 0 || nextHuman.hp <= 0
+  const mobility = isSettled
+    ? 0
+    : (getLegalActions(nextCpu, nextHuman).length - getLegalActions(nextHuman, nextCpu).length) *
+      MOBILITY_VALUE
 
   return damageDealt - damageTaken + energyDelta * ENERGY_VALUE + guardTempo + mobility
 }
