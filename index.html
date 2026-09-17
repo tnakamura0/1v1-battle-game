@@ -5,6 +5,36 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="theme-color" content="#06090d" />
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+
+    <!--
+      OGP / Twitter Card。SNSやチャットにURLを貼ったときのカード表示に使う。
+      対戦結果の共有（src/pages/BattleResult/share.ts の buildShareUrl）は
+      window.location.origin をURLとして渡すので、共有先で見えるのはここの内容になる。
+
+      **og:url と og:image は絶対URLで書くこと。** 多くのクローラは相対パスを解決しない。
+      そのためデプロイ先のドメインがここに直書きされている。ドメインを変えたらこの2つも直すこと。
+
+      og:image の中身（public/ogp.png）は、アプリの色・字形・ロゴ・行動アイコンから起こしてある。
+      カードの並び（中央=チャージ / 左=攻撃 / 右=ガード）は対戦画面の三角形
+      （components/ActionTriangle.tsx）に合わせたもの。
+    -->
+    <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="OUTWIT DUEL" />
+    <meta property="og:title" content="OUTWIT DUEL — 読み合いの1対1バトル" />
+    <meta
+      property="og:description"
+      content="登録不要、CPU相手にいつでも気軽に対戦できる。チャージ・攻撃・ガードの3択で駆け引きするシンプル対戦ゲーム。"
+    />
+    <meta property="og:url" content="https://1v1-battle-game-ecru.vercel.app/" />
+    <meta property="og:image" content="https://1v1-battle-game-ecru.vercel.app/ogp.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta
+      property="og:image:alt"
+      content="OUTWIT DUEL — チャージ・攻撃・ガードの3枚のカードが扇状に並んだ画像"
+    />
+    <meta property="og:locale" content="ja_JP" />
+    <meta name="twitter:card" content="summary_large_image" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
