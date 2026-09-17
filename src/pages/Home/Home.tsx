@@ -1,4 +1,5 @@
 import { Link } from 'react-router'
+import { PRIMARY_CTA_CLASS, SECONDARY_CTA_CLASS } from '@/components/ctaStyle'
 import { ActionShowcase } from '@/pages/Home/ActionShowcase'
 import { BattlePreview, OpponentStatusPreview } from '@/pages/Home/BattlePreview'
 import { LandingSection } from '@/pages/Home/LandingSection'
@@ -10,11 +11,6 @@ const STEPS = [
   '結果を確認し、次のターンへ',
   '相手のHPを0にすれば勝利',
 ]
-
-const PRIMARY_CTA_CLASS =
-  'flex h-13 touch-manipulation items-center justify-center rounded-xl bg-accent px-8 font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
-const SECONDARY_CTA_CLASS =
-  'flex h-13 touch-manipulation items-center justify-center rounded-xl border border-border-emphasis px-8 font-sans text-sm font-bold text-text-secondary transition-colors hover:border-accent hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page'
 
 export function Home() {
   return (
