@@ -1,8 +1,17 @@
+## [0.23.1] - 2026-09-17
+
+### 📚 Documentation
+
+- READMEをです・ます調にし、画像をモバイル版3枚に差し替える (#148)
 ## [0.23.0] - 2026-09-17
 
 ### 🚀 Features
 
 - OGP画像とメタタグを追加する (#145)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.23.0
 ## [0.22.1] - 2026-09-16
 
 ### 📚 Documentation
