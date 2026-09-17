@@ -1,3 +1,8 @@
+## [0.23.0] - 2026-09-17
+
+### 🚀 Features
+
+- OGP画像とメタタグを追加する (#145)
 ## [0.22.1] - 2026-09-16
 
 ### 📚 Documentation
@@ -7,6 +12,7 @@
 ### ⚙️ Miscellaneous Tasks
 
 - 公開前の下準備としてLICENSEと設定ファイルを整える (#140)
+- Update changelog for v0.22.1
 ## [0.22.0] - 2026-09-16
 
 ### 🚀 Features
