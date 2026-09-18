@@ -1,8 +1,22 @@
+## [0.23.2] - 2026-09-18
+
+### 🐛 Bug Fixes
+
+- トップ以外のURLを直接開くと404になる不具合を修正 (#153)
+- 存在しないパスにNotFound画面を表示する (#155)
+
+### 📚 Documentation
+
+- READMEをユーザー向けの内容に見直す (#152)
 ## [0.23.1] - 2026-09-17
 
 ### 📚 Documentation
 
 - READMEをです・ます調にし、画像をモバイル版3枚に差し替える (#148)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.23.1
 ## [0.23.0] - 2026-09-17
 
 ### 🚀 Features
