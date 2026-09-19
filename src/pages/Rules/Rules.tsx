@@ -225,7 +225,7 @@ export function Rules() {
         </Link>
         <Link
           to="/"
-          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-base font-bold text-text-secondary transition-colors hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
+          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-base font-bold text-text-secondary transition-colors hover:border-accent hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
         >
           トップへ戻る
         </Link>
