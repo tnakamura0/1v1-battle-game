@@ -94,7 +94,7 @@ export function BattleResult() {
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
-          className="flex h-13 touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-sm font-bold text-text-secondary transition-colors hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+          className="flex h-13 touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-sm font-bold text-text-secondary transition-colors hover:border-accent hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
         >
           トップページに戻る
         </button>
