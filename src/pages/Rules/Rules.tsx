@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router'
 import { ACTION_ORDER, ACTION_STYLE } from '@/components/actionStyle'
 import { ActionIcon } from '@/components/ActionIcon'
+import { ctaClass } from '@/components/ctaStyle'
 import { SectionHeading } from '@/components/SectionHeading'
 import { ACTION_LABEL } from '@/game/copy'
 import type { Action } from '@/game/types'
@@ -217,16 +218,10 @@ export function Rules() {
 
       {/* 本文と同じ幅に留める。896px幅に2つ並ぶと1つあたりが440px近くになって間延びする */}
       <div className="mb-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
-        <Link
-          to="/preset"
-          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-base font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
-        >
+        <Link to="/preset" className={ctaClass('primary', 'spread')}>
           対戦を始める
         </Link>
-        <Link
-          to="/"
-          className="flex h-14 w-full flex-none touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-base font-bold text-text-secondary transition-colors hover:border-accent hover:text-text-primary focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page sm:h-13 sm:w-auto sm:flex-1 sm:text-sm"
-        >
+        <Link to="/" className={ctaClass('secondary', 'spread')}>
           トップへ戻る
         </Link>
       </div>

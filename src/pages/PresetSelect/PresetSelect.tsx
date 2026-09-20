@@ -1,5 +1,6 @@
 import { useState, type ReactNode } from 'react'
 import { Link, useNavigate } from 'react-router'
+import { ctaClass } from '@/components/ctaStyle'
 import { CPU_DIFFICULTY_LABEL, setupChips } from '@/game/copy'
 import {
   CPU_DIFFICULTY_OPTIONS,
@@ -290,7 +291,7 @@ export function PresetSelect() {
       <button
         type="button"
         onClick={() => navigate('/battle', { state: { preset: setup }, replace: true })}
-        className="mx-6 mb-6 mt-6 flex h-13 flex-none touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page lg:mx-auto lg:w-80"
+        className={`${ctaClass('primary', 'fill')} mx-6 mb-6 mt-6 flex-none lg:mx-auto lg:w-80`}
       >
         対戦を始める
       </button>

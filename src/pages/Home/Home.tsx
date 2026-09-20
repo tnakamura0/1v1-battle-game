@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { PRIMARY_CTA_CLASS, SECONDARY_CTA_CLASS } from '@/components/ctaStyle'
+import { ctaClass } from '@/components/ctaStyle'
 import { ActionShowcase } from '@/pages/Home/ActionShowcase'
 import { BattlePreview, OpponentStatusPreview } from '@/pages/Home/BattlePreview'
 import { LandingSection } from '@/pages/Home/LandingSection'
@@ -85,7 +85,7 @@ export function Home() {
       <LandingSection>
         <div className="flex flex-col items-center gap-6 text-center">
           <SectionIntro meta="READY?" title="最初の対戦を始めよう" />
-          <Link to="/preset" className={PRIMARY_CTA_CLASS}>
+          <Link to="/preset" className={ctaClass('primary')}>
             対戦を始める
           </Link>
         </div>
@@ -134,10 +134,10 @@ function Hero() {
             登録不要、CPU相手にいつでも気軽に対戦できる。チャージ・攻撃・ガードの3択で駆け引きするシンプル対戦ゲーム。
           </p>
           <div className="mt-2 flex flex-col gap-3 self-stretch sm:flex-row sm:self-auto">
-            <Link to="/preset" className={PRIMARY_CTA_CLASS}>
+            <Link to="/preset" className={ctaClass('primary')}>
               対戦を始める
             </Link>
-            <Link to="/rules" className={SECONDARY_CTA_CLASS}>
+            <Link to="/rules" className={ctaClass('secondary')}>
               ルールを見る
             </Link>
           </div>
