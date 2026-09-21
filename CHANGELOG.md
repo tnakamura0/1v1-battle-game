@@ -1,3 +1,12 @@
+## [0.23.3] - 2026-09-21
+
+### 🐛 Bug Fixes
+
+- 枠線だけのCTAボタンのホバー挙動を3箇所で揃える (#158)
+
+### 🚜 Refactor
+
+- CTAボタンのクラスを ctaStyle.ts に統一する (#160)
 ## [0.23.2] - 2026-09-18
 
 ### 🐛 Bug Fixes
@@ -8,6 +17,10 @@
 ### 📚 Documentation
 
 - READMEをユーザー向けの内容に見直す (#152)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.23.2
 ## [0.23.1] - 2026-09-17
 
 ### 📚 Documentation
