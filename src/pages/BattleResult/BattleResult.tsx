@@ -1,4 +1,5 @@
 import { Navigate, useLocation, useNavigate } from 'react-router'
+import { ctaClass } from '@/components/ctaStyle'
 import { RESULT_DELAY } from '@/components/motion'
 import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 import { ruleLabel } from '@/game/copy'
@@ -87,14 +88,14 @@ export function BattleResult() {
               replace: true,
             })
           }
-          className="flex h-13 touch-manipulation items-center justify-center rounded-xl bg-accent font-sans text-sm font-bold text-bg-page transition-colors hover:bg-accent-hover focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+          className={ctaClass('primary', 'fill')}
         >
           もう一度対戦する
         </button>
         <button
           type="button"
           onClick={() => navigate('/', { replace: true })}
-          className="flex h-13 touch-manipulation items-center justify-center rounded-xl border border-border-emphasis font-sans text-sm font-bold text-text-secondary transition-colors hover:border-accent focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-accent focus-visible:ring-offset-2 focus-visible:ring-offset-bg-page"
+          className={ctaClass('secondary', 'fill')}
         >
           トップページに戻る
         </button>

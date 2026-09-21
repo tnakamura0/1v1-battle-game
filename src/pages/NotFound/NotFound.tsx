@@ -1,5 +1,5 @@
 import { Link } from 'react-router'
-import { PRIMARY_CTA_CLASS } from '@/components/ctaStyle'
+import { ctaClass } from '@/components/ctaStyle'
 
 /**
  * どのルートにもマッチしなかったときの受け皿。
@@ -32,7 +32,7 @@ export function NotFound() {
         URLが間違っているか、ページが移動した可能性があります。
       </p>
 
-      <Link to="/" className={PRIMARY_CTA_CLASS}>
+      <Link to="/" className={ctaClass('primary')}>
         トップへ戻る
       </Link>
     </main>
