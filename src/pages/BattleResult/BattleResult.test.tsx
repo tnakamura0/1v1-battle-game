@@ -65,6 +65,35 @@ describe('BattleResult', () => {
     expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
   })
 
+  /*
+   * Issue #162：画面の冒頭に重ねる幕。見出しと同じ「勝利」「敗北」を大きく出すが、
+   * 読み上げが二重にならないよう幕は aria-hidden にして、見出しは1つだけにしている。
+   * 動き（勝ちの光輪・火花、負けの揺れ）は jsdom では見えないので、ブラウザで確かめること。
+   */
+  describe('冒頭の幕', () => {
+    /** 見出しではないほうの「勝利」「敗北」。幕に大きく出している文字 */
+    function curtainText(text: string) {
+      const heading = screen.getByRole('heading', { name: text })
+      const others = screen.getAllByText(text).filter((element) => element !== heading)
+      expect(others).toHaveLength(1)
+      return others[0]
+    }
+
+    it('repeats the win in a curtain that assistive technology skips', () => {
+      renderPage({ summary })
+
+      expect(screen.getAllByRole('heading')).toHaveLength(1)
+      expect(curtainText('勝利').closest('[aria-hidden="true"]')).not.toBeNull()
+    })
+
+    it('shows the loss in the curtain when the cpu wins', () => {
+      renderPage({ summary: { ...summary, winner: 'cpu' } })
+
+      expect(curtainText('敗北').closest('[aria-hidden="true"]')).not.toBeNull()
+      expect(screen.queryByText('勝利')).not.toBeInTheDocument()
+    })
+  })
+
   describe('X共有リンク', () => {
     it('renders an external link to the twitter intent URL for the result', () => {
       renderPage({ summary })

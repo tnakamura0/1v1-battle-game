@@ -157,9 +157,9 @@
    * （詳しくは components/motion.ts）。both を外すと遅延中に中身が見えてしまい、
    * 段取りが成立しない。
    *
-   * 1つ1つは最長520ms。段取り全体でも、いちばん長い手の結果（変化行が5行あるとき）で
-   * 約1.24秒に収まる。結果フェーズは8秒（決着時5秒。game/presets.ts）なので、
-   * 演出が終わったあとに読む時間が十分残る。
+   * 1つ1つは最長520ms（いちばん下の幕のものを除く）。段取り全体でも、いちばん長い手の結果
+   * （変化行が5行あるとき）で約1.24秒に収まる。結果フェーズは8秒（決着時5秒。
+   * game/presets.ts）なので、演出が終わったあとに読む時間が十分残る。
    */
   --animate-fade-rise: fade-rise 320ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-enter-left: enter-left 340ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -170,12 +170,25 @@
   --animate-row-in: row-in 280ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-tick: tick 400ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-damage-flash: damage-flash 460ms ease-out both;
+
+  /*
+   * 最終結果画面の冒頭に重ねる幕（pages/BattleResult/ResultCurtain.tsx。Issue #162）。
+   * 中の動きは最長700msで、上の520msより長い。対戦画面と違って読ませるのは
+   * 「勝利」「敗北」の2文字だけなので、速さより余韻を取っている。
+   * 幕が出ている時間は全体で1.4秒（段取りは components/motion.ts の CURTAIN_DELAY）。
+   */
+  --animate-curtain-out: curtain-out 300ms ease-in both;
+  --animate-sweep: sweep 500ms ease-in-out both;
+  --animate-result-slam: result-slam 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-result-sink: result-sink 700ms ease-out both;
+  --animate-result-ring: result-ring 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  --animate-result-spark: result-spark 600ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 /*
  * 上の --animate-* トークンの実体。
  *
- * 動かすのは transform と opacity（と damage-flash の色）だけに限っている。
+ * 動かすのは transform と opacity（と damage-flash の色、curtain-out の visibility）だけに限っている。
  * 幅・高さ・余白を動かすとレイアウトが再計算され、隣の要素まで揺れるため。
  * enter-left / enter-right が translateX なのも同じ理由で、position を動かさない。
  *
@@ -295,6 +308,122 @@
     opacity: 1;
     background-color: transparent;
     transform: scaleY(1);
+  }
+}
+
+/*
+ * 最終結果画面の幕（pages/BattleResult/ResultCurtain.tsx）を消す。
+ *
+ * opacity だけでなく visibility: hidden まで持っていくのが要。幕は画面全体を覆っているので、
+ * 透明になっただけでは下のボタンへのタップを受け止め続け、結果画面が一切押せなくなる。
+ * visibility: hidden になった要素は当たり判定からも外れる。
+ *
+ * 幕に pointer-events-none を付けていないのはわざと。幕が出ている間のタップは幕に吸わせている。
+ * 付けると、まだ見えていないボタンに指が当たって、結果を見る前に次の対戦や
+ * トップページへ飛んでしまう。
+ *
+ * visibility は途中の値を持たない。両端の片方が visible なら途中はずっと visible として扱われ、
+ * hidden になるのはフェードが終わった瞬間だけ。
+ */
+@keyframes curtain-out {
+  from {
+    opacity: 1;
+    visibility: visible;
+  }
+  to {
+    opacity: 0;
+    visibility: hidden;
+  }
+}
+
+/* 光の帯。画面の外（左）から入って外（右）へ抜ける。開始前も終了後も画面の外にいるので見えない */
+@keyframes sweep {
+  from {
+    transform: translateX(-100%);
+  }
+  to {
+    transform: translateX(100%);
+  }
+}
+
+/* 勝ったときの文字。手前から叩きつけられ、少し縮んでから戻る */
+@keyframes result-slam {
+  from {
+    opacity: 0;
+    transform: scale(1.8);
+  }
+  55% {
+    opacity: 1;
+    transform: scale(0.94);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* 負けたときの文字。上から沈むように落ちてきて、小さく横に揺れる */
+@keyframes result-sink {
+  from {
+    opacity: 0;
+    transform: translate(0, -20px);
+  }
+  50% {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+  65% {
+    transform: translate(-3px, 0);
+  }
+  80% {
+    transform: translate(3px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: translate(0, 0);
+  }
+}
+
+/*
+ * 勝ったときの光輪と火花。どちらも最初のフレームを opacity: 0 にしている。
+ * fill-mode: both なので遅延中は最初のフレームで待つ。ここを見える値にすると、
+ * 文字が出る前から小さな輪や点が画面の中央に置かれたままになる。
+ */
+@keyframes result-ring {
+  from {
+    opacity: 0;
+    transform: scale(0.3);
+  }
+  15% {
+    opacity: 0.8;
+  }
+  to {
+    opacity: 0;
+    transform: scale(2.4);
+  }
+}
+
+/*
+ * 飛ぶ向きは親に当てた rotate で決まるので、ここには「上へ飛ぶ」だけを書く。
+ * 火花は縦長の筋なので、上へ飛ぶと中心から外へ伸びていく光の筋に見える。
+ *
+ * 50%まで不透明のまま保つこと。ease-out なので、そのまま消していくと
+ * 飛び出した直後から暗くなり、光る前に灰色の点になって消えてしまう。
+ */
+@keyframes result-spark {
+  from {
+    opacity: 0;
+    transform: translateY(-44px) scaleY(0.5);
+  }
+  10% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+    transform: translateY(-150px) scaleY(1);
   }
 }
 
