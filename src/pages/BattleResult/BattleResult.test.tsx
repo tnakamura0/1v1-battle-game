@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { isInaccessible, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { BattleResult } from '@/pages/BattleResult/BattleResult'
@@ -63,6 +63,36 @@ describe('BattleResult', () => {
   it('shows a lose headline when the cpu wins', () => {
     renderPage({ summary: { ...summary, winner: 'cpu' } })
     expect(screen.getByRole('heading', { name: '敗北' })).toBeInTheDocument()
+  })
+
+  /*
+   * Issue #162：画面の冒頭に重ねる幕。見出しと同じ「勝利」「敗北」を大きく出すが、
+   * 読み上げが二重にならないよう幕は aria-hidden にして、見出しは1つだけにしている。
+   * 動き（勝ちの光輪・火花、負けの揺れ）は jsdom では見えないので、ブラウザで確かめること。
+   */
+  describe('冒頭の幕', () => {
+    /** 見出しではないほうの「勝利」「敗北」。幕に大きく出している文字 */
+    function curtainText(text: string) {
+      const heading = screen.getByRole('heading', { name: text })
+      const others = screen.getAllByText(text).filter((element) => element !== heading)
+      expect(others).toHaveLength(1)
+      return others[0]
+    }
+
+    it('repeats the win in a curtain that assistive technology skips', () => {
+      renderPage({ summary })
+
+      expect(screen.getAllByRole('heading')).toHaveLength(1)
+      expect(isInaccessible(curtainText('勝利'))).toBe(true)
+      expect(screen.queryByText('敗北')).not.toBeInTheDocument()
+    })
+
+    it('shows the loss in the curtain when the cpu wins', () => {
+      renderPage({ summary: { ...summary, winner: 'cpu' } })
+
+      expect(isInaccessible(curtainText('敗北'))).toBe(true)
+      expect(screen.queryByText('勝利')).not.toBeInTheDocument()
+    })
   })
 
   describe('X共有リンク', () => {
