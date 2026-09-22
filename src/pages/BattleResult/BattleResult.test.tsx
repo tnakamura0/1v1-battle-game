@@ -1,4 +1,4 @@
-import { render, screen } from '@testing-library/react'
+import { isInaccessible, render, screen } from '@testing-library/react'
 import { MemoryRouter, Route, Routes } from 'react-router'
 import { describe, expect, it } from 'vitest'
 import { BattleResult } from '@/pages/BattleResult/BattleResult'
@@ -83,13 +83,14 @@ describe('BattleResult', () => {
       renderPage({ summary })
 
       expect(screen.getAllByRole('heading')).toHaveLength(1)
-      expect(curtainText('勝利').closest('[aria-hidden="true"]')).not.toBeNull()
+      expect(isInaccessible(curtainText('勝利'))).toBe(true)
+      expect(screen.queryByText('敗北')).not.toBeInTheDocument()
     })
 
     it('shows the loss in the curtain when the cpu wins', () => {
       renderPage({ summary: { ...summary, winner: 'cpu' } })
 
-      expect(curtainText('敗北').closest('[aria-hidden="true"]')).not.toBeNull()
+      expect(isInaccessible(curtainText('敗北'))).toBe(true)
       expect(screen.queryByText('勝利')).not.toBeInTheDocument()
     })
   })

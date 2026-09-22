@@ -34,7 +34,15 @@ const SPARKS = [
  *
  * 対戦画面の段階表示と同じく、幕は最初から最後までDOMにあり、CSSアニメーションだけで
  * 見えなくなる（motion.ts の不変条件）。消えたあとは visibility: hidden になり、
- * 当たり判定からも外れる（index.css の curtain-out）。
+ * 当たり判定からも外れる（index.css の curtain-fade / curtain-hide）。
+ *
+ * ## タップを受け止める
+ *
+ * 幕が出ている間のタップは、下の見えていないボタンに届かないよう幕で受け止める。
+ * 受け止めるのは指とマウスだけで、キーボードのフォーカスは止めていない。Tab で
+ * 見えていないボタンに移って押すことはできる。止めるには inert（state が要る）か、
+ * ボタン側を visibility で隠すしかなく、後者はスクリーンリーダーからもボタンを消してしまう。
+ * ページ遷移の直後はフォーカスが body にあり、押すまでにキーを2回要するので、そのままにしている。
  *
  * ## 読み上げない
  *
@@ -46,22 +54,39 @@ export function ResultCurtain({ won }: { won: boolean }) {
     <div
       aria-hidden="true"
       /*
+        invisible が素の状態で、見えているのはアニメーションが visible にしている間だけ
+        （index.css の curtain-hide）。アニメーションが走らない環境（拡張機能やユーザースタイルで
+        animation を切っているなど）では、幕は最初から出ず、画面はそのまま押せる。
+        素を見える状態にすると、同じ環境で全画面の幕が消えずに残り、結果画面が一切押せなくなる。
+
         動きを嫌う設定のときは、motion-reduce:hidden で幕そのものを出さない。
         index.css の一括の規則だけでも幕は一瞬で消えるが、最初の1フレームは幕が描かれうる。
         全画面の暗転と大きな文字が一瞬だけ光るのは、動きを止めたい人にとってむしろ悪い。
 
-        pointer-events-none を付けていないのはわざと（index.css の curtain-out を参照）。
+        z-10 は外さないこと。幕はDOMの先頭にあり、後ろに続く画面本体の要素は
+        アニメーションの transform で重なりの層を作る。z-index がないとそちらが幕より手前に来て、
+        幕の上に透けて見え、タップも幕を素通りしてボタンに届く。
+        fixed で画面全体を覆えるのは、祖先（main / #root / body）に transform・filter・
+        will-change・contain が付いていないから。付けると幕はその祖先の中に閉じ込められる。
+
+        受け止めたタップが何も起こさないよう、select-none で長押しの文字選択を、
+        touch-manipulation で連打によるダブルタップ拡大を止めている。
+
+        pointer-events-none を付けていないのはわざと（index.css の curtain-fade / curtain-hide を参照）。
       */
-      className={`animate-curtain-out ${CURTAIN_DELAY.out} fixed inset-0 z-10 flex items-center justify-center overflow-hidden bg-bg-page motion-reduce:hidden`}
+      className={`animate-curtain-out ${CURTAIN_DELAY.out} invisible fixed inset-0 z-10 flex touch-manipulation select-none items-center justify-center overflow-hidden bg-bg-page motion-reduce:hidden`}
     >
       {/*
-        光の帯。画面の外から外へ抜ける。overflow-hidden がないと、抜けていく途中で
-        横スクロールが出る（勝ったときの光輪も最後は画面幅を超える）。
+        光の帯。画面の外から外へ抜ける。
         線形のグラデーションだと帯の上下の縁がくっきり出るので、楕円の放射状にしている。
+
+        幕の overflow-hidden は保険。帯も、勝ったときの光輪も、最後は画面幅を超える。
+        fixed の要素のはみ出しは Chrome ではページの横スクロールを生まない（実測）が、
+        ほかのエンジンまでは確かめていないので、幕の中で切っている。
       */}
       <div className="absolute inset-0 flex items-center">
         <div
-          className={`animate-sweep h-40 w-full bg-radial to-transparent to-70% ${won ? 'from-accent/25' : 'from-lose/20'}`}
+          className={`animate-result-sweep h-40 w-full bg-radial to-transparent to-70% ${won ? 'from-accent/25' : 'from-lose/20'}`}
         />
       </div>
 

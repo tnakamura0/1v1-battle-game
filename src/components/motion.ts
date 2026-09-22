@@ -75,14 +75,16 @@ export const INTRO_DELAY = {
  * 最終結果画面の冒頭に重ねる幕（pages/BattleResult/ResultCurtain.tsx。Issue #162）の段取り。
  *
  * 幕そのものと光の帯は遅延0で、最初から出ている。そのあと 勝敗の文字（title）→
- * 勝ったときだけ光輪と火花（burst）→ 幕が消える（out。300msかけて消える）と続く。
+ * 勝ったときだけ光輪と火花（burst）→ 幕が消える（out。300msかけて透明になる）と続く。
+ * 透明になったあとも、ボタンが出始める（RESULT_DELAY.actions）まではタップを受け止める
+ * （index.css の curtain-hide。480ms は下の actions − gameOver と同じ値）。
  *
  * burst は文字が叩きつけられて縮みきったあたりに合わせている。result-slam は ease-out なので、
  * 見た目の上では55%のキーフレームより早く、title から150msほどで着地している。
  *
  * **out は RESULT_DELAY の起点になっている。** 幕が消え始めるのと同時に画面本体が
  * 出始めるよう、RESULT_DELAY.gameOver はこの値をそのまま使う。ここを動かすときは
- * RESULT_DELAY の残りの値も同じだけずらすこと。
+ * RESULT_DELAY の残りの値も同じだけずらすこと（ずらし忘れは motion.test.ts が止める）。
  */
 export const CURTAIN_DELAY = {
   title: '[animation-delay:150ms]',
@@ -100,6 +102,8 @@ export const CURTAIN_DELAY = {
  * **actions を gameOver から480msより後ろにしないこと。** この画面の主目的は
  * 「もう一度対戦する」ボタンで、それが見えるまでの時間を伸ばすことになる。
  * 成績行の最後より後ろに置いて、上から順に出るようにしている。
+ * actions を動かすときは、index.css の curtain-hide の長さ（いまは480ms）も合わせること。
+ * 幕がタップを受け止めるのを、ちょうどボタンが出始めるところで終わらせている。
  *
  * Issue #131 で「ルール」の行を足して3行→4行になった。刻みを70ms→50msに詰めて、
  * 最後の行を gameOver から430msに収めている。元の70ms刻みのまま1行足すと490msとなり、

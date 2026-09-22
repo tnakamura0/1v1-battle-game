@@ -175,10 +175,15 @@
    * 最終結果画面の冒頭に重ねる幕（pages/BattleResult/ResultCurtain.tsx。Issue #162）。
    * 中の動きは最長700msで、上の520msより長い。対戦画面と違って読ませるのは
    * 「勝利」「敗北」の2文字だけなので、速さより余韻を取っている。
-   * 幕が出ている時間は全体で1.4秒（段取りは components/motion.ts の CURTAIN_DELAY）。
+   * 幕が見えている時間は全体で1.4秒（段取りは components/motion.ts の CURTAIN_DELAY）。
+   *
+   * curtain-out だけは2つのアニメーションの組で、見た目と当たり判定を別々に消す
+   * （下の curtain-fade / curtain-hide を参照）。どちらにも同じ遅延がかかる。
+   * curtain-hide の 480ms は RESULT_DELAY.actions − gameOver（motion.ts）と同じ値で、
+   * components/motion.test.ts が一致を確かめている。
    */
-  --animate-curtain-out: curtain-out 300ms ease-in both;
-  --animate-sweep: sweep 500ms ease-in-out both;
+  --animate-curtain-out: curtain-fade 300ms ease-in both, curtain-hide 480ms step-end both;
+  --animate-result-sweep: result-sweep 500ms ease-in-out both;
   --animate-result-slam: result-slam 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
   --animate-result-sink: result-sink 700ms ease-out both;
   --animate-result-ring: result-ring 700ms cubic-bezier(0.22, 1, 0.36, 1) both;
@@ -188,7 +193,7 @@
 /*
  * 上の --animate-* トークンの実体。
  *
- * 動かすのは transform と opacity（と damage-flash の色、curtain-out の visibility）だけに限っている。
+ * 動かすのは transform と opacity（と damage-flash の色、curtain-hide の visibility）だけに限っている。
  * 幅・高さ・余白を動かすとレイアウトが再計算され、隣の要素まで揺れるため。
  * enter-left / enter-right が translateX なのも同じ理由で、position を動かさない。
  *
@@ -312,32 +317,44 @@
 }
 
 /*
- * 最終結果画面の幕（pages/BattleResult/ResultCurtain.tsx）を消す。
+ * 最終結果画面の幕（pages/BattleResult/ResultCurtain.tsx）を消す2つ。
+ * トークン --animate-curtain-out が、この2つを同じ遅延で同時に走らせる。
  *
- * opacity だけでなく visibility: hidden まで持っていくのが要。幕は画面全体を覆っているので、
- * 透明になっただけでは下のボタンへのタップを受け止め続け、結果画面が一切押せなくなる。
- * visibility: hidden になった要素は当たり判定からも外れる。
+ * - curtain-fade … 見た目。300msで透明になる
+ * - curtain-hide … 当たり判定。480ms後に visibility: hidden へ切り替わり、タップが下に届くようになる
  *
- * 幕に pointer-events-none を付けていないのはわざと。幕が出ている間のタップは幕に吸わせている。
- * 付けると、まだ見えていないボタンに指が当たって、結果を見る前に次の対戦や
- * トップページへ飛んでしまう。
+ * 分けているのは、見た目が消えるのと当たり判定が外れるのを別の時刻にするため。
+ * 幕は画面全体を覆っていて、pointer-events-none をわざと付けていない。
+ * 幕が出ている間のタップは幕に吸わせている。そうしないと、まだ見えていないボタンに
+ * 指が当たって、結果を見る前に次の対戦やトップページへ飛んでしまう。
+ * 透明になった時点で当たり判定まで外すと、ボタンが出始める（RESULT_DELAY.actions）までの
+ * 180msだけ、見えないボタンが押せる隙間ができる。curtain-hide の480msはそれを塞ぐ長さ。
  *
- * visibility は途中の値を持たない。両端の片方が visible なら途中はずっと visible として扱われ、
- * hidden になるのはフェードが終わった瞬間だけ。
+ * curtain-hide は step-end なので、最後の瞬間まで from の visible のまま。
+ * 幕の素の状態は invisible（ResultCurtain.tsx）なので、アニメーションが走らなかったときは
+ * 最初から幕が出ず、画面は押せる。fill-mode: both により、遅延中から終わるまでは
+ * ここの visible が素の値に勝つ。
  */
-@keyframes curtain-out {
+@keyframes curtain-fade {
   from {
     opacity: 1;
-    visibility: visible;
   }
   to {
     opacity: 0;
+  }
+}
+
+@keyframes curtain-hide {
+  from {
+    visibility: visible;
+  }
+  to {
     visibility: hidden;
   }
 }
 
 /* 光の帯。画面の外（左）から入って外（右）へ抜ける。開始前も終了後も画面の外にいるので見えない */
-@keyframes sweep {
+@keyframes result-sweep {
   from {
     transform: translateX(-100%);
   }
