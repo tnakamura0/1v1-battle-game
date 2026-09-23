@@ -133,11 +133,24 @@ function Hero() {
           <p className="max-w-md font-sans text-sm leading-relaxed text-text-secondary">
             登録不要、CPU相手にいつでも気軽に対戦できる。チャージ・攻撃・ガードの3択で駆け引きするシンプル対戦ゲーム。
           </p>
-          <div className="mt-2 flex flex-col gap-3 self-stretch sm:flex-row sm:self-auto">
-            <Link to="/preset" className={ctaClass('primary')}>
+          {/*
+            sm以上でも self-stretch のままにして、行を左カラムの幅まで伸ばす（Issue #165）。
+            親が items-start なので、sm:self-auto に戻すと行が内容ぶんの幅になり、
+            カラムの右側だけ余白が残って見える。
+
+            **sm:flex-1 は2つとも必要。** 行だけ伸ばしても中身は内容ぶんのままで、
+            見た目が変わらない。sm: を外さないこと。モバイルは縦積み（flex-col）なので、
+            flex-1 を無条件に付けるとボタンの高さが伸びる。
+
+            サイズは hug のまま。spread に替えると sm:flex-1 は付いてくるが、
+            モバイルの高さと文字サイズまで変わる（components/ctaStyle.ts）。
+            置き場所の都合は呼び出し側で足す、という同ファイルの方針に従っている。
+          */}
+          <div className="mt-2 flex flex-col gap-3 self-stretch sm:flex-row">
+            <Link to="/preset" className={`${ctaClass('primary')} sm:flex-1`}>
               対戦を始める
             </Link>
-            <Link to="/rules" className={ctaClass('secondary')}>
+            <Link to="/rules" className={`${ctaClass('secondary')} sm:flex-1`}>
               ルールを見る
             </Link>
           </div>
