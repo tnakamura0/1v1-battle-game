@@ -136,15 +136,20 @@ function Hero() {
           {/*
             sm以上でも self-stretch のままにして、行を左カラムの幅まで伸ばす（Issue #165）。
             親が items-start なので、sm:self-auto に戻すと行が内容ぶんの幅になり、
-            カラムの右側だけ余白が残って見える。
+            カラムの右側だけ余白が残って見える。揃える相手は説明文（max-w-md）ではなく
+            カラムの幅と決めたので、lg以上では説明文の右端より24px外に出る。
 
-            **sm:flex-1 は2つとも必要。** 行だけ伸ばしても中身は内容ぶんのままで、
-            見た目が変わらない。sm: を外さないこと。モバイルは縦積み（flex-col）なので、
-            flex-1 を無条件に付けるとボタンの高さが伸びる。
+            **sm:flex-1 は2つとも必要。** 行だけ伸ばしても中身は内容ぶんの幅のままで、
+            見た目が変わらない。
 
-            サイズは hug のまま。spread に替えると sm:flex-1 は付いてくるが、
-            モバイルの高さと文字サイズまで変わる（components/ctaStyle.ts）。
-            置き場所の都合は呼び出し側で足す、という同ファイルの方針に従っている。
+            **sm: を外さないこと。** モバイルは flex-col で、そこでは flex-1 の
+            flex-basis:0 が縦（主軸）の指定になり、h-13 の52pxを上書きする。行に高さが
+            ないので文字ぶん（約20px）まで潰れ、ctaStyle.ts が下限としているタップ目標44pxを割る。
+
+            サイズは hug のまま。欲しいのは spread の「sm以上で行を等分」だけだが、
+            spread はモバイルの高さ56px・文字16pxまで連れてくる（components/ctaStyle.ts）。
+            サイズを増やす前に既存の3つで足りないかを確かめる、という同ファイルの方針に従って
+            呼び出し側で足した。hug と spread の高さを揃える判断が済めば、spread に寄せられる。
           */}
           <div className="mt-2 flex flex-col gap-3 self-stretch sm:flex-row">
             <Link to="/preset" className={`${ctaClass('primary')} sm:flex-1`}>
