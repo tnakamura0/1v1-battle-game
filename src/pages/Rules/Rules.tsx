@@ -77,7 +77,8 @@ export function Rules() {
     /*
       lg以上では外枠を広げるが、説明文は Section の既定値（prose）で672pxに留める。
       日本語の説明文は1行が長くなるほど次の行頭に視線が戻りにくくなるので、
-      幅を使ってよいのはカードと表だけ。
+      幅を使ってよいのはカードと表、そして末尾のCTAだけ。
+      CTAは読ませる文章ではないので、この制限の理由が当てはまらない。
     */
     <main className="mx-auto flex min-h-screen max-w-2xl flex-col gap-10 p-6 lg:max-w-4xl">
       <Link
@@ -216,8 +217,16 @@ export function Rules() {
         </p>
       </Section>
 
-      {/* 本文と同じ幅に留める。896px幅に2つ並ぶと1つあたりが440px近くになって間延びする */}
-      <div className="mb-10 flex max-w-2xl flex-col gap-3 sm:flex-row">
+      {/*
+        外枠いっぱいに広げて、上の表・カードと左右の端を揃える（Issue #165）。
+        prose 幅に合わせなくてよい理由は main のコメントに書いてある。
+
+        もとは本文と同じ672pxで止めていた。理由は1つあたりが広くなりすぎて間延びする、
+        というもの（当時のコメントは440px近くと書いていたが、実測は418px）。
+        それでも**CTAの行だけが親より狭く、右側に余白が残って見えるほうが気になる**
+        という判断で全幅にした。幅を戻すなら、表とカードも一緒に狭めて画面全体で揃えること。
+      */}
+      <div className="mb-10 flex flex-col gap-3 sm:flex-row">
         <Link to="/preset" className={ctaClass('primary', 'spread')}>
           対戦を始める
         </Link>
