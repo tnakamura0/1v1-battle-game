@@ -1,3 +1,8 @@
+## [0.24.0] - 2026-09-23
+
+### 🚀 Features
+
+- 結果画面の冒頭に勝敗の幕演出を追加 (#163)
 ## [0.23.3] - 2026-09-21
 
 ### 🐛 Bug Fixes
@@ -7,6 +12,10 @@
 ### 🚜 Refactor
 
 - CTAボタンのクラスを ctaStyle.ts に統一する (#160)
+
+### ⚙️ Miscellaneous Tasks
+
+- Update changelog for v0.23.3
 ## [0.23.2] - 2026-09-18
 
 ### 🐛 Bug Fixes

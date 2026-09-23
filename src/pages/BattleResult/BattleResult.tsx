@@ -3,6 +3,7 @@ import { ctaClass } from '@/components/ctaStyle'
 import { RESULT_DELAY } from '@/components/motion'
 import { ROLE_STYLE, type BattleRole } from '@/components/roleStyle'
 import { ruleLabel } from '@/game/copy'
+import { ResultCurtain } from '@/pages/BattleResult/ResultCurtain'
 import { buildShareUrl } from '@/pages/BattleResult/share'
 import type { BattleSummary } from '@/game/types'
 
@@ -23,13 +24,24 @@ export function BattleResult() {
 
   return (
     <main className="mx-auto flex min-h-screen max-w-md flex-col items-center justify-center gap-8 p-6 text-center">
-      <span className="animate-fade-rise font-mono text-meta font-bold tracking-[0.18em] text-text-tertiary">
+      {/*
+        冒頭の幕。画面全体を覆って勝敗を大きく出し、約1.4秒で消える（Issue #162）。
+        この画面の段取り（RESULT_DELAY）は、幕が消え始めるところから始まる。
+        fixed なので、この main のフレックス配置（gap-8）には加わらない。
+      */}
+      <ResultCurtain won={won} />
+
+      <span
+        className={`animate-fade-rise ${RESULT_DELAY.gameOver} font-mono text-meta font-bold tracking-[0.18em] text-text-tertiary`}
+      >
         GAME OVER
       </span>
 
       {/*
         見出しには、対戦画面の決着ターンと同じ final-pop を使う。同じ動きで出すことで、
-        直前に見た「決着」の見出しがそのままこの画面に引き継がれたように見える。
+        直前に見た「決着」の見出しがこの画面に引き継がれたように見える。
+        あいだに幕が挟まるが、見出しは幕の大きな文字が消えていくのと入れ替わるように
+        出るので、流れは途切れない。
       */}
       <div className={`animate-final-pop ${RESULT_DELAY.headline} flex flex-col gap-2`}>
         <h1
