@@ -89,7 +89,8 @@ export function PresetSelect() {
             <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">
               BATTLE SETUP
             </span>
-            <h1 className="font-sans text-2xl font-extrabold text-text-primary">
+            {/* サイズはルール画面のh1と同じ指定にしてある（Issue #167。pages/Rules/Rules.tsx） */}
+            <h1 className="font-sans text-3xl font-extrabold text-text-primary sm:text-4xl">
               対戦ルールを選ぶ
             </h1>
             <p className="font-sans text-sm text-text-secondary">
@@ -141,7 +142,8 @@ export function PresetSelect() {
                     }}
                     className={`${RECOMMENDED_BUTTON_BASE} ${isActive ? RECOMMENDED_BUTTON_ACTIVE : RECOMMENDED_BUTTON_IDLE}`}
                   >
-                    <span className={`font-sans text-sm font-bold ${titleColorClass}`}>
+                    {/* 16px。ルール画面の行動カードと同じ「16pxのタイトル＋12pxの説明」の組 */}
+                    <span className={`font-sans text-base font-bold ${titleColorClass}`}>
                       {recommended.title}
                     </span>
                     <span className="font-sans text-xs text-text-tertiary">
@@ -300,12 +302,14 @@ export function PresetSelect() {
 }
 
 /**
- * h1（24px）と legend（11px）の間に挟むセクション見出し。
+ * h1（30／sm以上36px）と legend（11px）の間に挟むセクション見出し。
  * この段がないと「おすすめ設定」と legend が同じ強さになり、おすすめ設定が
  * 下の3項目と並列の設定項目に見えてしまう。
- * 16pxなのは、配下にあるおすすめカードのタイトル（14px bold）より一段上に置くため。
- * 他画面の SectionHeading（18px＋accentの縦バー）は使わない。この画面はh1が24pxと
- * スケールが小さく、かつ accent が「選択中」を表しているため、装飾で使うと意味が重なる。
+ * 18pxなのは、配下にあるおすすめカードのタイトル（16px bold）より一段上に置くため。
+ * 他画面の SectionHeading と同じサイズだが、**あちらのコンポーネントは使わない。**
+ * accentの縦バーを持っていて、この画面では accent が「選択中」を表しているため、
+ * 装飾に使うと意味が重なる（Issue #167 で見出しのサイズを揃えたときも、
+ * 揃えたのはサイズだけで、寄せない判断はこの理由で変えていない）。
  *
  * かつては「01」「02」の序数を添えていたが、順番に進まなければならない操作に見えた。
  * 実際にはおすすめを選んだだけで始める人が多く、個別の調整は必須の次の手順ではない。
@@ -325,7 +329,7 @@ function SectionTitle({
   children: ReactNode
 }) {
   return (
-    <h2 className="flex items-baseline gap-2.5 font-sans text-base font-bold text-text-primary">
+    <h2 className="flex items-baseline gap-2.5 font-sans text-lg font-bold text-text-primary">
       {children}
       {/*
         序数と違い aria-hidden にしない。「任意」は読み上げても意味のある情報で、
