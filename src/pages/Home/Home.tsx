@@ -5,10 +5,23 @@ import { BattlePreview, OpponentStatusPreview } from '@/pages/Home/BattlePreview
 import { LandingSection } from '@/pages/Home/LandingSection'
 import { SectionIntro } from '@/pages/Home/SectionIntro'
 
+/*
+ * 1ターンではなく1対戦分の流れ。見出しも「対戦の流れ」にしてある（Issue #173）。
+ * ターン単位の説明はルール画面が持つので、ここは設定から勝利までをなぞるだけに留める。
+ *
+ * 3番目はかつて「結果を確認し、次のターンへ」だったが、HPが0になればそこで終わるので
+ * 次のターンが必ず来るわけではない。
+ *
+ * **4つとも14文字を超えないこと。** 親（LandingSection）が最大幅に達したとき、カードは1枚235px・
+ * 内側のテキストは203pxで、text-sm なら14文字（約196px）までが1行に収まる。15文字にすると
+ * 最大幅でもその1枚だけ2行になり、他の3枚の下に余白が残る（gridのstretchで高さ自体は揃うので、
+ * 崩れるのは高さではなく余白の出方）。それより狭い幅（768pxでは1枚171px）では4枚とも2行になるが、
+ * 揃って2行なので気にならない。
+ */
 const STEPS = [
   '対戦ルールを設定する',
   '毎ターン、行動を1つ選択する',
-  '結果を確認し、次のターンへ',
+  '結果を確認し、決着まで続ける',
   '相手のHPを0にすれば勝利',
 ]
 
@@ -51,7 +64,7 @@ export function Home() {
       </LandingSection>
 
       <LandingSection tone="sunken">
-        <SectionIntro meta="FLOW" title="1ターンの流れ" />
+        <SectionIntro meta="FLOW" title="対戦の流れ" />
         <ol className="grid gap-3 sm:grid-cols-4">
           {STEPS.map((step, index) => (
             <li
