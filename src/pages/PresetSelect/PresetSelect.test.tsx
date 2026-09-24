@@ -149,6 +149,29 @@ describe('PresetSelect', () => {
     expect(screen.getByText('おすすめのままでも始められます。')).toBeInTheDocument()
   })
 
+  /*
+   * Issue #170：「おすすめのままでも始められます。」は開いたあとも出し続ける。
+   * 開いている間も「おすすめのままで始めてよい」ことは変わらないため。
+   * 逆に現在値のチップは、開けば同じ値が下に見えるので閉じているときだけ出す。
+   *
+   * 出し分けは group-open:hidden（CSS）なので jsdom では結果が見えない。
+   * このファイルの Issue #98 のテスト2つと同じ形で、クラスの有無として固定する。
+   */
+  it('keeps the optional note visible while hiding the chips once expanded', () => {
+    renderPage()
+
+    expect(screen.getByText('おすすめのままでも始められます。').className).not.toContain(
+      'group-open:hidden',
+    )
+    expect(screen.getByText('現在の設定:').parentElement!.className).toContain('group-open:hidden')
+  })
+
+  // Issue #170：すぐ下に「個別に調整する」があるので、言い添えなくても分かる
+  it('does not spell out that the setup can be changed later', () => {
+    renderPage()
+    expect(screen.queryByText(/あとから変更できます/)).not.toBeInTheDocument()
+  })
+
   // Issue #95 の再発防止：順番に進む操作に見えるので序数はやめた
   it('does not number the sections', () => {
     renderPage()
