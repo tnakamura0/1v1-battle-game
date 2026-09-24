@@ -89,7 +89,8 @@ export function PresetSelect() {
             <span className="font-mono text-meta font-bold tracking-[0.18em] text-accent">
               BATTLE SETUP
             </span>
-            <h1 className="font-sans text-2xl font-extrabold text-text-primary">
+            {/* ページ見出しの共通の指定（Rules / NotFound と同じ文字列）。Issue #167 でここに揃えた */}
+            <h1 className="font-sans text-3xl font-extrabold text-text-primary sm:text-4xl">
               対戦ルールを選ぶ
             </h1>
             <p className="font-sans text-sm text-text-secondary">
@@ -141,7 +142,8 @@ export function PresetSelect() {
                     }}
                     className={`${RECOMMENDED_BUTTON_BASE} ${isActive ? RECOMMENDED_BUTTON_ACTIVE : RECOMMENDED_BUTTON_IDLE}`}
                   >
-                    <span className={`font-sans text-sm font-bold ${titleColorClass}`}>
+                    {/* ルール画面の行動カードと、タイトル16px・説明12pxというサイズの組が同じ（太さは別） */}
+                    <span className={`font-sans text-base font-bold ${titleColorClass}`}>
                       {recommended.title}
                     </span>
                     <span className="font-sans text-xs text-text-tertiary">
@@ -176,7 +178,12 @@ export function PresetSelect() {
             個別設定は初期状態で閉じる（Issue #129）。「任意」バッジと
             「おすすめのままでも始められます。」で言葉の上では任意だと伝えていたが、
             展開したままだと画面の半分以上を占め、初見では「設定しないと始められない画面」に
-            見えていた。閉じることで初見の画面が「見出し＋おすすめ3枚＋対戦を始める」になる。
+            見えていた。閉じることで初見の画面が「見出し＋おすすめ＋対戦を始める」になる。
+
+            **3枚すべてが一度に見えるわけではない。** 375×667 では3枚目が「対戦を始める」に
+            35px重なる（Issue #167 で見出しを大きくする前は15px）。下に続きがあることは
+            切れたカードが示すので、そのまま許容している。狭い画面で3枚とも見せたいなら、
+            文字サイズではなく縦の間隔（この画面の gap-8）を詰めるほうを先に検討すること。
 
             コントロールドな button + aria-expanded ではなくネイティブの details を使う。
             この画面は SegmentedOption が素のradio、設定のまとまりが fieldset/legend と、
@@ -300,12 +307,14 @@ export function PresetSelect() {
 }
 
 /**
- * h1（24px）と legend（11px）の間に挟むセクション見出し。
+ * ページ見出し（h1）と legend（11px）の間に挟むセクション見出し。
  * この段がないと「おすすめ設定」と legend が同じ強さになり、おすすめ設定が
  * 下の3項目と並列の設定項目に見えてしまう。
- * 16pxなのは、配下にあるおすすめカードのタイトル（14px bold）より一段上に置くため。
- * 他画面の SectionHeading（18px＋accentの縦バー）は使わない。この画面はh1が24pxと
- * スケールが小さく、かつ accent が「選択中」を表しているため、装飾で使うと意味が重なる。
+ * 18pxなのは、配下にあるおすすめカードのタイトル（16px bold）より一段上に置くため。
+ * 他画面の SectionHeading と同じサイズだが、**あちらのコンポーネントは使わない。**
+ * accentの縦バーを持っていて、この画面では accent が「選択中」を表しているため、
+ * 装飾に使うと意味が重なる（Issue #167 で見出しのサイズを揃えたときも、
+ * 揃えたのはサイズだけで、寄せない判断はこの理由で変えていない）。
  *
  * かつては「01」「02」の序数を添えていたが、順番に進まなければならない操作に見えた。
  * 実際にはおすすめを選んだだけで始める人が多く、個別の調整は必須の次の手順ではない。
@@ -325,7 +334,7 @@ function SectionTitle({
   children: ReactNode
 }) {
   return (
-    <h2 className="flex items-baseline gap-2.5 font-sans text-base font-bold text-text-primary">
+    <h2 className="flex items-baseline gap-2.5 font-sans text-lg font-bold text-text-primary">
       {children}
       {/*
         序数と違い aria-hidden にしない。「任意」は読み上げても意味のある情報で、
