@@ -65,7 +65,14 @@ export type CtaSize = 'hug' | 'spread' | 'fill'
  * レイアウト（親のflex方向やgap）で吸収できることが多い。
  */
 const CTA_SIZE: Record<CtaSize, string> = {
-  /** 内容ぶんの幅。左右のpaddingを自分で持つ。親が広げれば全幅にもなる（Home のHero） */
+  /**
+   * 内容ぶんの幅。左右のpaddingを自分で持つ。親が広げれば全幅にもなる（Home のHero）。
+   *
+   * **Home のHeroだけは、sm以上で行を等分するために呼び出し側が sm:flex-1 を足している**
+   * （Issue #165）。本来は下の spread の役だが、あちらはモバイルの高さと文字サイズまで
+   * 変えてしまうため。下の「同じく2つ縦に積む〜」の高さを揃える判断が済めば、
+   * Home のHeroは spread に寄せられる。
+   */
   hug: 'h-13 px-8 text-sm',
   /** モバイルは全幅で大きめ、sm以上は横並びの行を等分。Rules の末尾に2つ並ぶ場合 */
   spread: 'h-14 w-full flex-none text-base sm:h-13 sm:w-auto sm:flex-1 sm:text-sm',
