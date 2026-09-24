@@ -106,7 +106,7 @@ export function PresetSelect() {
                 数を言わずに「個別の設定」と呼ぶ。
               */}
               <p id="recommended-setups-hint" className="font-sans text-xs text-text-tertiary">
-                選ぶと個別の設定がまとめて切り替わります。あとから変更できます。
+                選ぶと個別の設定がまとめて切り替わります。
               </p>
             </div>
             {/*
@@ -181,8 +181,9 @@ export function PresetSelect() {
             見えていた。閉じることで初見の画面が「見出し＋おすすめ＋対戦を始める」になる。
 
             **3枚すべてが一度に見えるわけではない。** 375×667 では3枚目が「対戦を始める」に
-            35px重なる（Issue #167 で見出しを大きくする前は15px）。下に続きがあることは
-            切れたカードが示すので、そのまま許容している。狭い画面で3枚とも見せたいなら、
+            19px重なる（見出しを大きくする前は15px、大きくした直後は35px。Issue #170 で
+            上のヒントが2行から1行になったぶん縮んだ）。下に続きがあることは切れたカードが
+            示すので、そのまま許容している。狭い画面で3枚とも見せたいなら、
             文字サイズではなく縦の間隔（この画面の gap-8）を詰めるほうを先に検討すること。
 
             コントロールドな button + aria-expanded ではなくネイティブの details を使う。
@@ -205,14 +206,19 @@ export function PresetSelect() {
                 個別に調整する
               </SectionTitle>
               {/*
-                閉じているときだけ出す2つ。開けば設定そのものが下に見えるので、
-                「おすすめのままでも始められます」も現在値のチップも用が済む。
-                出しっぱなしにすると、開いた状態で同じ値が二重に並んで再び密になる。
+                この文は開いても出したままにする（Issue #170）。開いて設定を眺めている間も
+                「おすすめのままで始めてよい」ことは変わらないので、そこで消すと、
+                開いた人にだけ「調整しないと始められない」という圧がかかる。
+                隠すのは下のチップだけ。あちらは開けば同じ値が下に見えて二重になる。
+
+                開いている間、この一文も summary の一部＝開閉の当たり判定に含まれる
+                （index.css が summary に cursor: pointer を当てているので見た目にも分かる）。
+                文を押すと閉じるが、summary の中にある以上そうなるのが自然な挙動。
 
                 p ではなく span なのは、summary の内容モデルが phrasing content と
                 heading content に限られるため（div や p は置けない）。
               */}
-              <span className="block font-sans text-xs text-text-tertiary group-open:hidden">
+              <span className="block font-sans text-xs text-text-tertiary">
                 おすすめのままでも始められます。
               </span>
               {/*
@@ -220,12 +226,16 @@ export function PresetSelect() {
                 すべて aria-pressed=false になるので、これがないと今の設定が画面から消える。
                 読み上げでは summary の名前の一部になるため、何の値なのかを sr-only で添える。
 
-                その結果、閉じている間だけ summary の名前が
-                「個別に調整する 任意 おすすめのままでも始められます。 現在の設定: HP2 …」と長くなる。
-                開けば group-open:hidden で「個別に調整する 任意」まで縮むので、
-                長い名前が出るのは中身が見えていないときだけ、という対応になっている。
-                （Chromium の AXツリーで実測。h2 は summary の中でも heading ノードとして
-                残るので、見出しナビゲーションからも従来どおり辿れる）
+                その結果、summary の名前は開閉で次のように変わる（Chromium の AXツリーで実測）。
+
+                  閉: 個別に調整する 任意 おすすめのままでも始められます。 現在の設定: HP2 ガード3ターン CPUふつう
+                  開: 個別に調整する 任意 おすすめのままでも始められます。
+
+                **いちばん長くなる現在値の部分は、閉じているときだけ**という対応は保っている。
+                上の一文は Issue #170 で開いても出すようにしたので、開いた側の名前もそのぶん伸びた。
+                中身が見えているのに名前が長いのは避けたいが、伸びるのは一文だけなので許容している。
+                （h2 は summary の中でも heading ノードとして残るので、
+                見出しナビゲーションからも従来どおり辿れる）
               */}
               <span className="flex flex-wrap items-center gap-1.5 pt-0.5 group-open:hidden">
                 <span className="sr-only">現在の設定:</span>
