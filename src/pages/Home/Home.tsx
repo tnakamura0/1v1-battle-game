@@ -5,10 +5,18 @@ import { BattlePreview, OpponentStatusPreview } from '@/pages/Home/BattlePreview
 import { LandingSection } from '@/pages/Home/LandingSection'
 import { SectionIntro } from '@/pages/Home/SectionIntro'
 
+/*
+ * 1ターンではなく1対戦分の流れ。見出しも「対戦の流れ」にしてある（Issue #173）。
+ * ターン単位の説明はルール画面が持つので、ここは設定から勝利までをなぞるだけに留める。
+ *
+ * 3番目はかつて「結果を確認し、次のターンへ」だったが、HPが0になればそこで終わるので
+ * 次のターンが必ず来るわけではない。**14文字を超えないこと。** sm以上は4カラムで
+ * 1枚あたり約203pxしかなく、超えると1枚だけ2行になって4枚の高さが揃わない。
+ */
 const STEPS = [
   '対戦ルールを設定する',
   '毎ターン、行動を1つ選択する',
-  '結果を確認し、次のターンへ',
+  '結果を確認し、決着まで続ける',
   '相手のHPを0にすれば勝利',
 ]
 
@@ -51,7 +59,7 @@ export function Home() {
       </LandingSection>
 
       <LandingSection tone="sunken">
-        <SectionIntro meta="FLOW" title="1ターンの流れ" />
+        <SectionIntro meta="FLOW" title="対戦の流れ" />
         <ol className="grid gap-3 sm:grid-cols-4">
           {STEPS.map((step, index) => (
             <li
