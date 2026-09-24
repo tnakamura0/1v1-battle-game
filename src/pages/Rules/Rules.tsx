@@ -7,10 +7,25 @@ import { SectionHeading } from '@/components/SectionHeading'
 import { ACTION_LABEL } from '@/game/copy'
 import type { Action } from '@/game/types'
 
+/*
+ * 1ターンで起きることだけを書く（Issue #173）。
+ *
+ * かつてはSTEP2が「勝敗が決まる」、STEP3が「次のターンに進む」だったが、どちらも実装と違う。
+ * 1ターンで決まるのは盤面の変化だけ（game/rules.ts の resolveTurn が返す TurnOutcome は6値で、
+ * 表示のときに game/copy.ts の outcomeHeadline が 命中／相打ち／ガード成功／変化なし の4語にまとめる）。
+ * 勝敗は checkVictory がHPを見て決めるもので、HPが0になればそこで終わる。
+ * つまり次のターンも必ず来るわけではない。
+ *
+ * STEP2で挙げるのはHPとエネルギーまで。ガードのクールダウンも毎ターン動くが（rules.ts の
+ * nextGuardCooldown）、専用の節が下にあるのでここでは触れない。
+ *
+ * STEP1の「お互いに」は外さないこと。同時に選ぶからこそ読み合いになるのに、
+ * 書かないと自分だけが選ぶように読める（対戦画面の「両者の行動は同時に公開されます」と同じ趣旨）。
+ */
 const TURN_STEPS = [
-  '3つの行動から1つを選ぶ',
-  '行動が公開され、組み合わせに応じて勝敗が決まる',
-  '次のターンに進む',
+  'お互いに3つの行動から1つを選ぶ',
+  '行動が同時に公開され、組み合わせに応じてHPとエネルギーが変化する',
+  'どちらかのHPが0になれば対戦終了。ならなければ次のターンへ',
 ]
 
 /** この画面でだけ出す行動の説明。名前は ACTION_LABEL、色は ACTION_STYLE を使う */
